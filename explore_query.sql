@@ -1,0 +1,40 @@
+--- TO2_0506A_SCADA ---
+
+SELECT [DATA_ID],[DATA_DATE],[DATA_TIME],
+		[A1_FQ_NEW],
+		[A2_FQ_NEW],
+		[A1_MOV],
+		[A2_MOV]
+FROM [ITRI].[dbo].[T02_0506A_SCADA]
+
+--- T02_0507B_SCADA ---
+
+--- TO2_06A1 ---
+SELECT [DATA_ID],[DATA_DATE],[PH],[ORP],[MLSS],[DO],[TEMP]
+FROM [ITRI].[dbo].[T02_06A1_RealTime]
+
+
+--- TO2_06A2 ---
+SELECT [DATA_ID],[DATA_DATE],[PH],[ORP],[MLSS],[DO],[TEMP]
+FROM [ITRI].[dbo].[T02_06A2_RealData]
+
+
+--- TO2_06B1 ---
+SELECT [DATA_ID],[DATA_DATE],[PH],[ORP],[MLSS],[DO],[TEMP]
+FROM [ITRI].[dbo].[T02_06B1_RealData]
+
+--- TO2_06B2 ---
+SELECT [DATA_ID],[DATA_DATE],[PH],[ORP],[MLSS],[DO],[TEMP]
+FROM [ITRI].[dbo].[T02_06B2_RealData]
+
+--- TO2_07A1 ---
+SELECT [DATA_ID],[DATA_DATE],[PH],[ORP],[MLSS],[DO]
+FROM [ITRI].[dbo].[T02_07A1_RealDATA]
+
+--- TO2_07A2 ---
+SELECT [DATA_ID],[DATA_DATE],[PH],[ORP],[MLSS],[DO]
+FROM [ITRI].[dbo].[T02_07A2_RealDATA]
+
+--- T02_08A ---
+SELECT *
+FROM [ITRI].[dbo].[T02_08A_Outlet]
