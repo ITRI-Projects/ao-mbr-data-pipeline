@@ -1,4 +1,5 @@
 -- March 24 through April 23, 2026 (inclusive)
+
 SELECT
     target.[DATA_ID] AS [Target_DATA_ID],
     target.[DATA_DATE],
@@ -40,6 +41,7 @@ SELECT
     process_a2.[MLSS] AS [A2_MLSS],
 
     -- Aeration
+    air.[Q_A1_Air],
     air.[Q_A2_Air],
 
     -- Effluent ammonia input
