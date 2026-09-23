@@ -123,7 +123,7 @@ BATCH_SIZE=500
 
 Do not commit `.env`; it may contain database or API credentials.
 
-The current database connector uses Windows trusted authentication. Support for `DB_USERNAME`, `DB_PASSWORD`, and the `DB_TRUSTED_CONNECTION` switch still needs to be implemented if SQL Server authentication is required.
+The database connector supports Windows/integrated authentication with `DB_TRUSTED_CONNECTION=true`, or SQL Server authentication with `DB_TRUSTED_CONNECTION=false` and `DB_USERNAME` / `DB_PASSWORD`. For WSL connecting to Windows SQL Server, use a reachable Windows host address and TCP port in `DB_SERVER`.
 
 ## Installation
 
@@ -135,11 +135,27 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+## Development commands (WSL/Linux)
+
+Run these commands from the project root:
+
+```bash
+make install  # Create .venv if needed and install dependencies
+make dev      # Connect to SQL Server and wait; Ctrl+C closes the connection
+make check    # Check Python syntax and installed dependency compatibility
+make help     # List available commands
+```
+
+These commands use `.venv/bin/python` directly, so activation is not required.
+`make check` does not connect to the database or run automated tests.
+You can select a different environment with `make dev VENV=/path/to/venv`.
+
 ## Current implementation status
 
 Implemented:
 
-- SQL Server connection using trusted authentication
+- SQL Server connection using integrated or SQL Server authentication
+- Development entry point that holds the connection until Ctrl+C
 - Extraction of an individual configured sensor column
 - Conversion of SQL/Python values into JSON-compatible values
 - Prediction payload construction
