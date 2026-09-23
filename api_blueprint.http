@@ -1,0 +1,15 @@
+POST https://iwater.findsmart.tw/import/json/
+Content-Type: application/json
+Accept: application/json
+
+{
+  "user": "username",
+  "token":"randomstringtoken1234",
+  "fullTagName":"tagID",
+  "datetime":"2023-01-01 00:00:00",
+  "value":3.5
+}
+
+### token is for authentication purposes of this API endpoint
+### fullTagName refers to the registered sensor/parameter corresponding to the column of the data
+### datetime can be retrieved from [DATA_ID of the query]
