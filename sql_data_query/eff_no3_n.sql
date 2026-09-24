@@ -29,16 +29,16 @@ SELECT
     inlet_a2.[NO3_N] AS [A2_NO3_N],
 
     -- A1 process measurements
-    process_a1.[PH]   AS [A1_PH],
-    process_a1.[ORP]  AS [A1_ORP],
-    process_a1.[DO]   AS [A1_DO],
-    process_a1.[MLSS] AS [A1_MLSS],
+    process_a1.[PH]   AS [A1_A_PH],
+    process_a1.[ORP]  AS [A1_A_ORP],
+    process_a1.[DO]   AS [A1_A_DO],
+    process_a1.[MLSS] AS [A1_A_MLSS],
 
     -- A2 process measurements
-    process_a2.[PH]   AS [A2_PH],
-    process_a2.[ORP]  AS [A2_ORP],
-    process_a2.[DO]   AS [A2_DO],
-    process_a2.[MLSS] AS [A2_MLSS],
+    process_a2.[PH]   AS [A2_A_PH],
+    process_a2.[ORP]  AS [A2_A_ORP],
+    process_a2.[DO]   AS [A2_A_DO],
+    process_a2.[MLSS] AS [A2_A_MLSS],
 
     -- Aeration
     air.[Q_A1_Air],
