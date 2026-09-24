@@ -5,7 +5,7 @@ SELECT
     target.[DATA_TIME],
 
     -- Target: A2 methanol dosing flow
-    target.[FQ_CH3OH] AS [Target_FQ_CH3OH],
+    target.[FQ_CH3OH] AS [Target_A2_FQ_CH3OH],
 
     -- Flow
     flow.[A2_Qinto],

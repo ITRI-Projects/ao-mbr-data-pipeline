@@ -6,7 +6,7 @@ SELECT
     target.[DATA_TIME],
 
     -- Target
-    target.[NO3_N] AS [Target_NO3_N],
+    target.[NO3_N] AS [Eff_NO3_N],
 
     -- Flow
     flow.[A1_Qinto],

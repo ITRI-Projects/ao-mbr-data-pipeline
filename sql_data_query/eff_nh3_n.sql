@@ -5,7 +5,7 @@ SELECT
     target.[DATA_TIME],
 
     -- Target
-    target.[NH4_N] AS [Target_NH4_N],
+    target.[NH4_N] AS [Eff_NH4_N],
 
     -- Flow
     flow.[A1_Qinto],
