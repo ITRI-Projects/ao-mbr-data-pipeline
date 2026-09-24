@@ -16,10 +16,10 @@ SELECT
     target.[NH3_N]  AS [A1_NH3_N],
 
     -- A1 process measurements
-    process_a1.[PH]   AS [A1_PH],
-    process_a1.[ORP]  AS [A1_ORP],
-    process_a1.[DO]   AS [A1_DO],
-    process_a1.[MLSS] AS [A1_MLSS],
+    process_a1.[PH]   AS [A1_A_PH],
+    process_a1.[ORP]  AS [A1_A_ORP],
+    process_a1.[DO]   AS [A1_A_DO],
+    process_a1.[MLSS] AS [A1_A_MLSS],
 
     -- Effluent measurements
     effluent.[NH4_N] AS [Effluent_NH4_N],
