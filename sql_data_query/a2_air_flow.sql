@@ -17,9 +17,11 @@ SELECT
     inlet_a2.[Q_r1]     AS [A2_Q_r1],
 
     -- A2 process measurements
-    process_a2.[ORP]  AS [A2_ORP],
-    process_a2.[DO]   AS [A2_DO],
-    process_a2.[MLSS] AS [A2_MLSS]
+    process_a2.[PH]   AS [A2_O_PH]
+    process_a2.[ORP]  AS [A2_O_ORP],
+    process_a2.[DO]   AS [A2_O_DO],
+    process_a2.[MLSS] AS [A2_O_MLSS]
+
 
 FROM [ITRI].[dbo].[T02_07A_AIR] AS target
 
