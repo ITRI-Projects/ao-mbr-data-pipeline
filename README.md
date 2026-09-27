@@ -1,3 +1,52 @@
+## Submit sensor readings to the cleaning API
+
+```bash
+.venv/bin/python main.py --submit --sensor A1_COD_in
+# Count only, without HTTP requests:
+.venv/bin/python main.py --dry-run --sensor A1_COD_in
+```
+
+`main.py` and `make dev` open an interactive menu: choose dry run or API
+submission, then a sensor by number or alias. Enter defaults to dry run and
+the configured sensor; `q` exits. Use `--submit` or `--dry-run` to skip the
+menu for scripted runs (with optional `--sensor`). The default alias is
+`PREVIEW_SENSOR` in `config/common.py`; extraction uses its inclusive
+`DATA_WINDOW`. Set `API_URL`, `API_USER`, and `API_TOKEN` in `.env`.
+The client uses the JSON authentication fields in `api_blueprint.http`.
+Timestamps currently combine `DATA_DATE` and `DATA_TIME`, as in the validated
+extraction preview; interpreting `DATA_ID` as a timestamp is not implemented.
+
+Logs show extraction start, each reading submitted, HTTP status, and final
+counts. Credentials and response bodies are not logged. NULL, non-numeric,
+and non-finite readings are skipped with a warning and a nonzero exit code.
+The run stops on the first HTTP or transport failure, without retries.
+HTTP 2xx means HTTP success only: the application's response contract and
+cleaning completion are not yet verified. No retrieval is performed.
+There is no persistent checkpoint or duplicate protection; restarting sends
+the selected window again. Check uncertain deliveries before rerunning.
+
+## SQL extraction count verification
+
+1. Run `.venv/bin/python main.py --dry-run` to count extracted readings
+   for `PREVIEW_SENSOR` in `config/common.py`. Override the sensor with
+   `.venv/bin/python main.py --dry-run --sensor A2_Qin`.
+2. Run `sql_data_query/count_sensor.sql` in the database selected by `DB_NAME`.
+   Set its schema, table, and column from the selected alias in
+   `config/sensors.py`, and match its start/end to `DATA_WINDOW` in
+   `config/common.py`. Defaults match `A1_Qin` and the current window.
+
+Compare all three counts: `rows` includes NULL readings, `non_null_values`
+excludes them, and `null_values` counts missing values. Python streams and
+counts the actual extracted rows; SQL independently computes aggregates.
+Both use inclusive boundaries, including the time-of-day cutoff. Compare
+against unchanged source data so concurrent updates do not skew the results.
+
+The command logs counts instead of individual readings, sends no API requests,
+and makes no database writes. Timestamps combine `DATA_DATE` and `DATA_TIME`.
+Database credentials must be configured in `.env`.
+
+---
+
 # AO-MBR Time-Series Prediction Pipeline
 
 This project extracts time-series sensor data from a local Microsoft SQL Server database, prepares model inputs, sends them to a prediction API, and stores the API results back in SQL Server.

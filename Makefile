@@ -9,7 +9,7 @@ VENV_PYTHON := $(VENV)/bin/python
 help:
 	@printf '%s\n' \
 	  'make install  Create the virtual environment and install dependencies' \
-	  'make dev      Run main.py (Ctrl+C to disconnect and stop)' \
+	  'make dev      Choose dry run or API submission, then a sensor' \
 	  'make check    Check Python syntax and installed dependency compatibility' \
 	  'make venv     Create the virtual environment if missing' \
 	  'make help     Show available commands'
