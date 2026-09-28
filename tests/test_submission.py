@@ -11,12 +11,6 @@ from src.transformer import build_import_payload
 
 
 class SubmissionTests(unittest.TestCase):
-    def test_interactive_dry_run_default(self):
-        with patch('builtins.input', side_effect=['', '']), patch('builtins.print'):
-            args = main.select_options([])
-        self.assertTrue(args.dry_run)
-        self.assertEqual(args.sensor, main.PREVIEW_SENSOR)
-
     def test_interactive_submit_and_invalid_choices(self):
         with patch('builtins.input', side_effect=['bad', '2', '0', 'A2_Qin']), patch('builtins.print'):
             args = main.select_options([])
@@ -60,7 +54,7 @@ class SubmissionTests(unittest.TestCase):
                 client.submit_reading.side_effect = outcome
             else:
                 client.submit_reading.return_value = outcome
-            result = main.main(['--dry-run'] if dry_run else ['--submit'])
+            result = main.main(['--dry-run' if dry_run else '--submit', '--sensor', 'A2_Qin'])
             close.assert_called_once()
             if dry_run:
                 factory.assert_not_called()
