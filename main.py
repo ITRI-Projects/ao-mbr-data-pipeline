@@ -4,7 +4,7 @@ from datetime import datetime
 import pyodbc
 import requests
 
-from config.common import DATA_WINDOW, PREVIEW_SENSOR, TIMESTAMP_COLUMNS
+from config.common import DATA_WINDOW, TIMESTAMP_COLUMNS
 from config.sensors import SENSORS
 from src.api_client import APIClient
 from src.database import close_connection, get_connection
