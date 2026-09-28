@@ -1,4 +1,5 @@
 import os
+import tempfile
 import unittest
 from datetime import datetime
 from decimal import Decimal
@@ -6,6 +7,7 @@ from unittest.mock import Mock, patch
 
 import requests
 import main
+from src import pipeline
 from src.api_client import APIClient
 from src.transformer import build_import_payload
 
@@ -19,9 +21,18 @@ class SubmissionTests(unittest.TestCase):
 
     def test_quit_and_eof_do_not_connect(self):
         for answer in ['q', EOFError()]:
-            with patch('builtins.input', side_effect=[answer]), patch('builtins.print'), patch.object(main, 'get_connection') as connect:
+            with patch('builtins.input', side_effect=[answer]), patch('builtins.print'), patch.object(main, 'run_pipeline') as connect:
                 self.assertIn(main.main([]), (0, 130))
                 connect.assert_not_called()
+
+    def test_cli_passes_selected_configuration(self):
+        with patch.object(main, 'run_pipeline', return_value=1) as run:
+            result = main.main(['--submit', '--sensor', 'A2_Qin', '--ledger', '/tmp/example.sqlite3'])
+        self.assertEqual(result, 1)
+        run.assert_called_once_with(
+            sensor_alias='A2_Qin', sensor=main.SENSORS['A2_Qin'],
+            data_window=main.DATA_WINDOW, timestamp_columns=main.TIMESTAMP_COLUMNS,
+            dry_run=False, ledger_path='/tmp/example.sqlite3')
 
     def test_payload_and_authentication(self):
         payload = build_import_payload({'fullTagName': 'tag'}, {
@@ -44,17 +55,22 @@ class SubmissionTests(unittest.TestCase):
     def run_pipeline(self, values, *, dry_run=False, outcome=200):
         rows = ({'data_id': i, 'timestamp': datetime(2026, 4, 23, 13), 'value': v}
                 for i, v in enumerate(values))
-        with patch.object(main, 'get_connection', return_value=Mock()), \
-                patch.object(main, 'close_connection') as close, \
-                patch.object(main, 'extract_parameter', return_value=rows), \
-                patch.object(main, 'APIClient') as factory, \
-                patch.object(main, 'get_logger', return_value=Mock()):
+        with tempfile.TemporaryDirectory() as temp, patch.object(pipeline, 'get_connection', return_value=Mock()), \
+                patch.object(pipeline, 'close_connection') as close, \
+                patch.object(pipeline, 'extract_parameter', return_value=rows), \
+                patch.object(pipeline, 'APIClient') as factory, \
+                patch.object(pipeline, 'get_logger', return_value=Mock()):
             client = factory.return_value
+            client.base_url = "https://example.com/import"
+            client.user = "test-user"
             if isinstance(outcome, Exception):
                 client.submit_reading.side_effect = outcome
             else:
                 client.submit_reading.return_value = outcome
-            result = main.main(['--dry-run' if dry_run else '--submit', '--sensor', 'A2_Qin'])
+            result = pipeline.run_pipeline(
+                sensor_alias='A2_Qin', sensor=main.SENSORS['A2_Qin'],
+                data_window=main.DATA_WINDOW, timestamp_columns=main.TIMESTAMP_COLUMNS,
+                dry_run=dry_run, ledger_path=os.path.join(temp, 'ledger.sqlite3'))
             close.assert_called_once()
             if dry_run:
                 factory.assert_not_called()
