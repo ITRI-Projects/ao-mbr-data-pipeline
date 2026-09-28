@@ -31,12 +31,8 @@ def select_options(argv=None):
                 args.dry_run = choice != "2"
                 break
             print("Enter 1, 2, or q.")
-        # A mode selected interactively is followed by a column selection.
-        interactive_sensor = True
-    else:
-        interactive_sensor = False
 
-    if args.sensor is None and interactive_sensor:
+    if args.sensor is None:
         aliases = list(SENSORS)
         print("\nSelect a sensor column:")
         previous_group = None
@@ -49,11 +45,9 @@ def select_options(argv=None):
             source = sensor["source"]
             print(f"  {number}. {alias} — {source['table']}.{source['column']} — {sensor.get('description', '')}")
         while True:
-            choice = input(f"Sensor number or alias [{PREVIEW_SENSOR}], q to quit: ").strip()
+            choice = input("Sensor number or alias, q to quit: ").strip()
             if choice.lower() == "q":
                 return None
-            if not choice:
-                choice = PREVIEW_SENSOR
             if choice in SENSORS:
                 args.sensor = choice
                 break
@@ -61,7 +55,6 @@ def select_options(argv=None):
                 args.sensor = aliases[int(choice) - 1]
                 break
             print("Enter a listed sensor number or alias, or q.")
-    args.sensor = args.sensor or PREVIEW_SENSOR
     return args
 
 
