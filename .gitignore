@@ -8,3 +8,5 @@ __pycache__/
 .idea/
 
 logs/
+# Local submission ledger
+data/

@@ -7,11 +7,9 @@
 ```
 
 `main.py` and `make dev` open an interactive menu: choose dry run or API
-submission, then a sensor by number or alias. Enter defaults to dry run and
-the configured sensor; `q` exits. Use `--submit` or `--dry-run` to skip the
-menu for scripted runs (with optional `--sensor`). The default alias is
-`PREVIEW_SENSOR` in `config/common.py`; extraction uses its inclusive
-`DATA_WINDOW`. Set `API_URL`, `API_USER`, and `API_TOKEN` in `.env`.
+submission, then a sensor by number or alias. Enter defaults to dry run; a sensor must be selected explicitly. `q` exits. Use `--submit` or `--dry-run` to skip the
+menus for scripted runs by also supplying `--sensor`. Without `--sensor`,
+the sensor menu is shown. Extraction uses the inclusive `DATA_WINDOW` in `config/common.py`. Set `API_URL`, `API_USER`, and `API_TOKEN` in `.env`.
 The client uses the JSON authentication fields in `api_blueprint.http`.
 Timestamps currently combine `DATA_DATE` and `DATA_TIME`, as in the validated
 extraction preview; interpreting `DATA_ID` as a timestamp is not implemented.
@@ -22,13 +20,13 @@ and non-finite readings are skipped with a warning and a nonzero exit code.
 The run stops on the first HTTP or transport failure, without retries.
 HTTP 2xx means HTTP success only: the application's response contract and
 cleaning completion are not yet verified. No retrieval is performed.
-There is no persistent checkpoint or duplicate protection; restarting sends
-the selected window again. Check uncertain deliveries before rerunning.
+Submission progress is stored in `data/submissions.sqlite3`. Reruns skip
+recorded HTTP successes and hold unresolved attempts for review. See below.
 
 ## SQL extraction count verification
 
 1. Run `.venv/bin/python main.py --dry-run` to count extracted readings
-   for `PREVIEW_SENSOR` in `config/common.py`. Override the sensor with
+   after choosing a sensor from the menu. Specify the sensor directly with
    `.venv/bin/python main.py --dry-run --sensor A2_Qin`.
 2. Run `sql_data_query/count_sensor.sql` in the database selected by `DB_NAME`.
    Set its schema, table, and column from the selected alias in
@@ -232,3 +230,64 @@ The remaining implementation depends on four contracts:
 4. The timestamp-alignment rule for readings that do not have exactly matching timestamps, such as nearest reading, hourly average, or forward fill.
 
 Keeping these decisions in configuration will allow additional predictions to be added without rewriting the extraction and API-processing code.
+
+## Persistent submission tracking
+
+Rerun the same submission command to resume. SQL readings are still scanned,
+but previously recorded HTTP successes are not uploaded again. Identity includes
+the API endpoint/account and exact tag, timestamp, and value payload; changed
+values are new submissions. Credentials and response bodies are not stored.
+Use the same ledger (`--ledger PATH` overrides the default) across runs and
+back it up. Deleting it or switching paths removes duplicate protection.
+
+Each attempt is committed before sending. A crash leaves `in_flight`; timeouts
+become `uncertain`. Non-2xx responses become `http_failed`. These entries are
+held on reruns while other readings continue. HTTP success remains distinct
+from application acceptance or cleaning completion.
+
+Inspect unresolved entries:
+
+```bash
+.venv/bin/python -m src.submission_store
+```
+
+Stop submission jobs and check the API/server for a listed reading. If it was
+delivered, record that finding; if it is safe to resend, explicitly enable retry:
+
+```bash
+.venv/bin/python -m src.submission_store --resolve KEY --action delivered
+.venv/bin/python -m src.submission_store --resolve KEY --action retry
+```
+
+Retry resolution only queues the entry; rerun `main.py` to send it. Specify the
+same `--ledger PATH` here if using a custom ledger. There are no automatic
+retries. Dry runs do not open or modify the ledger.
+
+Submissions made before tracking was installed are not in the ledger. Do not
+rerun previously uploaded windows expecting them to be skipped automatically.
+
+## Reusing the workflow
+
+`main.py` handles menus, command-line arguments, and logging setup.
+`src/pipeline.py` owns extraction, API submission, ledger tracking, summaries,
+and resource cleanup. Call it directly without interactive input:
+
+```python
+from config.common import DATA_WINDOW, TIMESTAMP_COLUMNS
+from config.sensors import SENSORS
+from src.logger import setup_logger
+from src.pipeline import run_pipeline
+
+setup_logger()
+status = run_pipeline(
+    sensor_alias="A2_Qin",
+    sensor=SENSORS["A2_Qin"],
+    data_window=DATA_WINDOW,
+    timestamp_columns=TIMESTAMP_COLUMNS,
+    dry_run=True,
+)
+```
+
+The function returns 0 for completion, 1 for failure or invalid/held readings,
+and 130 for interruption. Pass `dry_run=False` to submit and `ledger_path`
+to override the ledger location. Existing CLI commands remain the same.
