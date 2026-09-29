@@ -1,5 +1,4 @@
 import os
-import tempfile
 import unittest
 from datetime import datetime
 from decimal import Decimal
@@ -27,12 +26,12 @@ class SubmissionTests(unittest.TestCase):
 
     def test_cli_passes_selected_configuration(self):
         with patch.object(main, 'run_pipeline', return_value=1) as run:
-            result = main.main(['--submit', '--sensor', 'A2_Qin', '--ledger', '/tmp/example.sqlite3'])
+            result = main.main(['--submit', '--sensor', 'A2_Qin'])
         self.assertEqual(result, 1)
         run.assert_called_once_with(
             sensor_alias='A2_Qin', sensor=main.SENSORS['A2_Qin'],
             data_window=main.DATA_WINDOW, timestamp_columns=main.TIMESTAMP_COLUMNS,
-            dry_run=False, ledger_path='/tmp/example.sqlite3')
+            dry_run=False)
 
     def test_payload_and_authentication(self):
         payload = build_import_payload({'fullTagName': 'tag'}, {
@@ -55,7 +54,7 @@ class SubmissionTests(unittest.TestCase):
     def run_pipeline(self, values, *, dry_run=False, outcome=200):
         rows = ({'data_id': i, 'timestamp': datetime(2026, 4, 23, 13), 'value': v}
                 for i, v in enumerate(values))
-        with tempfile.TemporaryDirectory() as temp, patch.object(pipeline, 'get_connection', return_value=Mock()), \
+        with patch.object(pipeline, 'get_connection', return_value=Mock()), \
                 patch.object(pipeline, 'close_connection') as close, \
                 patch.object(pipeline, 'extract_parameter', return_value=rows), \
                 patch.object(pipeline, 'APIClient') as factory, \
@@ -70,7 +69,7 @@ class SubmissionTests(unittest.TestCase):
             result = pipeline.run_pipeline(
                 sensor_alias='A2_Qin', sensor=main.SENSORS['A2_Qin'],
                 data_window=main.DATA_WINDOW, timestamp_columns=main.TIMESTAMP_COLUMNS,
-                dry_run=dry_run, ledger_path=os.path.join(temp, 'ledger.sqlite3'))
+                dry_run=dry_run)
             close.assert_called_once()
             if dry_run:
                 factory.assert_not_called()
