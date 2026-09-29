@@ -20,8 +20,7 @@ and non-finite readings are skipped with a warning and a nonzero exit code.
 The run stops on the first HTTP or transport failure, without retries.
 HTTP 2xx means HTTP success only: the application's response contract and
 cleaning completion are not yet verified. No retrieval is performed.
-Submission progress is stored in `data/submissions.sqlite3`. Reruns skip
-recorded HTTP successes and hold unresolved attempts for review. See below.
+Persistent tracking is disabled. Reruns submit the selected window again.
 
 ## SQL extraction count verification
 
@@ -231,45 +230,17 @@ The remaining implementation depends on four contracts:
 
 Keeping these decisions in configuration will allow additional predictions to be added without rewriting the extraction and API-processing code.
 
-## Persistent submission tracking
+## Submission tracking (inactive)
 
-Rerun the same submission command to resume. SQL readings are still scanned,
-but previously recorded HTTP successes are not uploaded again. Identity includes
-the API endpoint/account and exact tag, timestamp, and value payload; changed
-values are new submissions. Credentials and response bodies are not stored.
-Use the same ledger (`--ledger PATH` overrides the default) across runs and
-back it up. Deleting it or switching paths removes duplicate protection.
-
-Each attempt is committed before sending. A crash leaves `in_flight`; timeouts
-become `uncertain`. Non-2xx responses become `http_failed`. These entries are
-held on reruns while other readings continue. HTTP success remains distinct
-from application acceptance or cleaning completion.
-
-Inspect unresolved entries:
-
-```bash
-.venv/bin/python -m src.submission_store
-```
-
-Stop submission jobs and check the API/server for a listed reading. If it was
-delivered, record that finding; if it is safe to resend, explicitly enable retry:
-
-```bash
-.venv/bin/python -m src.submission_store --resolve KEY --action delivered
-.venv/bin/python -m src.submission_store --resolve KEY --action retry
-```
-
-Retry resolution only queues the entry; rerun `main.py` to send it. Specify the
-same `--ledger PATH` here if using a custom ledger. There are no automatic
-retries. Dry runs do not open or modify the ledger.
-
-Submissions made before tracking was installed are not in the ledger. Do not
-rerun previously uploaded windows expecting them to be skipped automatically.
+`src/submission_store.py` and existing ledger files are retained, but `main.py`
+and `run_pipeline()` do not use them. Submission runs perform no ledger reads
+or writes and do not skip previously submitted readings. Rerunning a window
+sends its valid readings again. Console progress logging remains enabled.
 
 ## Reusing the workflow
 
 `main.py` handles menus, command-line arguments, and logging setup.
-`src/pipeline.py` owns extraction, API submission, ledger tracking, summaries,
+`src/pipeline.py` owns extraction, API submission, summaries,
 and resource cleanup. Call it directly without interactive input:
 
 ```python
@@ -288,6 +259,5 @@ status = run_pipeline(
 )
 ```
 
-The function returns 0 for completion, 1 for failure or invalid/held readings,
-and 130 for interruption. Pass `dry_run=False` to submit and `ledger_path`
-to override the ledger location. Existing CLI commands remain the same.
+The function returns 0 for completion, 1 for failure or invalid readings,
+and 130 for interruption. Pass `dry_run=False` to submit. Existing CLI commands remain the same.

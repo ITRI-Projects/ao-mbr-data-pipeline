@@ -4,13 +4,11 @@ from config.common import DATA_WINDOW, TIMESTAMP_COLUMNS
 from config.sensors import SENSORS
 from src.logger import setup_logger
 from src.pipeline import run_pipeline
-from src.submission_store import DEFAULT_PATH
 
 
 def select_options(argv=None):
     parser = argparse.ArgumentParser(description="Choose a SQL count check or cleaning API submission.")
     parser.add_argument("--sensor", choices=sorted(SENSORS))
-    parser.add_argument("--ledger", default=str(DEFAULT_PATH), help="Persistent submission database path")
     modes = parser.add_mutually_exclusive_group()
     modes.add_argument("--dry-run", action="store_true", help="Count readings without API requests")
     modes.add_argument("--submit", action="store_true", help="Send readings to the cleaning API")
@@ -68,7 +66,6 @@ def main(argv=None):
         data_window=DATA_WINDOW,
         timestamp_columns=TIMESTAMP_COLUMNS,
         dry_run=args.dry_run,
-        ledger_path=args.ledger,
     )
 
 

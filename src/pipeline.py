@@ -1,5 +1,4 @@
 """Reusable single-sensor extraction and submission workflow, without CLI prompts."""
-import sqlite3
 from datetime import datetime
 
 import pyodbc
@@ -9,21 +8,20 @@ from src.api_client import APIClient
 from src.database import close_connection, get_connection
 from src.extractor import extract_parameter
 from src.logger import get_logger
-from src.submission_store import DEFAULT_PATH, SubmissionStore
 from src.transformer import build_import_payload
 
 
 def run_pipeline(*, sensor_alias, sensor, data_window, timestamp_columns,
-                 dry_run=True, ledger_path=DEFAULT_PATH):
+                 dry_run=True):
     """Run one sensor with explicit configuration and return an exit status.
 
-    Returns 0 on completion, 1 on failure/skipped invalid readings/held entries,
+    Returns 0 on completion, 1 on failure/skipped invalid readings,
     or 130 on interruption. Configure logging in the calling application.
-    Dry runs count SQL readings without opening the API or submission ledger.
+    Dry runs count SQL readings without opening the API.
     """
     logger = get_logger(__name__)
-    connection = client = readings = store = None
-    count = non_null = submitted = skipped = failed = uncertain = already_sent = held = 0
+    connection = client = readings = None
+    count = non_null = submitted = skipped = failed = uncertain = 0
     try:
         start = datetime.fromisoformat(data_window["start"])
         end = datetime.fromisoformat(data_window["end"])
@@ -35,8 +33,6 @@ def run_pipeline(*, sensor_alias, sensor, data_window, timestamp_columns,
                     source["schema"], source["table"], source["column"], start, end)
         if not dry_run:
             client = APIClient()
-            store = SubmissionStore(ledger_path)
-            logger.info("Submission ledger: %s", ledger_path)
         connection = get_connection()
         logger.info("Database connected. Starting extraction.")
         readings = extract_parameter(
@@ -55,42 +51,29 @@ def run_pipeline(*, sensor_alias, sensor, data_window, timestamp_columns,
                 logger.warning("Skipping row=%d data_id=%s: missing or invalid numeric value",
                                count, reading["data_id"])
                 continue
-            key, previous = store.claim(
-                [client.base_url, client.user], sensor_alias, reading["data_id"], payload)
-            if previous in {"http_success", "confirmed_delivered"}:
-                already_sent += 1
-                continue
-            if previous != "claimed":
-                held += 1
-                logger.warning("Holding row=%d ledger_key=%s status=%s; review before retrying.",
-                               count, key, previous)
-                continue
             logger.info("Submitting row=%d data_id=%s tag=%s datetime=%s value=%s",
                         count, reading["data_id"], payload["fullTagName"],
                         payload["datetime"], payload["value"])
             try:
                 status = client.submit_reading(payload)
             except requests.RequestException:
-                store.finish(key, "uncertain")
                 uncertain += 1
                 logger.error("Delivery uncertain for row=%d data_id=%s. Stopping without retry; check server before resending.",
                              count, reading["data_id"])
                 return 1
             if not 200 <= status < 300:
-                store.finish(key, "http_failed", status)
                 failed += 1
                 logger.error("HTTP failure row=%d status=%d. Stopping without retry.", count, status)
                 return 1
-            store.finish(key, "http_success", status)
             submitted += 1
             logger.info("HTTP success row=%d status=%d submitted=%d (cleaning not verified)",
                         count, status, submitted)
         logger.info("Extraction complete: rows=%d non_null_values=%d null_values=%d",
                     count, non_null, count - non_null)
-        return 1 if skipped or held else 0
-    except (pyodbc.Error, sqlite3.Error, OSError, ValueError, TypeError):
+        return 1 if skipped else 0
+    except (pyodbc.Error, OSError, ValueError, TypeError):
         # Exception text can contain connection or request secrets.
-        logger.error("Run failed. Check database connectivity, required environment settings, timestamp configuration, and ledger access.")
+        logger.error("Run failed. Check database connectivity, required environment settings, and timestamp configuration.")
         return 1
     except KeyboardInterrupt:
         logger.warning("Interrupted. An in-flight request may have reached the API; check before resending.")
@@ -98,9 +81,6 @@ def run_pipeline(*, sensor_alias, sensor, data_window, timestamp_columns,
     finally:
         logger.info("Run summary: extracted=%d submitted_http_2xx=%d skipped=%d failed=%d uncertain=%d dry_run=%s",
                     count, submitted, skipped, failed, uncertain, dry_run)
-        logger.info("Resume summary: already_sent=%d held_for_review=%d", already_sent, held)
-        if store is not None:
-            store.close()
         try:
             if readings is not None:
                 readings.close()
