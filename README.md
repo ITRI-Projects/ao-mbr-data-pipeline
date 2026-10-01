@@ -14,13 +14,15 @@ The client uses the JSON authentication fields in `api_blueprint.http`.
 Timestamps currently combine `DATA_DATE` and `DATA_TIME`, as in the validated
 extraction preview; interpreting `DATA_ID` as a timestamp is not implemented.
 
-Logs show extraction start, each reading submitted, HTTP status, and final
-counts. Credentials and response bodies are not logged. NULL, non-numeric,
+Logs show extraction start, warnings/errors, resume instructions on submission
+failure, and final counts. Per-reading submission and success messages use DEBUG
+and are hidden by default. Credentials and response bodies are not logged. NULL, non-numeric,
 and non-finite readings are skipped with a warning and a nonzero exit code.
 The run stops on the first HTTP or transport failure, without retries.
 HTTP 2xx means HTTP success only: the application's response contract and
 cleaning completion are not yet verified. No retrieval is performed.
-Persistent tracking is disabled. Reruns submit the selected window again.
+Persistent tracking is disabled. Reruns submit the selected window again unless
+you supply an explicit resume boundary as described below.
 
 ## SQL extraction count verification
 
@@ -235,7 +237,46 @@ Keeping these decisions in configuration will allow additional predictions to be
 `src/submission_store.py` and existing ledger files are retained, but `main.py`
 and `run_pipeline()` do not use them. Submission runs perform no ledger reads
 or writes and do not skip previously submitted readings. Rerunning a window
-sends its valid readings again. Console progress logging remains enabled.
+sends its valid readings again unless a resume boundary is supplied.
+
+## Resume using a failure log (no local database)
+
+Failures log the sensor alias, DATA_ID, source timestamp, original time window,
+and shell-quoted resume commands. After checking delivery on the server, use:
+
+```bash
+# The failed reading was NOT delivered: include it.
+.venv/bin/python main.py --submit --sensor A2_Q_r1 --resume-from-id '2026-04-07 08:08:00'
+# The reading WAS delivered: skip it too.
+.venv/bin/python main.py --submit --sensor A2_Q_r1 --resume-after-id '2026-04-07 08:08:00'
+```
+
+Use the actual sensor alias and DATA_ID from your log. Keep the original source,
+destination, and DATA_WINDOW. DATA_ID must uniquely identify a reading within
+the selected source/window, and source readings must remain unchanged. Earlier
+readings are assumed already handled; this does not check their delivery or
+revisit previously skipped invalid values. The extractor still scans the window
+in timestamp/ID order, but no API calls occur before the boundary. An ID absent
+from the window produces an error without sending any readings. Extraction
+counts (including dry-run counts) describe the scanned window, not just its
+remaining portion.
+
+A timeout or HTTP error does not prove the server made no changes. Verify the
+boundary reading before choosing whether to include it. HTTP 2xx is not a
+verification of downstream cleaning. No automatic retry or resume is performed.
+
+Logging goes to the console; retain it for later use, for example in Bash:
+
+```bash
+set -o pipefail
+.venv/bin/python main.py --submit --sensor A2_Q_r1 2>&1 | tee -a submission.log
+```
+
+There are no per-reading ledger writes. Start/end summaries and unusual events
+are logged by default. A handled interruption logs resume context when available;
+a forced kill, power loss, or machine crash may leave no usable restart point.
+Changes apply to the next process, not a submission already running. Old failure
+logs containing a unique DATA_ID can also be used with these options.
 
 ## Reusing the workflow
 
