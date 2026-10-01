@@ -31,7 +31,7 @@ class SubmissionTests(unittest.TestCase):
         run.assert_called_once_with(
             sensor_alias='A2_Qin', sensor=main.SENSORS['A2_Qin'],
             data_window=main.DATA_WINDOW, timestamp_columns=main.TIMESTAMP_COLUMNS,
-            dry_run=False)
+            dry_run=False, resume_from_id=None, resume_after_id=None)
 
     def test_payload_and_authentication(self):
         payload = build_import_payload({'fullTagName': 'tag'}, {
@@ -51,7 +51,7 @@ class SubmissionTests(unittest.TestCase):
             client.close()
             session.return_value.close.assert_called_once()
 
-    def run_pipeline(self, values, *, dry_run=False, outcome=200):
+    def run_pipeline(self, values, *, dry_run=False, outcome=200, **resume):
         rows = ({'data_id': i, 'timestamp': datetime(2026, 4, 23, 13), 'value': v}
                 for i, v in enumerate(values))
         with patch.object(pipeline, 'get_connection', return_value=Mock()), \
@@ -69,13 +69,32 @@ class SubmissionTests(unittest.TestCase):
             result = pipeline.run_pipeline(
                 sensor_alias='A2_Qin', sensor=main.SENSORS['A2_Qin'],
                 data_window=main.DATA_WINDOW, timestamp_columns=main.TIMESTAMP_COLUMNS,
-                dry_run=dry_run)
+                dry_run=dry_run, **resume)
             close.assert_called_once()
             if dry_run:
                 factory.assert_not_called()
             else:
                 client.close.assert_called_once()
             return result, client.submit_reading.call_count
+
+    def test_resume_includes_failed_reading(self):
+        self.assertEqual(self.run_pipeline([1, 2, 3], resume_from_id='1'), (0, 2))
+
+    def test_resume_excludes_confirmed_reading(self):
+        self.assertEqual(self.run_pipeline([1, 2, 3], resume_after_id='1'), (0, 1))
+
+    def test_missing_resume_id_sends_nothing(self):
+        self.assertEqual(self.run_pipeline([1, 2, 3], resume_from_id='99'), (1, 0))
+
+    def test_resume_at_final_reading(self):
+        self.assertEqual(self.run_pipeline([1, 2, 3], resume_after_id='2'), (0, 0))
+
+    def test_resume_failure_still_stops(self):
+        self.assertEqual(self.run_pipeline([1, 2, 3], resume_from_id='1', outcome=requests.Timeout()), (1, 1))
+
+    def test_resume_options_are_exclusive(self):
+        with self.assertRaises(SystemExit):
+            main.select_options(['--resume-from-id', '1', '--resume-after-id', '2'])
 
     def test_success_and_zero(self):
         self.assertEqual(self.run_pipeline([0, Decimal('3.5')]), (0, 2))
