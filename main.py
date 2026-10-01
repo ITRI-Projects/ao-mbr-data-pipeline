@@ -9,6 +9,9 @@ from src.pipeline import run_pipeline
 def select_options(argv=None):
     parser = argparse.ArgumentParser(description="Choose a SQL count check or cleaning API submission.")
     parser.add_argument("--sensor", choices=sorted(SENSORS))
+    resume = parser.add_mutually_exclusive_group()
+    resume.add_argument('--resume-from-id', help='Skip earlier readings; include this DATA_ID (verify it was not delivered)')
+    resume.add_argument('--resume-after-id', help='Skip through this DATA_ID (verify it was delivered)')
     modes = parser.add_mutually_exclusive_group()
     modes.add_argument("--dry-run", action="store_true", help="Count readings without API requests")
     modes.add_argument("--submit", action="store_true", help="Send readings to the cleaning API")
@@ -66,6 +69,8 @@ def main(argv=None):
         data_window=DATA_WINDOW,
         timestamp_columns=TIMESTAMP_COLUMNS,
         dry_run=args.dry_run,
+        resume_from_id=args.resume_from_id,
+        resume_after_id=args.resume_after_id,
     )
 
 
