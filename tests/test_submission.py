@@ -51,14 +51,14 @@ class SubmissionTests(unittest.TestCase):
             client.close()
             session.return_value.close.assert_called_once()
 
-    def run_pipeline(self, values, *, dry_run=False, outcome=200, **resume):
+    def run_pipeline(self, values, *, dry_run=False, outcome=200, logger=None, **resume):
         rows = ({'data_id': i, 'timestamp': datetime(2026, 4, 23, 13), 'value': v}
                 for i, v in enumerate(values))
         with patch.object(pipeline, 'get_connection', return_value=Mock()), \
                 patch.object(pipeline, 'close_connection') as close, \
                 patch.object(pipeline, 'extract_parameter', return_value=rows), \
                 patch.object(pipeline, 'APIClient') as factory, \
-                patch.object(pipeline, 'get_logger', return_value=Mock()):
+                patch.object(pipeline, 'get_logger', return_value=logger or Mock()):
             client = factory.return_value
             client.base_url = "https://example.com/import"
             client.user = "test-user"
@@ -98,6 +98,24 @@ class SubmissionTests(unittest.TestCase):
 
     def test_success_and_zero(self):
         self.assertEqual(self.run_pipeline([0, Decimal('3.5')]), (0, 2))
+
+    def test_submission_progress_is_visible_at_info(self):
+        logger = Mock()
+        self.assertEqual(self.run_pipeline([0, Decimal('3.5')], logger=logger), (0, 2))
+        progress = [call.args for call in logger.info.call_args_list
+                    if call.args[0].startswith(('Submitting row=', 'HTTP success row='))]
+        self.assertEqual(len(progress), 4)
+        self.assertTrue(progress[0][0].startswith('Submitting row='))
+        self.assertEqual(progress[0][1:3], (1, 0))
+        self.assertTrue(progress[1][0].startswith('HTTP success row='))
+        self.assertEqual(progress[1][1:], (1, 0, 200, 1))
+        self.assertEqual(progress[3][1:], (2, 1, 200, 2))
+
+    def test_failed_submission_does_not_log_success(self):
+        logger = Mock()
+        self.assertEqual(self.run_pipeline([1, 2], outcome=401, logger=logger), (1, 1))
+        self.assertFalse(any(call.args[0].startswith('HTTP success row=')
+                             for call in logger.info.call_args_list))
 
     def test_invalid_values_skipped(self):
         self.assertEqual(self.run_pipeline([None, float('nan'), 'bad', 3]), (1, 1))

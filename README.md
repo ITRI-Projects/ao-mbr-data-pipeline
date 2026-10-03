@@ -14,9 +14,11 @@ The client uses the JSON authentication fields in `api_blueprint.http`.
 Timestamps currently combine `DATA_DATE` and `DATA_TIME`, as in the validated
 extraction preview; interpreting `DATA_ID` as a timestamp is not implemented.
 
-Logs show extraction start, warnings/errors, resume instructions on submission
-failure, and final counts. Per-reading submission and success messages use DEBUG
-and are hidden by default. Credentials and response bodies are not logged. NULL, non-numeric,
+Logs show SQL query start and timing, warnings/errors, resume instructions on submission
+failure, and final counts. Each API submission logs the row number, DATA_ID, tag,
+timestamp, and value at INFO, followed by its HTTP success status and cumulative
+successful submission count. These messages are visible by default.
+Credentials and response bodies are not logged. NULL, non-numeric,
 and non-finite readings are skipped with a warning and a nonzero exit code.
 The run stops on the first HTTP or transport failure, without retries.
 HTTP 2xx means HTTP success only: the application's response contract and
@@ -273,7 +275,7 @@ set -o pipefail
 ```
 
 There are no per-reading ledger writes. Start/end summaries and unusual events
-are logged by default. A handled interruption logs resume context when available;
+and per-reading submission progress are logged by default. A handled interruption logs resume context when available;
 a forced kill, power loss, or machine crash may leave no usable restart point.
 Changes apply to the next process, not a submission already running. Old failure
 logs containing a unique DATA_ID can also be used with these options.
