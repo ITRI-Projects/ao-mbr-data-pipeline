@@ -1,4 +1,7 @@
 from datetime import date, datetime, time
+from time import monotonic
+
+from src.logger import get_logger
 
 
 def _identifier(value):
@@ -27,8 +30,13 @@ def extract_parameter(
     """
     cursor = connection.cursor()
     try:
+        logger = get_logger(__name__)
+        logger.info("Executing extraction query for %s.%s.%s; waiting for database results.",
+                    schema, table, column)
+        started = monotonic()
         cursor.execute(query, start.date(), end.date(), start.date(),
                        start.time().isoformat(), end.date(), end.time().isoformat())
+        logger.info("Extraction query ready after %.1fs; streaming rows.", monotonic() - started)
         for row in cursor:
             row_date, row_time = row[1], row[2]
             if isinstance(row_date, datetime):

@@ -76,7 +76,7 @@ def run_pipeline(*, sensor_alias, sensor, data_window, timestamp_columns,
                 logger.warning("Skipping row=%d data_id=%s: missing or invalid numeric value",
                                count, reading["data_id"])
                 continue
-            logger.debug("Submitting row=%d data_id=%s tag=%s datetime=%s value=%s",
+            logger.info("Submitting row=%d data_id=%s tag=%s datetime=%s value=%s",
                         count, reading["data_id"], payload["fullTagName"],
                         payload["datetime"], payload["value"])
             current = reading
@@ -96,8 +96,8 @@ def run_pipeline(*, sensor_alias, sensor, data_window, timestamp_columns,
             submitted += 1
             last_success = reading
             current = None
-            logger.debug("HTTP success row=%d status=%d submitted=%d (cleaning not verified)",
-                        count, status, submitted)
+            logger.info("HTTP success row=%d data_id=%s status=%d submitted=%d (cleaning not verified)",
+                        count, reading["data_id"], status, submitted)
         if seeking:
             logger.error("Resume data_id=%s not found in this window; no readings submitted.", resume_id)
             return 1
@@ -127,4 +127,3 @@ def run_pipeline(*, sensor_alias, sensor, data_window, timestamp_columns,
                 if connection is not None:
                     close_connection(connection)
                     logger.info("Database connection closed.")
-
