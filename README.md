@@ -348,3 +348,15 @@ the entire import. Importing timestamps already present fails rather than replac
 existing readings. Files with subsets of sensors should use separate tables if
 their timestamps overlap. The importer validates the full CSV in memory before
 connecting. It does not use DATA_WINDOW or call the API.
+
+
+Use `make db-check` to inspect the actual CLI connection identity, effective dbo
+import permissions, and database updateability without writing data. Compare its
+server and database with SSMS if grants appear ineffective.
+
+To pre-create the default CSV destination with an administrator account, open
+`sql_data_query/create_cleaned_sensor_data.sql` in SSMS connected to NextLevelPlay
+and execute it. It creates `ITRI.dbo.CleanedSensorData` with all 30 workbook alias
+columns and grants INSERT on that table to database user `admin`. An existing
+table is preserved. Then use `make load`; CREATE TABLE and ALTER permissions
+are not needed by the importer when the compatible table already exists.
