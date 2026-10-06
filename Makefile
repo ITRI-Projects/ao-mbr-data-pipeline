@@ -4,13 +4,14 @@ PYTHON ?= python3
 VENV ?= .venv
 VENV_PYTHON := $(VENV)/bin/python
 
-.PHONY: help venv install dev load check
+.PHONY: help venv install dev load db-check check
 
 help:
 	@printf '%s\n' \
 	  'make install  Create the virtual environment and install dependencies' \
 	  'make dev      Choose a pipeline operation' \
 	  'make load     Prompt for a cleaned CSV path and import into SQL Server' \
+	  'make db-check  Show connected SQL identity and effective permissions' \
 	  'make check    Check Python syntax and installed dependency compatibility' \
 	  'make venv     Create the virtual environment if missing' \
 	  'make help     Show available commands'
@@ -28,6 +29,9 @@ dev:
 
 load:
 	"$(VENV_PYTHON)" main.py --load-csv
+
+db-check:
+	"$(VENV_PYTHON)" -m src.database_check
 
 check:
 	"$(VENV_PYTHON)" -m compileall -q main.py src config
