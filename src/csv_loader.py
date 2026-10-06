@@ -141,6 +141,7 @@ def load_csv(path, *, table='CleanedSensorData', schema='dbo',
              timestamp_column='datetime', validate_only=False):
     logger = get_logger(__name__)
     connection = None
+    stage = 'CSV validation'
     try:
         destination = identifier(schema) + '.' + identifier(table)
         mapping = read_aliases()
@@ -153,18 +154,23 @@ def load_csv(path, *, table='CleanedSensorData', schema='dbo',
         if any(table.lower() == s['source']['table'].lower() and
                schema.lower() == s['source']['schema'].lower() for s in SENSORS.values()):
             raise ValueError('Choose a separate cleaned-data table')
+        stage = 'database connection'
         connection = get_connection()
         connection.autocommit = False
         cursor = connection.cursor()
         try:
+            stage = 'destination table lookup'
             exists = cursor.execute('SELECT OBJECT_ID(?, ?)', f'{schema}.{table}', 'U').fetchone()[0]
             if exists is None:
                 definitions = ', '.join(identifier(a) + ' FLOAT NULL' for a in mapping.values())
+                stage = 'destination table creation'
                 cursor.execute(f'CREATE TABLE {destination} ([datetime] DATETIME2(6) NOT NULL PRIMARY KEY, {definitions})')
             columns = ', '.join(['[datetime]'] + [identifier(a) for a in aliases])
             placeholders = ', '.join('?' for _ in range(len(aliases) + 1))
             for start in range(0, len(rows), 500):
+                stage = f'inserting CSV data rows {start + 1}–{min(start + 500, len(rows))}'
                 cursor.executemany(f'INSERT INTO {destination} ({columns}) VALUES ({placeholders})', rows[start:start + 500])
+            stage = 'transaction commit'
             connection.commit()
         finally:
             cursor.close()
@@ -175,10 +181,30 @@ def load_csv(path, *, table='CleanedSensorData', schema='dbo',
             connection.rollback()
         logger.error('CSV import failed: %s', error)
         return 1
-    except pyodbc.Error:
+    except pyodbc.Error as error:
         if connection is not None:
             connection.rollback()
-        logger.error('CSV import rolled back. Check database access, table columns, and duplicate timestamps.')
+        # Log structured diagnostics, not raw messages that may contain credentials.
+        state = str(error.args[0]) if error.args else ''
+        state = state if re.fullmatch(r'[A-Z0-9]{5}', state) else 'unknown'
+        message = str(error).lower()
+        hint = 'Check database access and destination column types.'
+        if state.startswith('08') or state in {'HYT00', 'HYT01'}:
+            hint = 'Check DB_SERVER, SQL Server availability, TCP port, and network access.'
+        elif state == '28000':
+            hint = 'Check database authentication settings.'
+        elif 'permission' in message or 'denied' in message:
+            hint = 'SQL Server reported a permission denial. Run make db-check to inspect the actual connection and effective permissions.'
+        elif 'duplicate' in message or state == '23000':
+            hint = 'Check existing timestamps and destination constraints; the file may already be imported.'
+        elif 'invalid column' in message:
+            hint = 'The existing destination table is missing required alias or datetime columns.'
+        elif state in {'HY004', 'HY105', '07006'}:
+            hint = 'The ODBC driver rejected a parameter type.'
+        native_codes = ','.join(dict.fromkeys(re.findall(r'\((\d+)\)', message))) or 'unknown'
+        logger.error('CSV import failed during %s (SQLSTATE=%s, native=%s). %s', stage, state, native_codes, hint)
+        if connection is not None:
+            logger.error('The import transaction was rolled back.')
         return 1
     except KeyboardInterrupt:
         if connection is not None:
