@@ -304,3 +304,59 @@ status = run_pipeline(
 
 The function returns 0 for completion, 1 for failure or invalid readings,
 and 130 for interruption. Pass `dry_run=False` to submit. Existing CLI commands remain the same.
+
+## Load a downloaded cleaned CSV
+
+Run `make load` to prompt only for the CSV path and import into SQL Server.
+Choose **3. Load cleaned CSV into database** in the interactive menu, or run:
+
+```bash
+# Validate the complete file and show alias columns without a database connection:
+.venv/bin/python main.py --load-csv 'C:\Users\Bryan\Downloads\clean.csv' --validate-only
+# Import into the database configured in .env:
+.venv/bin/python main.py --load-csv 'C:\Users\Bryan\Downloads\clean.csv'
+```
+
+Windows drive paths are translated to `/mnt/c/...` when running under WSL.
+Local Linux paths also work. Quote paths containing spaces.
+
+The importer currently supports a **wide UTF-8 CSV** with one timestamp column
+(default `datetime`, also accepts `DateTime`) and one or more sensor columns named by full tag name:
+
+```csv
+datetime,70flowa1qin,70coda1inf
+2026-04-23 13:00:00,3.5,42.0
+```
+
+It reads `Sensor_Configurations.xlsx` at import time and uses its `Prefered Alias`
+column: the example becomes SQL columns `datetime`, `A1_Qin`, and `A1_COD_in`.
+When the workbook alias is blank, the source column is used (`Q_A1_air` and
+`Q_A2_air`). Unknown sensor headers, duplicate headers or timestamps, malformed
+rows, invalid numbers, and non-finite numbers fail validation. Blank readings
+become SQL NULL. Timestamps accept ISO dates/times or month/day/year with a
+24-hour time, such as `3/24/2026 13:00` (optional seconds and fractional seconds).
+Timezone offsets are rejected. Timestamp headers are matched case-insensitively.
+Use `--timestamp-column timestamp` if your timestamp header is different.
+
+The default destination is `dbo.CleanedSensorData`. It is created when missing,
+with a `datetime` DATETIME2(6) primary key and nullable FLOAT columns for all
+workbook sensor aliases. Override with `--schema dbo --table MyCleanedData`.
+An existing destination must have compatible columns; retain a unique timestamp
+key to prevent duplicates. Configured raw source tables are rejected.
+Imports append rows in batches within a single transaction; an error rolls back
+the entire import. Importing timestamps already present fails rather than replacing
+existing readings. Files with subsets of sensors should use separate tables if
+their timestamps overlap. The importer validates the full CSV in memory before
+connecting. It does not use DATA_WINDOW or call the API.
+
+
+Use `make db-check` to inspect the actual CLI connection identity, effective dbo
+import permissions, and database updateability without writing data. Compare its
+server and database with SSMS if grants appear ineffective.
+
+To pre-create the default CSV destination with an administrator account, open
+`sql_data_query/create_cleaned_sensor_data.sql` in SSMS connected to NextLevelPlay
+and execute it. It creates `ITRI.dbo.CleanedSensorData` with all 30 workbook alias
+columns and grants INSERT on that table to database user `admin`. An existing
+table is preserved. Then use `make load`; CREATE TABLE and ALTER permissions
+are not needed by the importer when the compatible table already exists.
