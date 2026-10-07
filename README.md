@@ -1,3 +1,9 @@
+## Explore cleaned data in Jupyter
+
+See [notebooks/README.md](notebooks/README.md) for setup and launch commands.
+The notebook loads `dbo.CleanedSensorData` using the existing `.env` database
+settings and includes timestamp, missing-value, and summary-statistics checks.
+
 ## Submit sensor readings to the cleaning API
 
 ```bash
