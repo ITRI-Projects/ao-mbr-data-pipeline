@@ -1,0 +1,7 @@
+jupyterlab
+ipykernel
+pandas
+matplotlib
+seaborn
+gdown
+python-dotenv
