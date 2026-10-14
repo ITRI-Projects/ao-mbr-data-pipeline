@@ -49,10 +49,31 @@ configuration cells so the notebook reloads the value. In the notebook's configu
 `TIMESTAMP_COLUMN` to the CSV's timestamp header (default: `datetime`). Timestamp
 header matching ignores capitalization and surrounding whitespace, so `DateTime`
 also works with the default. Multiple matching timestamp headers are rejected.
-The remaining columns should be
-numeric sensor readings; blanks remain missing. Optional start/end timestamps
-filter the downloaded data, with an inclusive start and exclusive end. Each load
+The remaining columns should be numeric sensor readings; blanks remain missing
+in the original `df`. `START_TIME` and `END_TIME` filter the downloaded data,
+with an inclusive start and exclusive end. Each load
 downloads the current CSV in full, so the file must fit in memory. The notebook
 reads an uploaded CSV, not a Google Sheets document.
+
+The notebook reports missing readings and plots each sensor over time. It also
+validates and plots `70mlssa2aerobic` separately, showing a message when that
+column has no recorded values in the selected window. An earlier example
+interpolates short gaps in `70coda1inf` for comparison.
+
+Run the final gap-aware cell after loading `df` to create `df_filled` for all
+sensor columns. It uses time-based linear interpolation only for interior gaps
+of up to three rows, with observed endpoints no more than four minutes apart,
+in columns with less than 20% missing readings. Flow columns also require the
+readings on both sides of a gap to have the same zero, positive, or negative
+state. Columns with recurring high missingness and columns with no observations
+retain their nulls; these need valve-state or other operational evidence before
+values can be assigned. The 20% cutoff reflects the current window's distinct
+gap patterns and should be reviewed for other windows.
+
+`df_filled` keeps the same index and columns as `df`, and `df` is unchanged.
+`df_fill_mask` marks estimated cells, while `fill_summary` shows the policy,
+gap counts, and before/after null counts per sensor. `df_filled` can still
+contain nulls. Rerun the load and fill cells after changing the date window;
+the notebook does not write filled values to the CSV or database.
 
 Clear notebook outputs before committing to keep sensor readings out of Git.
