@@ -60,6 +60,14 @@ validates and plots `70mlssa2aerobic` separately, showing a message when that
 column has no recorded values in the selected window. An earlier example
 interpolates short gaps in `70coda1inf` for comparison.
 
+The **A2 aerobic tank: MLSS and surrounding parameters** cell follows the
+bilingual sensor plots. It shows MLSS, DO, ORP, pH, and aeration airflow on a
+shared time axis with larger bilingual labels and valid/missing counts. An
+entirely missing sensor is explicitly marked without substituting zero readings.
+Adjust `A2_FONT_SIZE` and `A2_FIGSIZE` for presentation, or set
+`SAVE_A2_FIGURE = False` to display only. By default it saves a 200-DPI image to
+`notebooks/data/a2_aerobic_sensor_context.png`; rerunning replaces that image.
+
 Run the final gap-aware cell after loading `df` to create `df_filled` for all
 sensor columns. It uses time-based linear interpolation only for interior gaps
 of up to three rows, with observed endpoints no more than four minutes apart,
@@ -73,7 +81,30 @@ gap patterns and should be reviewed for other windows.
 `df_filled` keeps the same index and columns as `df`, and `df` is unchanged.
 `df_fill_mask` marks estimated cells, while `fill_summary` shows the policy,
 gap counts, and before/after null counts per sensor. `df_filled` can still
-contain nulls. Rerun the load and fill cells after changing the date window;
-the notebook does not write filled values to the CSV or database.
+contain nulls. Rerun the load and fill cells after changing the date window.
+
+Run the final export cell to save `df_filled` as
+`notebooks/data/google_drive_filled.csv`. It creates the directory if needed
+and includes the datetime index as a `datetime` column. Remaining nulls are
+written as blank fields. Edit `EXPORT_PATH` to choose a different filename;
+rerunning the cell replaces the file at that path. The existing `data/` ignore
+rule keeps this local export out of Git. The Google Drive source stays unchanged.
 
 Clear notebook outputs before committing to keep sensor readings out of Git.
+
+The Google Drive sensor plots show English and Traditional Chinese together.
+The plot cell preserves `CJK_FONT` from earlier cells and registers Windows
+Microsoft JhengHei automatically under WSL. For other setups, set a font file
+path before running the plot cell:
+
+```python
+CJK_FONT_PATH = "/mnt/c/Windows/Fonts/msjh.ttc"  # WSL
+# CJK_FONT_PATH = r"C:\Windows\Fonts\msjh.ttc"   # Windows kernel
+```
+
+The file must exist on the machine running the Python kernel. The cell prints
+the selected font file and checks its Chinese glyph coverage. Fonts are
+registered immediately using
+[Matplotlib's font manager](https://matplotlib.org/stable/api/font_manager_api.html);
+there is no need to restart the kernel. If a requested font name is unavailable,
+set `CJK_FONT_PATH` to a Traditional Chinese font file accessible to the kernel.
