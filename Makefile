@@ -3,6 +3,7 @@
 PYTHON ?= python3
 VENV ?= .venv
 VENV_PYTHON := $(VENV)/bin/python
+export CSV_TIMESTAMP_FORMAT
 
 .PHONY: help venv install dev load db-check check
 

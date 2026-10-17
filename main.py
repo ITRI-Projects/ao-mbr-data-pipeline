@@ -1,4 +1,5 @@
 import argparse
+import os
 
 from config.common import DATA_WINDOW, TIMESTAMP_COLUMNS
 from config.sensors import SENSORS
@@ -21,6 +22,8 @@ def select_options(argv=None):
     parser.add_argument("--table", default="CleanedSensorData", help="Cleaned CSV destination table")
     parser.add_argument("--schema", default="dbo")
     parser.add_argument("--timestamp-column", default="datetime", help="Timestamp header in the CSV (case-insensitive; default datetime accepts DateTime)")
+    parser.add_argument("--timestamp-format", default=os.getenv("CSV_TIMESTAMP_FORMAT") or None,
+                        help="Explicit datetime format, e.g. %%d/%%m/%%Y %%H:%%M; overrides auto parsing")
     parser.add_argument("--validate-only", action="store_true", help="Validate a CSV without connecting to SQL Server")
     args = parser.parse_args(argv)
     if args.load_csv == "":
@@ -87,7 +90,8 @@ def main(argv=None):
     setup_logger()
     if args.load_csv:
         return load_csv(args.load_csv, table=args.table, schema=args.schema,
-                        timestamp_column=args.timestamp_column, validate_only=args.validate_only)
+                        timestamp_column=args.timestamp_column, validate_only=args.validate_only,
+                        timestamp_format=args.timestamp_format)
     return run_pipeline(
         sensor_alias=args.sensor,
         sensor=SENSORS[args.sensor],

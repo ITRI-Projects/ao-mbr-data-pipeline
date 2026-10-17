@@ -73,9 +73,14 @@ def read_aliases(workbook=WORKBOOK):
     return mapping
 
 
-def parse_timestamp(value):
+def parse_timestamp(value, timestamp_format=None):
     """Accept ISO or month/day/year timestamps from the downloaded CSV."""
     value = value.strip()
+    if timestamp_format:
+        timestamp = datetime.strptime(value, timestamp_format)
+        if timestamp.tzinfo is not None:
+            raise ValueError('Use local timestamps without a timezone offset')
+        return timestamp
     try:
         timestamp = datetime.fromisoformat(value)
     except ValueError:
@@ -93,7 +98,7 @@ def parse_timestamp(value):
     return timestamp
 
 
-def read_clean_csv(path, mapping, timestamp_column='datetime'):
+def read_clean_csv(path, mapping, timestamp_column='datetime', timestamp_format=None):
     with local_path(path).open(encoding='utf-8-sig', newline='') as stream:
         reader = csv.reader(stream)
         headers = [h.strip() for h in next(reader, [])]
@@ -117,7 +122,7 @@ def read_clean_csv(path, mapping, timestamp_column='datetime'):
             if len(row) != len(headers):
                 raise ValueError(f'CSV row {number}: incorrect column count')
             try:
-                timestamp = parse_timestamp(row[time_index])
+                timestamp = parse_timestamp(row[time_index], timestamp_format)
                 if timestamp in seen:
                     raise ValueError('Duplicate timestamp')
                 seen.add(timestamp)
@@ -138,14 +143,14 @@ def read_clean_csv(path, mapping, timestamp_column='datetime'):
 
 
 def load_csv(path, *, table='CleanedSensorData', schema='dbo',
-             timestamp_column='datetime', validate_only=False):
+             timestamp_column='datetime', validate_only=False, timestamp_format=None):
     logger = get_logger(__name__)
     connection = None
     stage = 'CSV validation'
     try:
         destination = identifier(schema) + '.' + identifier(table)
         mapping = read_aliases()
-        aliases, rows = read_clean_csv(path, mapping, timestamp_column)
+        aliases, rows = read_clean_csv(path, mapping, timestamp_column, timestamp_format)
         logger.info('CSV validated: rows=%d destination=%s columns=%s', len(rows), destination, ', '.join(aliases))
         if validate_only:
             return 0
