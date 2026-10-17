@@ -60,6 +60,18 @@ class CSVLoaderTests(unittest.TestCase):
             self.assertEqual(main.main(['--load-csv', str(self.path), '--validate-only']), 0)
             connect.assert_not_called()
 
+    def test_day_first_format(self):
+        self.path.write_text('DateTime,70flowa1qin\n22/04/2026 23:59,1\n04/05/2026 08:00,2\n')
+        fmt = '%d/%m/%Y %H:%M'
+        _, rows = csv_loader.read_clean_csv(self.path, csv_loader.read_aliases(), timestamp_format=fmt)
+        self.assertEqual(rows[0][0].isoformat(), '2026-04-22T23:59:00')
+        self.assertEqual(rows[1][0].isoformat(), '2026-05-04T08:00:00')
+        with self.assertRaises(ValueError):
+            csv_loader.parse_timestamp('04/22/2026 23:59', fmt)
+        with patch.object(main, 'load_csv', return_value=0) as load:
+            self.assertEqual(main.main(['--load-csv', str(self.path), '--timestamp-format', fmt, '--validate-only']), 0)
+            self.assertEqual(load.call_args.kwargs['timestamp_format'], fmt)
+
     def test_timestamp_validation(self):
         for value in ('24/3/2026 13:00', '2/30/2026 13:00',
                       '2026-03-24T13:00:00+08:00', ''):
