@@ -366,3 +366,14 @@ and execute it. It creates `ITRI.dbo.CleanedSensorData` with all 30 workbook ali
 columns and grants INSERT on that table to database user `admin`. An existing
 table is preserved. Then use `make load`; CREATE TABLE and ALTER permissions
 are not needed by the importer when the compatible table already exists.
+
+For day/month/year CSVs such as `22/04/2026 23:59`, use an explicit format
+to avoid ambiguous dates being interpreted as month/day/year:
+
+```bash
+make load CSV_TIMESTAMP_FORMAT='%d/%m/%Y %H:%M'
+# Or validate without database writes:
+.venv/bin/python main.py --load-csv 'C:\Users\User\Downloads\clean.csv' --timestamp-format '%d/%m/%Y %H:%M' --validate-only
+```
+
+The explicit format applies to every timestamp in that import.
