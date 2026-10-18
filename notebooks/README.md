@@ -108,3 +108,65 @@ registered immediately using
 [Matplotlib's font manager](https://matplotlib.org/stable/api/font_manager_api.html);
 there is no need to restart the kernel. If a requested font name is unavailable,
 set `CJK_FONT_PATH` to a Traditional Chinese font file accessible to the kernel.
+
+## Seven-day database training candidate
+
+Run notebook 01 from the top with both exploration boundaries set to `None`.
+The final sections rank every full seven-day interval after applying notebook
+02's conservative gap rules to SQL sensor aliases. Six configured targets remain
+observed-only, and interpolation brackets cannot cross the candidate boundaries.
+The selected minute-level dataset is exported to `notebooks/data/data_filled.csv`,
+with an imputation mask, per-column summary, model coverage and window rankings.
+Long gaps remain null. A separate `data_filled_20min.csv` averages raw observations
+only, with bin-end availability timestamps and an observed-count companion CSV.
+
+Retrospective interpolation uses future observations: split raw data chronologically
+before filling, and wait for right-hand observations before using estimates online.
+The coverage ranking establishes completeness, not forecast accuracy. The notebook
+reports whether configured models have complete inputs and whether aggregation is
+needed to obtain a complete training candidate.
+
+## Effluent forecast training
+
+Run `03_train_effluent_nh3_no3.ipynb` after notebook 01. It reads
+`data_filled_20min.csv` and its observed-count companion, using SQL aliases.
+Both effluent XGBoost models predict the mean in the bin ending one hour after
+the forecast origin. The latest 20% of origins form the test set; training
+labels unavailable at the first test origin are purged. Compare held-out
+predictions with one-hour persistence before judging model usefulness.
+
+Models, predictions, metrics, split diagnostics, plots and source hashes are
+saved to `notebooks/data/effluent_training_20min/`. Saved models are fitted only
+on the training split. The current constant NO3 target cannot demonstrate skill
+on changing nitrate levels. This seven-day, completeness-selected experiment
+requires evaluation on a separate later period before deployment.
+
+The comparison sections also fit Random Forest, Extra Trees and a scaled Ridge
+regression pipeline on the same training examples. Tables compare all four
+algorithms with persistence using identical held-out targets. Test-only and
+train/test overview plots use consistent model colors and highlight split regions.
+Comparison metrics, predictions, parameters and additional models are saved beside
+the XGBoost artifacts. No parameters are tuned on the test set; reserve a new later
+period for unbiased evaluation after comparing algorithms on this holdout.
+
+## Google Drive forecast comparison
+
+Notebook 02 now includes the same XGBoost, Random Forest, Extra Trees, Ridge and
+persistence comparison, following its exploration/export sections. Install
+`notebooks/requirements-drive.txt` in the notebook's environment. On Windows:
+
+```powershell
+.venv\Scripts\python.exe -m pip install -r notebooks/requirements-drive.txt
+```
+
+Set `DRIVE_FILE_URL_OR_ID` in `.env`, choose the date window, and run the notebook
+in order. Full-tag CSV headers are mapped to configured sensor aliases. Training
+uses raw observed 20-minute means, with bin-end availability and one-hour future
+labels. Input gaps are handled inside training-only median-imputation pipelines;
+future targets remain observed-only. Short or sparse source coverage is reported.
+
+Both test-only and train/test overview plots use English/Traditional Chinese
+labels, consistent estimator colors, and shaded train/purge/test regions. Windows
+Microsoft JhengHei is detected through `%WINDIR%\Fonts\msjh.ttc`; use
+`CJK_FONT_PATH` to override. Outputs go to
+`notebooks/data/google_drive_effluent_training_20min/`, separate from SQL results.
