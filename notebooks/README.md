@@ -170,3 +170,36 @@ labels, consistent estimator colors, and shaded train/purge/test regions. Window
 Microsoft JhengHei is detected through `%WINDIR%\Fonts\msjh.ttc`; use
 `CJK_FONT_PATH` to override. Outputs go to
 `notebooks/data/google_drive_effluent_training_20min/`, separate from SQL results.
+
+## Methanol dosing forecast training
+
+Run `04_train_ch3oh_dosing.ipynb` after notebook 01 to forecast A1 and A2 methanol
+flow one hour ahead using the same observed-only 20-minute aggregate as notebook
+03. The workbook's checked **A1 CH3OH Flow** and **A2 CH3OH Flow** columns select
+11 inputs each, including current dosing flow exactly once. The notebook audits
+these selections against the application configuration and stops on a mismatch.
+Reading the workbook uses standard ZIP/XML libraries; no Excel engine is required.
+
+It repeats notebook 03's purged chronological 80/20 split, XGBoost, Random Forest,
+Extra Trees, scaled Ridge and persistence comparison. Metrics use m³/hour. Both
+test-only plots and train/test overview plots with shaded split regions are saved
+with models, predictions, source/workbook hashes and a feature audit under
+`notebooks/data/ch3oh_dosing_training_20min/`. These models forecast recorded dosing
+flow; they do not optimize or prescribe chemical doses. A separate later period
+is required to validate model selection beyond the demo.
+
+## Aeration airflow forecast training
+
+Run `05_train_aeration_flow.ipynb` after notebook 01. It forecasts A1 `Q_A1_air`
+and A2 `Q_A2_air` one hour ahead from the same observed-only 20-minute aggregate.
+The workbook audit verifies nine A1 and ten A2 checked external inputs. Following
+notebook 03, each model additionally receives its own current airflow, explicitly
+marked as an unchecked autoregressive input in the audit (10/11 total inputs).
+
+The notebook repeats the purged chronological 80/20 split, XGBoost, Random Forest,
+Extra Trees, scaled Ridge and persistence comparison. Metrics and plot units are
+m³/min, following the workbook. Test-only timelines and shaded train/purge/test
+overviews accompany models, predictions, feature audits and source hashes in
+`notebooks/data/aeration_flow_training_20min/`. These models forecast recorded
+flow; they do not prescribe aeration setpoints. Keep a separate later period for
+validation before operational use.
