@@ -10,6 +10,7 @@ __pycache__/
 logs/
 # Local submission ledger
 data/
+zhtw/
 
 # Jupyter autosave checkpoints
 .ipynb_checkpoints/
