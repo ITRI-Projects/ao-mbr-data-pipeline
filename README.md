@@ -1,3 +1,9 @@
+## Pipeline report
+
+See [AO-MBR ETL Pipeline and Jupyter Model Evaluation](docs/etl_pipeline_report.md)
+for the end-to-end workflow, manual CSV and backup steps, data preparation,
+saved model comparisons, and evaluation figures.
+
 ## Explore cleaned data in Jupyter
 
 See [notebooks/README.md](notebooks/README.md) for setup and launch commands.
