@@ -1,0 +1,46 @@
+{
+  "report_date": "2026-10-19",
+  "basis": "Saved notebook outputs; no database/API access or training rerun. Metrics retain displayed six-decimal precision.",
+  "notebooks": {
+    "02_explore_google_drive_csv.ipynb": {
+      "sha256": "a5b94328edbce630b99393d79f63e714d12a7391c36c9aafbfdb5a8153b3aa51",
+      "comparison_cell_index_zero_based": 32
+    },
+    "03_train_effluent_nh3_no3.ipynb": {
+      "sha256": "f04b1d44ff25b4ad65008a7c5b0867f89f8e81ead681b1cd91f273932ae6e6c5",
+      "comparison_cell_index_zero_based": 15,
+      "figures": [
+        {
+          "cell_index_zero_based": 19,
+          "image_index_zero_based": 0,
+          "output_file": "effluent_ammonium_comparison.png"
+        }
+      ]
+    },
+    "04_train_ch3oh_dosing.ipynb": {
+      "sha256": "97946e21e9880c1fa08245417959a819d3610e11bbad236d926d9d8e42bf4a78",
+      "comparison_cell_index_zero_based": 17,
+      "figures": [
+        {
+          "cell_index_zero_based": 21,
+          "image_index_zero_based": 1,
+          "output_file": "a2_methanol_comparison.png"
+        }
+      ]
+    },
+    "05_train_aeration_flow.ipynb": {
+      "sha256": "2d0c0069a7eae7cec024c22123d29b11d1a8ba31b88736f8d71a384097942b61",
+      "comparison_cell_index_zero_based": 17,
+      "figures": [
+        {
+          "cell_index_zero_based": 21,
+          "image_index_zero_based": 1,
+          "output_file": "a2_aeration_comparison.png"
+        }
+      ]
+    },
+    "01_explore_clean_data.ipynb": {
+      "sha256": "4cfd99fbfcf6feef9e6df4e40491904a23b2396e36d78f1da6e8b790a9754b92"
+    }
+  }
+}
