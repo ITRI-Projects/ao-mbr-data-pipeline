@@ -1,0 +1,47 @@
+{
+  "basis": "Images extracted from saved notebook outputs; no training rerun.",
+  "figures": [
+    {
+      "file": "effluent_ammonium_test_comparison.png",
+      "source_notebook": "03_train_effluent_nh3_no3.ipynb",
+      "notebook_sha256": "f04b1d44ff25b4ad65008a7c5b0867f89f8e81ead681b1cd91f273932ae6e6c5",
+      "cell_index_zero_based": 17,
+      "image_index_zero_based": 0
+    },
+    {
+      "file": "effluent_nitrate_test_comparison.png",
+      "source_notebook": "03_train_effluent_nh3_no3.ipynb",
+      "notebook_sha256": "f04b1d44ff25b4ad65008a7c5b0867f89f8e81ead681b1cd91f273932ae6e6c5",
+      "cell_index_zero_based": 17,
+      "image_index_zero_based": 1
+    },
+    {
+      "file": "a1_methanol_test_comparison.png",
+      "source_notebook": "04_train_ch3oh_dosing.ipynb",
+      "notebook_sha256": "97946e21e9880c1fa08245417959a819d3610e11bbad236d926d9d8e42bf4a78",
+      "cell_index_zero_based": 19,
+      "image_index_zero_based": 0
+    },
+    {
+      "file": "a2_methanol_test_comparison.png",
+      "source_notebook": "04_train_ch3oh_dosing.ipynb",
+      "notebook_sha256": "97946e21e9880c1fa08245417959a819d3610e11bbad236d926d9d8e42bf4a78",
+      "cell_index_zero_based": 19,
+      "image_index_zero_based": 1
+    },
+    {
+      "file": "a1_airflow_test_comparison.png",
+      "source_notebook": "05_train_aeration_flow.ipynb",
+      "notebook_sha256": "2d0c0069a7eae7cec024c22123d29b11d1a8ba31b88736f8d71a384097942b61",
+      "cell_index_zero_based": 19,
+      "image_index_zero_based": 0
+    },
+    {
+      "file": "a2_airflow_test_comparison.png",
+      "source_notebook": "05_train_aeration_flow.ipynb",
+      "notebook_sha256": "2d0c0069a7eae7cec024c22123d29b11d1a8ba31b88736f8d71a384097942b61",
+      "cell_index_zero_based": 19,
+      "image_index_zero_based": 1
+    }
+  ]
+}
