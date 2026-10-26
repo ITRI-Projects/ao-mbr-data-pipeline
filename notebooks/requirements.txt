@@ -7,3 +7,6 @@ seaborn
 xgboost
 scikit-learn
 joblib
+
+# LSTM comparisons (CPU-only install option documented in README).
+torch>=2.5,<3
