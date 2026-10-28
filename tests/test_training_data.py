@@ -4,7 +4,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from src.training_data import fill_short_gaps, rank_training_windows
+from src.training.training_data import fill_short_gaps, rank_training_windows
 
 
 class TrainingDataTests(unittest.TestCase):

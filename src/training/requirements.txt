@@ -1,0 +1,8 @@
+numpy
+pandas
+matplotlib
+scikit-learn
+openpyxl
+joblib
+xgboost
+torch>=2.5,<3
