@@ -1,19 +1,76 @@
-# Training utilities
+# Python forecasting training
 
-- `sensor_preparation.py`: sensor behavior audit and causal age-limited filling (notebook 02).
-- `training_data.py`: conservative gap filling and historical-window ranking.
-- `forecast_dataset.py`: configured one-hour forecasting datasets and sequence exports.
-
-Run the dataset CLI from the repository root:
+Run from the repository root (no training notebook required):
 
 ```bash
-python -m src.training.forecast_dataset --source notebooks/data/google_drive_raw_aliases.csv
+python -m pip install -r src/training/requirements.txt
+python -m src.training.train
 ```
 
-Notebook 02 keeps loading, policy settings, plotting and exporting visible while
-calling reusable preparation functions here. Database and API code stays in `src/`.
+The defaults consume `notebooks/data/data_filled.csv` and
+`notebooks/data/data_filled_mask.csv` exported by notebook 02. The mask is required
+so filled estimates cannot become future measured labels. Input preparation is
+used as exported: the trainer does not apply another uniform fill policy.
 
-The model notebooks 03-05 reference `src.training.preparation_experiments`, and
-notebook 01 optionally references `src.training.dataset_review`. Those two modules
-were already absent before this refactor; their implementations must be restored
-to this package before running the corresponding training sections.
+`Sensor_Configurations.xlsx` supplies the six prediction groups, checkmarked
+inputs, aliases (falling back to the source column for airflow) and units.
+The owner confirmed that the airflow targets should follow the headings:
+A1 = `Q_A1_air`, A2 = `Q_A2_air`. Their inconsistent green workbook marks are
+recorded in the exported audit rather than changing the workbook. Current target
+history is added once as an explicit autoregressive input. Constant, unobserved
+or unsampled training inputs are excluded and recorded in each model metadata.
+
+All four algorithms receive identical 12-step sequences at 20-minute origins
+and exact observed labels 60 minutes later. LSTM uses the ordered sequences;
+Ridge, Random Forest and XGBoost use the same sequences flattened. Missingness
+channels accompany training-only imputation and scaling. LSTM target scaling
+also fits training only. Future labels crossing split boundaries are purged.
+
+Defaults train on April 14-17, validate on April 18-20 and test on April 21-23.
+Validation selects Ridge regularization, tree depth, and LSTM epoch count
+(maximum 60, patience 12). Models retain their training-only fits; there is no
+subsequent combined train/validation refit. Test observations can enter later
+rolling forecast histories when they have become available. This is not a
+single forecast of all three days made at the test boundary.
+
+Outputs in `data/training/workbook_forecasts/`:
+
+- `report.html`: metrics table, chronological split and per-algorithm train/test plots.
+- `metrics_summary.csv` and `.png`: MAE, RMSE and R2 (undefined for constant labels).
+- `workbook_feature_audit.csv` and `manifest.json`: input choices, corrections,
+  source hashes, package versions, split definitions and seed.
+- Each target directory: predictions with origin/label times and split,
+  metrics, training/test and dataset-split plots, LSTM loss plot/history,
+  models, preprocessing/sequence arrays and selection metadata.
+
+Stored models are reloaded and their predictions checked during each run.
+Re-running replaces files in the selected output directory. Predictions remain
+in original target units. Train metrics are in-sample fits, not forecast skill
+estimates. Constant nitrate and the short previously inspected period limit
+interpretation; use a later independent period to confirm generalization.
+
+Examples:
+
+```bash
+python -m src.training.train --targets eff_nh3_n a1_air_flow --epochs 40
+python -m src.training.train --data path/data_filled.csv --mask path/data_filled_mask.csv --output data/training/another_run
+```
+
+Modules: `workbook.py` reads the feature matrix; `train.py` orchestrates models
+and reporting; `lstm.py` implements the CPU sequence model;
+`forecast_dataset.py` builds leakage-controlled sequences; `sensor_preparation.py`
+and `training_data.py` provide exploration/preparation utilities. The old
+notebook-only `preparation_experiments` and `dataset_review` helpers are not needed.
+
+For the workspace-local Windows dependency installation used during verification,
+start a PowerShell session at the repository root and run:
+
+```powershell
+$env:PYTHONPATH = (Resolve-Path .training-deps).ProviderPath
+python -m src.training.train
+```
+
+The `.training-deps/` folder is ignored by Git and leaves the global Python
+installation unchanged. WSL/Linux should install the requirements in `.venv`
+instead; Windows binary packages in `.training-deps/` cannot be used under WSL.
+

@@ -1,3 +1,11 @@
+## Train forecasting models with Python
+
+Use `python -m src.training.train` to train XGBoost, LSTM, Ridge Regression and
+Random Forest for the workbook-defined targets. Install
+`src/training/requirements.txt` first. This uses notebook 02's filled data and mask;
+no forecasting notebook is required. See [training instructions](src/training/README.md)
+for split rules, workbook corrections, saved plots, model artifacts and metrics.
+
 ## Pipeline report
 
 See [AO-MBR ETL Pipeline and Jupyter Model Evaluation](docs/etl_pipeline_report.md)
