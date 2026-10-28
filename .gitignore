@@ -14,3 +14,7 @@ zhtw/
 
 # Jupyter autosave checkpoints
 .ipynb_checkpoints/
+
+# Local model-training dependencies
+.training-venv/
+.training-deps/
