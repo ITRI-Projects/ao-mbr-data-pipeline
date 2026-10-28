@@ -17,7 +17,7 @@ CONFIG_MODULES = ("eff_nh3_n", "eff_no3_n", "a1_ch3oh_flow",
 
 
 def prepare(raw, config, train_end="2026-04-18", test_start="2026-04-21",
-            horizon_minutes=60, step_minutes=20, sequence_steps=12, max_age_minutes=5):
+            horizon_minutes=60, step_minutes=20, sequence_steps=12, max_age_minutes=5, prepared_inputs=None):
     """Use exact future observed labels and past/current inputs only.
 
     Validation is April 18-20 by default; train labels cannot cross April 18,
@@ -55,6 +55,10 @@ def prepare(raw, config, train_end="2026-04-18", test_start="2026-04-21",
     last = observed.apply(lambda s: times.where(s.notna()).ffill())
     age = last.apply(lambda s: (times - s).dt.total_seconds() / 60)
     causal = observed.ffill().where(age.le(max_age_minutes))
+    if prepared_inputs is not None:
+        if not prepared_inputs.index.equals(grid.index) or not set(retained).issubset(prepared_inputs.columns):
+            raise ValueError("Prepared inputs must align exactly with the source minute grid.")
+        causal = prepared_inputs[retained]
     origins = pd.date_range(grid.index.min().ceil(f"{step_minutes}min"),
                             grid.index.max(), freq=f"{step_minutes}min")
     values = causal.reindex(origins).to_numpy(dtype=float)
