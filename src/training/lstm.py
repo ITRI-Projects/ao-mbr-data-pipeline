@@ -15,7 +15,7 @@ class SequenceRegressor(nn.Module):
         return self.output(sequence[:, -1]).squeeze(-1)
 
 
-def train_lstm(X, y, split, folder, epochs=60, seed=42):
+def train_lstm(X, y, split, folder, epochs=60, seed=42, hidden=24, learning_rate=0.003, weight_decay=0.0):
     torch.set_num_threads(2)
     torch.manual_seed(seed)
     torch.use_deterministic_algorithms(True)
@@ -25,8 +25,8 @@ def train_lstm(X, y, split, folder, epochs=60, seed=42):
         scale = 1.0
     x = torch.tensor(X, dtype=torch.float32)
     labels = torch.tensor((y - center) / scale, dtype=torch.float32)
-    model = SequenceRegressor(X.shape[2])
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.003)
+    model = SequenceRegressor(X.shape[2], hidden=hidden)
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
     loss_fn = nn.MSELoss()
     best, patience, history = float("inf"), 0, []
     train_positions = np.flatnonzero(train)
@@ -56,7 +56,7 @@ def train_lstm(X, y, split, folder, epochs=60, seed=42):
     with torch.no_grad():
         predicted = model(x).numpy() * scale + center
     path = folder / "lstm.pt"
-    torch.save({"state_dict": state, "input_features": X.shape[2], "hidden": 24,
+    torch.save({"state_dict": state, "input_features": X.shape[2], "hidden": hidden,
                 "target_center": center, "target_scale": scale, "best_epoch": best_epoch}, path)
     saved = torch.load(path, map_location="cpu", weights_only=True)
     restored = SequenceRegressor(saved["input_features"], saved["hidden"])
