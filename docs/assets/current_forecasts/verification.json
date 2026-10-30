@@ -1,0 +1,14 @@
+{
+  "targets_verified": [
+    "a1_air_flow",
+    "a1_ch3oh_flow",
+    "a2_air_flow",
+    "a2_ch3oh_flow",
+    "eff_nh3_n",
+    "eff_no3_n"
+  ],
+  "all_sample_labels_and_splits_unchanged": true,
+  "validation_error_nonincreasing_for_every_model": true,
+  "serialized_models_reproduce_predictions": true,
+  "algorithm_selection_matches_validation_only": true
+}
