@@ -1,121 +1,135 @@
-# Forecast Results and Discussion — Presentation Content
+# Multivariate Forecast Results and Discussion — Presentation Content
 
-Seven slides: one evaluation setup slide, followed by one graph slide for each of six targets. These use the saved **seven-day SQL experiments in notebooks 03–05**. Notebook 02's one-day Drive experiment is separate. No training was rerun to prepare this material.
+This revision reports the saved **expanded-history and tuned CSV experiments**. It supersedes the earlier seven-day SQL experiment narrative. Notebook 03–05 figures and persistence percentages belong to the older experiment and must not be reused as evidence for these results. No models were retrained to prepare this report.
 
-## Slide 1 — Forecast Evaluation Setup
+## Slide 1 — Study design and chronological evaluation
 
-**Data and split**
+- Real treatment-plant operating data: **24 March 2026 13:00–23 April 2026 23:59**.
+- Training: available March 24–April 17 history. Validation: **April 18–20**. Fixed rolling test: **April 21–23**.
+- Predict the **exact observed minute value one hour after each origin**, with origins spaced 20 minutes apart.
+- Twelve input samples at 20-minute spacing span **3 hours 40 minutes** and end at the forecast origin.
+- Algorithms: **Ridge, Random Forest, XGBoost and LSTM**.
 
-- Seven-day source window: **3 April 22:45–10 April 22:45, 2026**, end exclusive.
-- **504 observed-only 20-minute averages** produce **501 one-hour input/target pairs**.
-- Initial chronological split: **80% earlier origins / 20% later origins**.
-- Final counts per target: **398 training / 2 purged / 101 test forecasts**.
-- Predict the 20-minute target mean ending **one hour after each forecast origin**.
+**Speaker notes:** “Future labels crossing training or validation boundaries were purged. Filled estimates cannot become future labels. Test observations may enter later histories once available, as in rolling operation. Time stamps retain the source's timezone-naive representation. This is not a forecast of the whole test period made at its start.”
 
-**Algorithms**
+## Slide 2 — Preparation, features and hyperparameter selection
 
-**XGBoost · Random Forest · Extra Trees · Ridge regression**
+- Expanded history uses **notebook 02's sensor-specific preparation policy**, rather than notebook 01's unlimited forward filling.
+- Carry-forward age limits: flow **2 min**, chemistry **5 min**, MLSS **15 min**. Longer and leading gaps remain missing.
+- Workbook checkmarked sensor inputs plus historical target values. Constant/unobserved/unsupported training inputs are excluded.
+- Remaining imputation and scaling fit training only; models receive missingness channels.
+- Tune using **April 18–20 validation MSE**. On fixed nonconstant labels this also maximizes R². Existing fitted models remain candidates; no combined training/validation refit is performed.
+- Final algorithm selection also uses validation error, **not test rankings**.
 
-Reference: **persistence**, which predicts that the future target equals the current measured target.
+**Speaker notes:** “Raw operating changes are preserved. Large values alone do not identify sensor faults. Airflow target mappings follow the confirmed headings: A1 = Q_A1_air and A2 = Q_A2_air. Test inputs, masks, origins and labels match the earlier experiment. The latest runs have no persistence baseline, so we do not claim improvement over persistence.”
 
-**Evaluation metrics**
+## Slide 3 — Overall results: validation-selected models
 
-| Metric | Interpretation |
-|---|---|
-| MAE | Average absolute error; lower is better. |
-| RMSE | Gives greater weight to large errors; lower is better. |
-| R² | Squared-error performance relative to the retrospective test-set mean; higher is better. |
-| Bias | Average prediction minus observation; positive means overprediction, negative means underprediction. |
-| Improvement over persistence (%) | Positive values mean lower MAE or RMSE than persistence. |
+![R² across chronological splits](assets/current_forecasts/selected_r2_comparison.png)
 
-**Speaker notes:** “The models were trained using earlier observations and evaluated on later observations. Two boundary origins were removed because their future outcomes would not be available when testing began. Each model was evaluated on the same 101 test targets within its task, with fixed parameters and no test-set hyperparameter tuning.”
+| Target | Validation-selected model | Training R² | Validation R² | Test R² |
+|---|---|---:|---:|---:|
+| Effluent ammonium | XGBoost | 0.472 | -0.101 | ≈0.000 |
+| Effluent nitrate | Ridge | undefined | undefined | undefined |
+| A1 methanol dosing | Ridge | 0.831 | 0.788 | 0.730 |
+| A2 methanol dosing | XGBoost | 0.945 | 0.701 | 0.693 |
+| A1 airflow | LSTM | 0.838 | 0.821 | -0.287 |
+| A2 airflow | LSTM | 0.879 | 0.921 | -0.016 |
 
-Training origins run from **3 April 23:05 to 9 April 11:25**. Test origins run from **9 April 12:25 to 10 April 21:45**, and the corresponding test target bins end from **9 April 13:25 to 10 April 22:45**. Times refer to 2026 and retain database timestamps. A training label available exactly at the first test origin is permitted.
+**Discussion:** “Methanol forecasts retain positive R² on the fixed test period. Airflow validation scores do not transfer to the later operating period. Ammonium test R² is approximately zero. Tuning improved or matched each algorithm's validation error, but did not consistently improve test performance.”
 
-Ridge scaling is fitted on training data only. MAE, RMSE and bias retain the target's units. Negative R² means greater squared error than the test-set mean reference; a model can improve on persistence while retaining negative R². Baseline improvement is `100 × (1 − model error / persistence error)`.
+Training R² is in-sample fit. Negative test R² means greater squared error than the retrospective test-set mean reference. Nitrate R² is undefined because its recorded signal is constant. R² does not establish acceptability against a plant-specific error threshold.
 
-## Layout for the six graph slides
+## Graph slide layout
 
-Place the saved test-only chart across the upper two-thirds of each slide. Below it, show a short metric callout and two discussion bullets. The black line is actual test data; dashed colored lines are the four learning models. **Persistence appears in the metric comparisons, but is not drawn in these saved charts.** The horizontal axis is the future target bin-end time.
+Use the test figure in the upper two-thirds with the selected-model callout beneath. Black is observed; the validation-selected algorithm is emphasized and the other tuned algorithms are dashed. The x-axis is future label time. All algorithms use the same observed labels within a target. Do not select a different headline model because its test score is higher.
 
-## Slide 2 — Effluent Ammonium Forecast
+## Slide 4 — Effluent Ammonium Forecast
 
-![Effluent ammonium forecast comparison](assets/forecast_slides/effluent_ammonium_test_comparison.png)
+![Effluent ammonium test forecasts](assets/current_forecasts/eff_nh3_n_test_comparison.png)
 
-**Metric callout:** Random Forest — **MAE 0.004053; RMSE 0.005405 mg-N/L; R² −0.016**.
+**Validation-selected model: XGBoost.** Test N = **211**; MAE **0.009132**; RMSE **0.011110 mg-N/L**; R² **≈0.000**.
 
-- Random Forest reduced MAE by **29.33%** and RMSE by **25.43%** relative to persistence.
-- Predictions stay near the central concentration and miss many observed peaks and troughs.
+- The selected XGBoost model has test R² approximately zero. Small absolute error within this narrow test range does not establish reliable forecasting of concentration changes.
+- Training includes values up to 7.652 mg-N/L, while validation and test maxima are below 0.225 mg-N/L. These represent reported real operating variability and are preserved; the discrepancy should be evaluated across operating conditions.
 
-**Discussion:** “Random Forest achieved the lowest errors on this holdout. However, the graph shows that the models smooth much of the observed variability. All fitted models retain negative R², so improvement over persistence does not establish reliable prediction of concentration changes across operating conditions.”
+**Speaker note:** “Use the measured name ammonium / NH4-N. The task eff_nh3_n predicts Eff_NH4_N.”
 
-Use the measured label **ammonium / NH4-N**. The code's `eff_nh3_n` task uses `Eff_NH4_N` as its target.
+## Slide 5 — Effluent Nitrate Forecast
 
-## Slide 3 — Effluent Nitrate Forecast
+![Effluent nitrate test forecasts](assets/current_forecasts/eff_no3_n_test_comparison.png)
 
-![Effluent nitrate forecast comparison](assets/forecast_slides/effluent_nitrate_test_comparison.png)
+**Validation-selected model: Ridge.** Test N = **211**; MAE **0.000000**; RMSE **0.000000 mg-N/L**; R² **undefined**.
 
-**Metric callout:** All methods, including persistence — **MAE 0; RMSE 0; R² undefined**.
+- The recorded target remains constant at 5.0 mg-N/L. Ridge and tree models have zero error; LSTM can deviate from the constant signal.
+- R² is undefined. This experiment cannot establish the ability to forecast nitrate changes.
 
-- The recorded target remains constant at **5.0 mg-N/L** in this selected dataset.
-- Actual and predicted lines overlap; the experiment cannot evaluate forecasting of nitrate changes.
+**Speaker note:** “A constant recorded value is a limitation of this evaluation, not sufficient evidence of a sensor fault.”
 
-**Discussion:** “The overlapping lines arise from a constant target. Persistence also achieves zero error. Further evaluation requires checking the recorded nitrate signal and obtaining data with meaningful variation. Percentage improvement over persistence is undefined because its error is zero.”
+## Slide 6 — A1 Methanol Dosing Forecast
 
-## Slide 4 — A1 Methanol Dosing Forecast
+![A1 methanol dosing test forecasts](assets/current_forecasts/a1_ch3oh_flow_test_comparison.png)
 
-![A1 methanol forecast comparison](assets/forecast_slides/a1_methanol_test_comparison.png)
+**Validation-selected model: Ridge.** Test N = **213**; MAE **17.871515**; RMSE **26.470019 m3/hour**; R² **0.730**.
 
-**Metric callout:** Persistence — **MAE 11.7117; RMSE 33.3158 m³/hour**. Best fitted method, Extra Trees — **MAE 18.3306; RMSE 33.6306 m³/hour**.
+- Ridge is selected by validation error and retains positive test R², but predicts negative flow during some low-flow periods. Those predictions are shown without clipping and limit physical plausibility.
+- Tuned Random Forest has a higher retrospective test R² (0.793), but is not substituted as the headline model after seeing the test result.
 
-- Persistence achieved lower MAE and RMSE than all four learning models.
-- The graph shows delayed responses to major flow changes; several models underestimate the later restart level.
+**Speaker note:** “Recorded dosing is forecast; optimal chemical doses and chemical savings were not evaluated.”
 
-**Discussion:** “The learned forecasts capture parts of the dosing pattern but struggle around abrupt changes. The positive R² values do not establish an improvement over persistence. Ridge also produces negative flow predictions in low-flow periods, which calls for evaluating physical plausibility alongside error metrics.”
+## Slide 7 — A2 Methanol Dosing Forecast
 
-## Slide 5 — A2 Methanol Dosing Forecast
+![A2 methanol dosing test forecasts](assets/current_forecasts/a2_ch3oh_flow_test_comparison.png)
 
-![A2 methanol forecast comparison](assets/forecast_slides/a2_methanol_test_comparison.png)
+**Validation-selected model: XGBoost.** Test N = **213**; MAE **13.529343**; RMSE **19.716478 m3/hour**; R² **0.693**.
 
-**Metric callout:** Random Forest — **MAE 14.8596; RMSE 31.9198 m³/hour; R² 0.761**. Persistence — **MAE 13.2107; RMSE 37.4613 m³/hour**.
+- Validation selects XGBoost. Test R² remains positive, supporting partial predictability of the recorded dosing pattern.
+- XGBoost validation R² increased from 0.682 to 0.701, while test R² decreased from 0.705 to 0.693. Improved validation fit does not guarantee improved later forecasts.
 
-- Random Forest reduced RMSE by **14.79%**, but increased MAE by **12.48%** versus persistence.
-- Models broadly reproduce the high-flow period while showing timing and magnitude errors around shutdown and restart transitions.
+**Speaker note:** “Recorded dosing is forecast; optimal chemical doses and chemical savings were not evaluated.”
 
-**Discussion:** “Random Forest is preferable on RMSE, while persistence is preferable on MAE. Selecting a model therefore requires an agreed error criterion. The graph also shows negative Ridge predictions during low-flow periods.”
+## Slide 8 — A1 Aeration Airflow Forecast
 
-Both methanol experiments forecast recorded dosing flow; they do not establish optimal doses or chemical savings. Units follow workbook labels and require instrument-scaling confirmation.
+![A1 airflow test forecasts](assets/current_forecasts/a1_air_flow_test_comparison.png)
 
-## Slide 6 — A1 Aeration Airflow Forecast
+**Validation-selected model: LSTM.** Test N = **211**; MAE **2.025027**; RMSE **3.646666 m3/min**; R² **-0.287**.
 
-![A1 airflow forecast comparison](assets/forecast_slides/a1_airflow_test_comparison.png)
+- Validation selects LSTM, with validation R² 0.821 but negative test R². The validation-to-test gap limits operational confidence.
+- Tuned Ridge achieves positive test R² (0.240), but choosing it from that test result would be retrospective selection. Validate algorithm choice across additional chronological periods.
 
-**Metric callout:** Ridge — **MAE 1.0651 m³/min**. Random Forest — **RMSE 3.5063 m³/min**. Persistence — **MAE 1.1147; RMSE 4.5548 m³/min**.
+**Speaker note:** “Airflow forecasts describe recorded flow, not optimized aeration setpoints or energy savings.”
 
-- Ridge improved MAE by **4.46%**; Random Forest improved RMSE by **23.02%** versus persistence.
-- Tree-model predictions remain relatively flat, missing the early low readings and some gradual changes. Ridge follows more of the later variation.
+## Slide 9 — A2 Aeration Airflow Forecast
 
-**Discussion:** “The lowest-error model depends on the metric. Random Forest has lower RMSE but higher MAE than persistence. All fitted methods have negative R² on this holdout, so operational accuracy requires further evaluation.”
+![A2 airflow test forecasts](assets/current_forecasts/a2_air_flow_test_comparison.png)
 
-## Slide 7 — A2 Aeration Airflow Forecast
+**Validation-selected model: LSTM.** Test N = **211**; MAE **1.899255**; RMSE **2.971203 m3/min**; R² **-0.016**.
 
-![A2 airflow forecast comparison](assets/forecast_slides/a2_airflow_test_comparison.png)
+- Tuned LSTM has validation R² 0.921, but test R² is slightly negative. High validation fit does not establish operational reliability.
+- Tuned Random Forest has test R² 0.492. This descriptive comparison motivates broader chronological evaluation rather than replacing the selected algorithm based on the same test.
 
-**Metric callout:** Ridge — **MAE 1.1208 m³/min**. Random Forest — **RMSE 3.2216 m³/min**. Persistence — **MAE 1.1577; RMSE 4.2189 m³/min**.
+**Speaker note:** “Airflow forecasts describe recorded flow, not optimized aeration setpoints or energy savings.”
 
-- Ridge improved MAE by **3.19%**; Random Forest improved RMSE by **23.64%** versus persistence.
-- Tree models miss the early low values and overpredict part of the later lower-flow period. Ridge tracks more of the gradual change but shows an early timing mismatch.
+## Slide 10 — Conclusions and next evaluation
 
-**Discussion:** “As with A1, Ridge performs best on MAE and Random Forest on RMSE. All R² values remain negative, including Random Forest at approximately −0.018. We need evaluation across additional operating periods before selecting a model.”
+- The approach is reportable as an **experimental multivariate time-series forecasting study using real plant operating data**.
+- Methanol forecasts generalize more consistently in this period. Ammonium and airflow remain sensitive to the evaluated operating periods.
+- More historical data benefited several candidates. Wider hyperparameter tuning did not consistently improve unseen-period performance.
+- Preserve real transitions and unusual events. Exclude or correct observations only with independent evidence of measurement faults.
+- Add persistence on the same labels, use multiple chronological validation windows, and confirm the frozen procedure on a new later operating period.
 
-Airflow forecasts describe recorded flow, with workbook units of m³/min pending instrument-scaling confirmation. The experiments do not evaluate optimized aeration setpoints or energy savings.
+**Closing statement:** “These results demonstrate target-dependent forecasting performance under real operational variability. They support continued validation and model development, but do not yet establish a dependable plant-control system or chemical and energy savings.”
 
-## Transition to the conclusion
+The fixed test was excluded from automated parameter/algorithm selection, but has been repeatedly inspected during development. Later independent evaluation is needed. Flow units are inherited from the workbook and require instrument-scaling confirmation. MAE/RMSE remain in target units; percentage improvement over persistence is unavailable for the latest runs.
 
-“The experiments demonstrate target-specific improvements rather than one consistently superior algorithm. The next step is to choose the operational error criterion and validate candidates on independent later data with more varied operating conditions.”
+## Evidence and reproduction
 
-## Evidence
+- [General results notebook](../notebooks/06_multivariate_forecast_results.ipynb): executed tables, all algorithm comparisons, target distributions and test plots; no retraining.
+- [Headline metrics](assets/current_forecasts/headline_metrics.csv): validation-selected models with training, validation and test R².
+- [All experiment metrics](assets/current_forecasts/experiment_metrics.csv): short-history, expanded-history and tuned runs, all algorithms and splits.
+- [Validation-selected experiment comparison](assets/current_forecasts/validation_selected_experiment_comparison.csv): comparisons use independently validation-selected models within each experiment.
+- [Feature configuration](assets/current_forecasts/feature_configuration.json) and [selected parameters](assets/current_forecasts/selected_parameters.json).
+- [Source and snapshot hashes](assets/current_forecasts/provenance.json); [saved-model/split verification](assets/current_forecasts/verification.json).
+- Training implementation and reproduction commands: [training README](../src/training/README.md).
 
-- Source notebooks: [03: effluent](../notebooks/03_train_effluent_nh3_no3.ipynb), [04: methanol](../notebooks/04_train_ch3oh_dosing.ipynb), [05: airflow](../notebooks/05_train_aeration_flow.ipynb).
-- [Full metric table](assets/etl_report/evaluation_metrics.csv): use **N = 101** for these slides; **N = 14** belongs to the separate Drive experiment.
-- [Figure provenance](assets/forecast_slides/provenance.json): saved notebook hashes and output locations. Charts were extracted directly without modifying the plotted data.
+Figures in `assets/current_forecasts` are generated from the saved test predictions by the results notebook. Historical figures in `assets/forecast_slides` and metrics in `assets/etl_report` belong to older experiments and remain separate.

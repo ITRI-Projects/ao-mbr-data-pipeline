@@ -1,0 +1,314 @@
+[
+  {
+    "model": "eff_nh3_n",
+    "target": "Eff_NH4_N",
+    "features": [
+      "A1_Qin",
+      "A2_Qin",
+      "A1_COD_in",
+      "A2_COD_in",
+      "A1_O_PH",
+      "A1_O_ORP",
+      "A1_O_DO",
+      "A1_O_MLSS",
+      "A2_O_PH",
+      "A2_O_ORP",
+      "A2_O_DO",
+      "A2_O_MLSS",
+      "Q_A1_air",
+      "Q_A2_air",
+      "Eff_NH4_N"
+    ],
+    "excluded": [
+      "A1_NH3_N",
+      "A2_NH3_N"
+    ],
+    "counts": {
+      "test": 211,
+      "train": 1733,
+      "validation": 213
+    },
+    "workbook": {
+      "name": "eff_nh3_n",
+      "target": "Eff_NH4_N",
+      "features": [
+        "A1_Qin",
+        "A2_Qin",
+        "A1_COD_in",
+        "A2_COD_in",
+        "A1_NH3_N",
+        "A2_NH3_N",
+        "A1_O_PH",
+        "A1_O_ORP",
+        "A1_O_DO",
+        "A1_O_MLSS",
+        "A2_O_PH",
+        "A2_O_ORP",
+        "A2_O_DO",
+        "A2_O_MLSS",
+        "Q_A1_air",
+        "Q_A2_air",
+        "Eff_NH4_N"
+      ],
+      "unit": "mg-N/L",
+      "heading": "Eff NH3-N",
+      "workbook_marked_targets": [
+        "Eff_NH4_N"
+      ],
+      "target_mark_corrected": false
+    }
+  },
+  {
+    "model": "eff_no3_n",
+    "target": "Eff_NO3_N",
+    "features": [
+      "A1_Qin",
+      "A2_Qin",
+      "A1_COD_in",
+      "A1_FQ_CH3OH",
+      "A1_Q_r1",
+      "A2_COD_in",
+      "A2_Q_r1",
+      "A2_FQ_CH3OH",
+      "A1_A_PH",
+      "A1_A_ORP",
+      "A1_A_DO",
+      "A1_A_MLSS",
+      "A2_A_PH",
+      "A2_A_ORP",
+      "A2_A_DO",
+      "A2_A_MLSS",
+      "Q_A1_air",
+      "Q_A2_air",
+      "Eff_NH4_N"
+    ],
+    "excluded": [
+      "A1_NH3_N",
+      "A2_NH3_N",
+      "Eff_NO3_N"
+    ],
+    "counts": {
+      "test": 211,
+      "train": 1733,
+      "validation": 213
+    },
+    "workbook": {
+      "name": "eff_no3_n",
+      "target": "Eff_NO3_N",
+      "features": [
+        "A1_Qin",
+        "A2_Qin",
+        "A1_COD_in",
+        "A1_FQ_CH3OH",
+        "A1_Q_r1",
+        "A2_COD_in",
+        "A2_Q_r1",
+        "A2_FQ_CH3OH",
+        "A1_NH3_N",
+        "A2_NH3_N",
+        "A1_A_PH",
+        "A1_A_ORP",
+        "A1_A_DO",
+        "A1_A_MLSS",
+        "A2_A_PH",
+        "A2_A_ORP",
+        "A2_A_DO",
+        "A2_A_MLSS",
+        "Q_A1_air",
+        "Q_A2_air",
+        "Eff_NH4_N",
+        "Eff_NO3_N"
+      ],
+      "unit": "mg-N/L",
+      "heading": "Eff NO3-N",
+      "workbook_marked_targets": [
+        "Eff_NO3_N"
+      ],
+      "target_mark_corrected": false
+    }
+  },
+  {
+    "model": "a1_ch3oh_flow",
+    "target": "A1_FQ_CH3OH",
+    "features": [
+      "A1_Qin",
+      "A1_COD_in",
+      "A1_FQ_CH3OH",
+      "A1_Q_r1",
+      "A1_A_PH",
+      "A1_A_ORP",
+      "A1_A_DO",
+      "A1_A_MLSS",
+      "Eff_NH4_N"
+    ],
+    "excluded": [
+      "A1_NH3_N",
+      "Eff_NO3_N"
+    ],
+    "counts": {
+      "test": 213,
+      "train": 1746,
+      "validation": 213
+    },
+    "workbook": {
+      "name": "a1_ch3oh_flow",
+      "target": "A1_FQ_CH3OH",
+      "features": [
+        "A1_Qin",
+        "A1_COD_in",
+        "A1_FQ_CH3OH",
+        "A1_Q_r1",
+        "A1_NH3_N",
+        "A1_A_PH",
+        "A1_A_ORP",
+        "A1_A_DO",
+        "A1_A_MLSS",
+        "Eff_NH4_N",
+        "Eff_NO3_N"
+      ],
+      "unit": "m3/hour",
+      "heading": "A1 CH3OH Flow",
+      "workbook_marked_targets": [
+        "A1_FQ_CH3OH"
+      ],
+      "target_mark_corrected": false
+    }
+  },
+  {
+    "model": "a2_ch3oh_flow",
+    "target": "A2_FQ_CH3OH",
+    "features": [
+      "A2_Qin",
+      "A2_COD_in",
+      "A2_Q_r1",
+      "A2_FQ_CH3OH",
+      "A2_A_PH",
+      "A2_A_ORP",
+      "A2_A_DO",
+      "A2_A_MLSS",
+      "Eff_NH4_N"
+    ],
+    "excluded": [
+      "A2_NH3_N",
+      "Eff_NO3_N"
+    ],
+    "counts": {
+      "test": 213,
+      "train": 1746,
+      "validation": 213
+    },
+    "workbook": {
+      "name": "a2_ch3oh_flow",
+      "target": "A2_FQ_CH3OH",
+      "features": [
+        "A2_Qin",
+        "A2_COD_in",
+        "A2_Q_r1",
+        "A2_FQ_CH3OH",
+        "A2_NH3_N",
+        "A2_A_PH",
+        "A2_A_ORP",
+        "A2_A_DO",
+        "A2_A_MLSS",
+        "Eff_NH4_N",
+        "Eff_NO3_N"
+      ],
+      "unit": "m3/hour",
+      "heading": "A2 CH3OH Flow",
+      "workbook_marked_targets": [
+        "A2_FQ_CH3OH"
+      ],
+      "target_mark_corrected": false
+    }
+  },
+  {
+    "model": "a1_air_flow",
+    "target": "Q_A1_air",
+    "features": [
+      "A1_Qin",
+      "A1_FQ_CH3OH",
+      "A1_Q_r1",
+      "A1_O_PH",
+      "A1_O_ORP",
+      "A1_O_DO",
+      "A1_O_MLSS",
+      "Q_A2_air",
+      "Q_A1_air"
+    ],
+    "excluded": [
+      "A1_NH3_N"
+    ],
+    "counts": {
+      "test": 211,
+      "train": 1730,
+      "validation": 212
+    },
+    "workbook": {
+      "name": "a1_air_flow",
+      "target": "Q_A1_air",
+      "features": [
+        "A1_Qin",
+        "A1_FQ_CH3OH",
+        "A1_Q_r1",
+        "A1_NH3_N",
+        "A1_O_PH",
+        "A1_O_ORP",
+        "A1_O_DO",
+        "A1_O_MLSS",
+        "Q_A2_air"
+      ],
+      "unit": "m3/min",
+      "heading": "A1 Aeration Flow",
+      "workbook_marked_targets": [
+        "Q_A2_air"
+      ],
+      "target_mark_corrected": true
+    }
+  },
+  {
+    "model": "a2_air_flow",
+    "target": "Q_A2_air",
+    "features": [
+      "A2_Qin",
+      "A2_COD_in",
+      "A2_Q_r1",
+      "A2_FQ_CH3OH",
+      "A2_O_PH",
+      "A2_O_ORP",
+      "A2_O_DO",
+      "A2_O_MLSS",
+      "Eff_NH4_N",
+      "Q_A2_air"
+    ],
+    "excluded": [
+      "A2_NH3_N"
+    ],
+    "counts": {
+      "test": 211,
+      "train": 1729,
+      "validation": 212
+    },
+    "workbook": {
+      "name": "a2_air_flow",
+      "target": "Q_A2_air",
+      "features": [
+        "A2_Qin",
+        "A2_COD_in",
+        "A2_Q_r1",
+        "A2_FQ_CH3OH",
+        "A2_NH3_N",
+        "A2_O_PH",
+        "A2_O_ORP",
+        "A2_O_DO",
+        "A2_O_MLSS",
+        "Eff_NH4_N"
+      ],
+      "unit": "m3/min",
+      "heading": "A2 Aeration Flow",
+      "workbook_marked_targets": [
+        "Eff_NH4_N"
+      ],
+      "target_mark_corrected": true
+    }
+  }
+]

@@ -1,0 +1,217 @@
+model,target,unit,algorithm,split,n,MAE,RMSE,R2,constant_target,experiment
+eff_nh3_n,Eff_NH4_N,mg-N/L,Ridge,train,274,0.0070664514817808,0.0090021883748993,0.2161568155920438,False,Short history
+eff_nh3_n,Eff_NH4_N,mg-N/L,Ridge,validation,213,0.0105892310305671,0.0131740171035327,-0.3734719862781637,False,Short history
+eff_nh3_n,Eff_NH4_N,mg-N/L,Ridge,test,211,0.0092573802802822,0.0123728083294346,-0.2404181473000506,False,Short history
+eff_nh3_n,Eff_NH4_N,mg-N/L,Random Forest,train,274,0.0052829915855133,0.006728941207806,0.5620480533879727,False,Short history
+eff_nh3_n,Eff_NH4_N,mg-N/L,Random Forest,validation,213,0.009270620774159,0.0113639131143766,-0.0219724045827347,False,Short history
+eff_nh3_n,Eff_NH4_N,mg-N/L,Random Forest,test,211,0.0101512335931966,0.0121129640118631,-0.1888645978094665,False,Short history
+eff_nh3_n,Eff_NH4_N,mg-N/L,XGBoost,train,274,0.0028513551123229,0.0036880438157197,0.8684396144592994,False,Short history
+eff_nh3_n,Eff_NH4_N,mg-N/L,XGBoost,validation,213,0.0093313381186561,0.0115735192564037,-0.0600204337258594,False,Short history
+eff_nh3_n,Eff_NH4_N,mg-N/L,XGBoost,test,211,0.0091850875359259,0.0114715182796595,-0.0662851083316444,False,Short history
+eff_nh3_n,Eff_NH4_N,mg-N/L,LSTM,train,274,0.0073522393115837,0.0093816707275102,0.1486789618464025,False,Short history
+eff_nh3_n,Eff_NH4_N,mg-N/L,LSTM,validation,213,0.0092221191323508,0.0113085457855586,-0.01203814383534,False,Short history
+eff_nh3_n,Eff_NH4_N,mg-N/L,LSTM,test,211,0.0107968373200882,0.0127740373039484,-0.3221718336588943,False,Short history
+eff_no3_n,Eff_NO3_N,mg-N/L,Ridge,train,274,0.0,0.0,,True,Short history
+eff_no3_n,Eff_NO3_N,mg-N/L,Ridge,validation,213,0.0,0.0,,True,Short history
+eff_no3_n,Eff_NO3_N,mg-N/L,Ridge,test,211,0.0,0.0,,True,Short history
+eff_no3_n,Eff_NO3_N,mg-N/L,Random Forest,train,274,0.0,0.0,,True,Short history
+eff_no3_n,Eff_NO3_N,mg-N/L,Random Forest,validation,213,0.0,0.0,,True,Short history
+eff_no3_n,Eff_NO3_N,mg-N/L,Random Forest,test,211,0.0,0.0,,True,Short history
+eff_no3_n,Eff_NO3_N,mg-N/L,XGBoost,train,274,0.0,0.0,,True,Short history
+eff_no3_n,Eff_NO3_N,mg-N/L,XGBoost,validation,213,0.0,0.0,,True,Short history
+eff_no3_n,Eff_NO3_N,mg-N/L,XGBoost,test,211,0.0,0.0,,True,Short history
+eff_no3_n,Eff_NO3_N,mg-N/L,LSTM,train,274,0.0025936356426155,0.0032554274554816,,True,Short history
+eff_no3_n,Eff_NO3_N,mg-N/L,LSTM,validation,213,0.0185854513320564,0.026931581920546,,True,Short history
+eff_no3_n,Eff_NO3_N,mg-N/L,LSTM,test,211,0.0312151072714566,0.0601805470940617,,True,Short history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,Ridge,train,274,16.06165849881271,21.24620657237841,0.785491091303322,False,Short history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,Ridge,validation,213,36.24261100376469,43.79164739586741,0.2440618172112089,False,Short history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,Ridge,test,213,36.42339830658389,62.32133319649051,-0.4958702897651452,False,Short history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,Random Forest,train,274,4.678933049297957,9.829412865669108,0.9540867867225648,False,Short history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,Random Forest,validation,213,17.920327367391295,28.871000123407544,0.6714304045250361,False,Short history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,Random Forest,test,213,18.865402152416426,34.911020996559074,0.5305973183437025,False,Short history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,XGBoost,train,274,5.6889416623154485,9.244168613847137,0.9593913781578628,False,Short history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,XGBoost,validation,213,21.96806250770596,29.781342864450703,0.6503832196893222,False,Short history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,XGBoost,test,213,19.425523378832555,33.41610607165471,0.5699369332342594,False,Short history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,LSTM,train,274,19.525791432036684,28.49256028812237,0.614214868298169,False,Short history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,LSTM,validation,213,27.820889639193396,34.85464307980772,0.5211218788943468,False,Short history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,LSTM,test,213,26.665965460379883,33.68384497653212,0.5630177608317909,False,Short history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,Ridge,train,274,14.258631099519382,19.776674122463405,0.7808007082841847,False,Short history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,Ridge,validation,213,32.39825623311074,39.59543533293451,0.1195208405654127,False,Short history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,Ridge,test,213,34.27089370245847,42.224023647070304,-0.4061623626277075,False,Short history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,Random Forest,train,274,6.310788611661448,11.688511577462412,0.9234313386294848,False,Short history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,Random Forest,validation,213,23.15363798900517,30.848119233685026,0.4655756740017942,False,Short history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,Random Forest,test,213,19.969092076452675,25.51009045072508,0.4867366736540571,False,Short history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,XGBoost,train,274,7.074828822156948,11.656802117065588,0.923846217385721,False,Short history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,XGBoost,validation,213,24.524975410689944,35.10055995209742,0.3080783401200427,False,Short history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,XGBoost,test,213,22.180617082340707,30.1099453305944,0.2849503948107805,False,Short history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,LSTM,train,274,19.83254740233261,27.232220513268828,0.5843777950250242,False,Short history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,LSTM,validation,213,27.05958084239691,33.96844065289332,0.3519924619469393,False,Short history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,LSTM,test,213,27.452129283318317,32.12706152869226,0.1859365665688861,False,Short history
+a1_air_flow,Q_A1_air,m3/min,Ridge,train,272,1.3215148941713215,2.467702434312215,0.6248165951745093,False,Short history
+a1_air_flow,Q_A1_air,m3/min,Ridge,validation,212,1.311986194193138,1.582638004434412,-1.712760058852346,False,Short history
+a1_air_flow,Q_A1_air,m3/min,Ridge,test,211,2.947085666457623,4.176682097988387,-0.6885148773953893,False,Short history
+a1_air_flow,Q_A1_air,m3/min,Random Forest,train,272,0.4916246991762609,1.3124047165336556,0.8938808882099277,False,Short history
+a1_air_flow,Q_A1_air,m3/min,Random Forest,validation,212,1.1728775570339205,1.3078780784338828,-0.8526045351282439,False,Short history
+a1_air_flow,Q_A1_air,m3/min,Random Forest,test,211,2.345113550130118,4.179582800443306,-0.6908610363424852,False,Short history
+a1_air_flow,Q_A1_air,m3/min,XGBoost,train,272,0.5276614139556886,0.8279830508667766,0.9577622344968112,False,Short history
+a1_air_flow,Q_A1_air,m3/min,XGBoost,validation,212,1.6785345088167014,2.78873840841033,-7.422940987978425,False,Short history
+a1_air_flow,Q_A1_air,m3/min,XGBoost,test,211,2.3030714986068936,3.720217167045376,-0.3396107834908644,False,Short history
+a1_air_flow,Q_A1_air,m3/min,LSTM,train,272,1.059131290974337,2.3587511645607377,0.6572146154312892,False,Short history
+a1_air_flow,Q_A1_air,m3/min,LSTM,validation,212,0.5161236274575288,0.6435990843353794,0.5513795808033373,False,Short history
+a1_air_flow,Q_A1_air,m3/min,LSTM,test,211,1.7734676585988405,3.351089972612806,-0.0869616618219741,False,Short history
+a2_air_flow,Q_A2_air,m3/min,Ridge,train,272,1.1922404439926149,1.791504271850252,0.7828563574502396,False,Short history
+a2_air_flow,Q_A2_air,m3/min,Ridge,validation,212,1.3649874481776976,1.695350379276671,-0.2023510296391713,False,Short history
+a2_air_flow,Q_A2_air,m3/min,Ridge,test,211,2.041721818217056,2.9282696307955787,0.0133359580605717,False,Short history
+a2_air_flow,Q_A2_air,m3/min,Random Forest,train,272,0.5152290922803157,1.2837893230858697,0.8884938190751964,False,Short history
+a2_air_flow,Q_A2_air,m3/min,Random Forest,validation,212,1.1587075257774204,2.027903176492465,-0.720310242517586,False,Short history
+a2_air_flow,Q_A2_air,m3/min,Random Forest,test,211,1.1245696388967028,2.289551274399344,0.3968186261424833,False,Short history
+a2_air_flow,Q_A2_air,m3/min,XGBoost,train,272,0.1500700358222513,0.1953695904640586,0.9974175890480844,False,Short history
+a2_air_flow,Q_A2_air,m3/min,XGBoost,validation,212,1.6728433614334972,4.211827598984713,-6.42084766091314,False,Short history
+a2_air_flow,Q_A2_air,m3/min,XGBoost,test,211,1.7683600011310308,3.0784979986969043,-0.090498130455038,False,Short history
+a2_air_flow,Q_A2_air,m3/min,LSTM,train,272,1.283671718238382,2.597604098584116,0.54348259036096,False,Short history
+a2_air_flow,Q_A2_air,m3/min,LSTM,validation,212,1.2454083100228943,1.452591283298714,0.1173282817706794,False,Short history
+a2_air_flow,Q_A2_air,m3/min,LSTM,test,211,1.3368760854133497,2.214744979865512,0.4355900958431563,False,Short history
+eff_nh3_n,Eff_NH4_N,mg-N/L,Ridge,train,1733,0.0974173867495369,0.3638137850499918,0.4216486858772263,False,Expanded history
+eff_nh3_n,Eff_NH4_N,mg-N/L,Ridge,validation,213,0.0861147011540753,0.1082877515842726,-91.79873001458816,False,Expanded history
+eff_nh3_n,Eff_NH4_N,mg-N/L,Ridge,test,211,0.0995572585496902,0.1232440770361376,-122.0732458331003,False,Expanded history
+eff_nh3_n,Eff_NH4_N,mg-N/L,Random Forest,train,1733,0.040773346834278,0.2259693287851472,0.7768831259668132,False,Expanded history
+eff_nh3_n,Eff_NH4_N,mg-N/L,Random Forest,validation,213,0.0114068882760967,0.0194460679849613,-1.992588202177191,False,Expanded history
+eff_nh3_n,Eff_NH4_N,mg-N/L,Random Forest,test,211,0.0095948462890014,0.0116412961089162,-0.098080585648808,False,Expanded history
+eff_nh3_n,Eff_NH4_N,mg-N/L,XGBoost,train,1733,0.034224753282569,0.1681207765962224,0.8764973716072715,False,Expanded history
+eff_nh3_n,Eff_NH4_N,mg-N/L,XGBoost,validation,213,0.0097885920316087,0.0123199935192153,-0.2011695625700318,False,Expanded history
+eff_nh3_n,Eff_NH4_N,mg-N/L,XGBoost,test,211,0.0090817480018489,0.0112655500221796,-0.0283390821397422,False,Expanded history
+eff_nh3_n,Eff_NH4_N,mg-N/L,LSTM,train,1733,0.0748470742337231,0.4533078327151654,0.1021167454697991,False,Expanded history
+eff_nh3_n,Eff_NH4_N,mg-N/L,LSTM,validation,213,0.0152671735558129,0.0180602580441207,-1.5812570928874492,False,Expanded history
+eff_nh3_n,Eff_NH4_N,mg-N/L,LSTM,test,211,0.0230625093210952,0.0267395486596045,-4.7934823188061335,False,Expanded history
+eff_no3_n,Eff_NO3_N,mg-N/L,Ridge,train,1733,0.0,0.0,,True,Expanded history
+eff_no3_n,Eff_NO3_N,mg-N/L,Ridge,validation,213,0.0,0.0,,True,Expanded history
+eff_no3_n,Eff_NO3_N,mg-N/L,Ridge,test,211,0.0,0.0,,True,Expanded history
+eff_no3_n,Eff_NO3_N,mg-N/L,Random Forest,train,1733,0.0,0.0,,True,Expanded history
+eff_no3_n,Eff_NO3_N,mg-N/L,Random Forest,validation,213,0.0,0.0,,True,Expanded history
+eff_no3_n,Eff_NO3_N,mg-N/L,Random Forest,test,211,0.0,0.0,,True,Expanded history
+eff_no3_n,Eff_NO3_N,mg-N/L,XGBoost,train,1733,0.0,0.0,,True,Expanded history
+eff_no3_n,Eff_NO3_N,mg-N/L,XGBoost,validation,213,0.0,0.0,,True,Expanded history
+eff_no3_n,Eff_NO3_N,mg-N/L,XGBoost,test,211,0.0,0.0,,True,Expanded history
+eff_no3_n,Eff_NO3_N,mg-N/L,LSTM,train,1733,0.0012668757100223,0.0016731011121171,,True,Expanded history
+eff_no3_n,Eff_NO3_N,mg-N/L,LSTM,validation,213,0.0028134757923967,0.0036129947553391,,True,Expanded history
+eff_no3_n,Eff_NO3_N,mg-N/L,LSTM,test,211,0.005042765377822,0.0078204067424752,,True,Expanded history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,Ridge,train,1746,12.485743533018134,23.051290957221145,0.8308977736578187,False,Expanded history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,Ridge,validation,213,16.557413238353462,23.20152508576287,0.787804200914212,False,Expanded history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,Ridge,test,213,17.741488442911216,26.32173253656839,0.7331609354458487,False,Expanded history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,Random Forest,train,1746,6.815782445639188,15.423307296072704,0.9242968686828616,False,Expanded history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,Random Forest,validation,213,21.47431728332497,30.9647777902015,0.6220453860477011,False,Expanded history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,Random Forest,test,213,18.862672056251835,28.796709744526204,0.6806211124783472,False,Expanded history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,XGBoost,train,1746,10.01324534023487,19.54556938936461,0.8784218659915396,False,Expanded history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,XGBoost,validation,213,18.64733789948656,27.10611278193408,0.7103735654668657,False,Expanded history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,XGBoost,test,213,16.397944203431933,24.052407960439023,0.7771885069861362,False,Expanded history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,LSTM,train,1746,12.454454885804202,23.040930476863323,0.831049746628097,False,Expanded history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,LSTM,validation,213,19.55167654246156,26.96384312593088,0.7134058643974015,False,Expanded history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,LSTM,test,213,17.51350849577683,25.847055329154884,0.7426983265133221,False,Expanded history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,Ridge,train,1746,12.101034983318876,22.180102396264267,0.8037233848677244,False,Expanded history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,Ridge,validation,213,15.85780772772704,25.839511624182148,0.6250292092372854,False,Expanded history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,Ridge,test,213,14.516394547193642,21.84181199499313,0.6237352217696173,False,Expanded history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,Random Forest,train,1746,4.742694657219653,10.3987651534119,0.9568575299191524,False,Expanded history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,Random Forest,validation,213,13.10640686780339,24.35888927706067,0.6667702255492203,False,Expanded history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,Random Forest,test,213,16.41371476300683,22.89973784693517,0.586403115705857,False,Expanded history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,XGBoost,train,1746,10.120782863162171,19.011236915017506,0.8558010114222309,False,Expanded history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,XGBoost,validation,213,13.648590272712504,23.80810343407652,0.6816693633715095,False,Expanded history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,XGBoost,test,213,13.407528891941572,19.34605739935193,0.7048103125537737,False,Expanded history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,LSTM,train,1746,13.367603941441766,21.910414374415968,0.8084674245498844,False,Expanded history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,LSTM,validation,213,17.617555464211048,27.635750641037973,0.5710848690638196,False,Expanded history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,LSTM,test,213,15.323806649278811,22.094141311034747,0.6149913455354564,False,Expanded history
+a1_air_flow,Q_A1_air,m3/min,Ridge,train,1730,0.6120515673898684,1.508154175988708,0.6799636047529471,False,Expanded history
+a1_air_flow,Q_A1_air,m3/min,Ridge,validation,212,0.4990606597324588,0.6111125741599479,0.5955259707807499,False,Expanded history
+a1_air_flow,Q_A1_air,m3/min,Ridge,test,211,1.611102620490919,2.855359706841869,0.21084247280746,False,Expanded history
+a1_air_flow,Q_A1_air,m3/min,Random Forest,train,1730,0.3980353475740645,0.953974478776682,0.8719494639465387,False,Expanded history
+a1_air_flow,Q_A1_air,m3/min,Random Forest,validation,212,1.6196406048452785,1.8920993721422532,-2.877359636370912,False,Expanded history
+a1_air_flow,Q_A1_air,m3/min,Random Forest,test,211,1.846759499478701,2.980560101957455,0.1401200606455209,False,Expanded history
+a1_air_flow,Q_A1_air,m3/min,XGBoost,train,1730,0.4162104117579818,0.9989373016785192,0.8595944260160617,False,Expanded history
+a1_air_flow,Q_A1_air,m3/min,XGBoost,validation,212,1.793440343662478,2.5475385065603318,-6.028938057324718,False,Expanded history
+a1_air_flow,Q_A1_air,m3/min,XGBoost,test,211,2.018448487138071,3.072834002769396,0.0860546034596041,False,Expanded history
+a1_air_flow,Q_A1_air,m3/min,LSTM,train,1730,0.4103712621858629,1.073008082825919,0.8380004250601442,False,Expanded history
+a1_air_flow,Q_A1_air,m3/min,LSTM,validation,212,0.3368279552531691,0.4063395924601964,0.8211757208236947,False,Expanded history
+a1_air_flow,Q_A1_air,m3/min,LSTM,test,211,2.0250267130341,3.6466661916664265,-0.2871645529242215,False,Expanded history
+a2_air_flow,Q_A2_air,m3/min,Ridge,train,1729,0.6473940960400363,1.4196843895305329,0.7836023657689364,False,Expanded history
+a2_air_flow,Q_A2_air,m3/min,Ridge,validation,212,0.6010111194538621,0.7745114296074213,0.7490610905283,False,Expanded history
+a2_air_flow,Q_A2_air,m3/min,Ridge,test,211,1.2369518322262154,2.3052288704726025,0.3885298314860207,False,Expanded history
+a2_air_flow,Q_A2_air,m3/min,Random Forest,train,1729,0.2593092514037265,0.825267228218313,0.926876310919684,False,Expanded history
+a2_air_flow,Q_A2_air,m3/min,Random Forest,validation,212,0.5656506049738979,0.8061150926498672,0.7281643268283928,False,Expanded history
+a2_air_flow,Q_A2_air,m3/min,Random Forest,test,211,1.004204319438302,2.0789380966075908,0.5026864530094017,False,Expanded history
+a2_air_flow,Q_A2_air,m3/min,XGBoost,train,1729,0.4517035050435726,0.9555071909298856,0.9019750083014856,False,Expanded history
+a2_air_flow,Q_A2_air,m3/min,XGBoost,validation,212,0.8101737257183722,1.303338654036335,0.2893972311909469,False,Expanded history
+a2_air_flow,Q_A2_air,m3/min,XGBoost,test,211,1.9165018100539652,3.007196511405164,-0.0405687806027501,False,Expanded history
+a2_air_flow,Q_A2_air,m3/min,LSTM,train,1729,0.4090656907707641,0.9233109099672236,0.9084697119454532,False,Expanded history
+a2_air_flow,Q_A2_air,m3/min,LSTM,validation,212,0.3496384693937481,0.4396015666089025,0.9191591619605284,False,Expanded history
+a2_air_flow,Q_A2_air,m3/min,LSTM,test,211,1.9083003816577495,2.928916791315457,0.0128997956480754,False,Expanded history
+a1_air_flow,Q_A1_air,m3/min,Ridge,train,1730,0.5869765888086218,1.5264822241531253,0.6721377682858218,False,Tuned history
+a1_air_flow,Q_A1_air,m3/min,Ridge,validation,212,0.4994622398520417,0.6078078479483099,0.5998887078524885,False,Tuned history
+a1_air_flow,Q_A1_air,m3/min,Ridge,test,211,1.5572449031594795,2.8017291637911925,0.2402086385619347,False,Tuned history
+a1_air_flow,Q_A1_air,m3/min,Random Forest,train,1730,0.5160868222822844,1.1522094920419272,0.8132026178969755,False,Tuned history
+a1_air_flow,Q_A1_air,m3/min,Random Forest,validation,212,0.7026557888211871,0.8183287832550113,0.2747230828626644,False,Tuned history
+a1_air_flow,Q_A1_air,m3/min,Random Forest,test,211,1.5642494014583626,2.821518476837632,0.2294375405395825,False,Tuned history
+a1_air_flow,Q_A1_air,m3/min,XGBoost,train,1730,0.6104610118147127,1.5145046209480055,0.6772627503661319,False,Tuned history
+a1_air_flow,Q_A1_air,m3/min,XGBoost,validation,212,0.4614055891216925,0.5842496633099719,0.6303036665904991,False,Tuned history
+a1_air_flow,Q_A1_air,m3/min,XGBoost,test,211,1.9020074190691172,3.096373797437234,0.0719982030755655,False,Tuned history
+a1_air_flow,Q_A1_air,m3/min,LSTM,train,1730,0.410371268786127,1.0730080742318389,0.8380004276551616,False,Tuned history
+a1_air_flow,Q_A1_air,m3/min,LSTM,validation,212,0.3368280660377358,0.4063396659119024,0.8211756561735852,False,Tuned history
+a1_air_flow,Q_A1_air,m3/min,LSTM,test,211,2.0250267345971555,3.646666158922164,-0.2871645298087224,False,Tuned history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,Ridge,train,1746,12.484665143045502,23.04401939196855,0.8310044439462556,False,Tuned history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,Ridge,validation,213,16.614347233918238,23.18558510523088,0.788095667531318,False,Tuned history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,Ridge,test,213,17.871515074584394,26.470019218826103,0.7301459259278156,False,Tuned history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,Random Forest,train,1746,8.291735841467268,18.23836249107517,0.8941403370953297,False,Tuned history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,Random Forest,validation,213,15.72244307355844,24.212518522395584,0.7689086722658033,False,Tuned history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,Random Forest,test,213,15.216767743703445,23.18388822118021,0.7929891949372861,False,Tuned history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,XGBoost,train,1746,3.993975607926485,7.570730611934493,0.9817595979595264,False,Tuned history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,XGBoost,validation,213,17.025011113264238,24.009380065127797,0.7727700311790597,False,Tuned history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,XGBoost,test,213,20.81187029485532,27.61883425689464,0.7062139612301236,False,Tuned history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,LSTM,train,1746,13.376002339755937,24.360937863161105,0.8111370241312214,False,Tuned history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,LSTM,validation,213,18.529393090954997,25.269095906942862,0.7483000534062605,False,Tuned history
+a1_ch3oh_flow,A1_FQ_CH3OH,m3/hour,LSTM,test,213,19.750140508945524,27.88278795075084,0.7005716909417934,False,Tuned history
+a2_air_flow,Q_A2_air,m3/min,Ridge,train,1729,0.6498515273844871,1.4182332462198586,0.7840445252945906,False,Tuned history
+a2_air_flow,Q_A2_air,m3/min,Ridge,validation,212,0.6003195473437041,0.7742705422982894,0.7492171594928851,False,Tuned history
+a2_air_flow,Q_A2_air,m3/min,Ridge,test,211,1.2862182135270106,2.337257333336248,0.3714204664557973,False,Tuned history
+a2_air_flow,Q_A2_air,m3/min,Random Forest,train,1729,0.2946997816452715,1.0273744483396492,0.8866748206385214,False,Tuned history
+a2_air_flow,Q_A2_air,m3/min,Random Forest,validation,212,0.4366606880292677,0.5525097627990457,0.8722996002304152,False,Tuned history
+a2_air_flow,Q_A2_air,m3/min,Random Forest,test,211,0.9898488391060803,2.1021440554934974,0.491522052869393,False,Tuned history
+a2_air_flow,Q_A2_air,m3/min,XGBoost,train,1729,0.680571420745232,1.648476686516761,0.7082341126991439,False,Tuned history
+a2_air_flow,Q_A2_air,m3/min,XGBoost,validation,212,0.5142057010002857,0.6835494892171343,0.8045425311916985,False,Tuned history
+a2_air_flow,Q_A2_air,m3/min,XGBoost,test,211,1.4346732453115745,2.4917539502901085,0.2855736156120164,False,Tuned history
+a2_air_flow,Q_A2_air,m3/min,LSTM,train,1729,0.4461810393369287,1.0613199882901934,0.8790623343101748,False,Tuned history
+a2_air_flow,Q_A2_air,m3/min,LSTM,validation,212,0.3468848949504349,0.4348920735722481,0.9208819948681656,False,Tuned history
+a2_air_flow,Q_A2_air,m3/min,LSTM,test,211,1.899255200007289,2.9712026079713403,-0.0158081884533456,False,Tuned history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,Ridge,train,1746,12.092332056392989,22.17400915260164,0.8038312109674126,False,Tuned history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,Ridge,validation,213,15.845570447539568,25.803162228604418,0.6260834377317221,False,Tuned history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,Ridge,test,213,14.49082574180352,21.816174660140128,0.6246180024433621,False,Tuned history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,Random Forest,train,1746,7.259634815805455,15.957304941436371,0.8984077555747303,False,Tuned history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,Random Forest,validation,213,13.178928767256687,24.21451352188397,0.6707086419771899,False,Tuned history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,Random Forest,test,213,12.471240481360503,20.118818078578844,0.6807571608940335,False,Tuned history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,XGBoost,train,1746,6.127884395450291,11.741556406572798,0.9449961861203202,False,Tuned history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,XGBoost,validation,213,12.987520161233109,23.091734680069585,0.7005378389910313,False,Tuned history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,XGBoost,test,213,13.529343043468636,19.71647755653552,0.6933980626753735,False,Tuned history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,LSTM,train,1746,13.53496248903087,22.141498150393826,0.8044060252479459,False,Tuned history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,LSTM,validation,213,17.477644756524175,26.466090270646102,0.6066234968764961,False,Tuned history
+a2_ch3oh_flow,A2_FQ_CH3OH,m3/hour,LSTM,test,213,15.590634605999435,22.658731323300408,0.5950630412544842,False,Tuned history
+eff_nh3_n,Eff_NH4_N,mg-N/L,Ridge,train,1733,0.0925596073902562,0.4752577368339059,0.0130575783487332,False,Tuned history
+eff_nh3_n,Eff_NH4_N,mg-N/L,Ridge,validation,213,0.0419559422703774,0.0443332046047641,-14.553982657414808,False,Tuned history
+eff_nh3_n,Eff_NH4_N,mg-N/L,Ridge,test,211,0.0450175008805306,0.0466409585280658,-16.626515822358297,False,Tuned history
+eff_nh3_n,Eff_NH4_N,mg-N/L,Random Forest,train,1733,0.0718003601782382,0.3810026269054579,0.3657078077896938,False,Tuned history
+eff_nh3_n,Eff_NH4_N,mg-N/L,Random Forest,validation,213,0.0099053601658748,0.0132817750602125,-0.3960327334041111,False,Tuned history
+eff_nh3_n,Eff_NH4_N,mg-N/L,Random Forest,test,211,0.0589710896613865,0.0645583789937653,-32.77044434964593,False,Tuned history
+eff_nh3_n,Eff_NH4_N,mg-N/L,XGBoost,train,1733,0.0516659902871341,0.347585444716444,0.4720940107238727,False,Tuned history
+eff_nh3_n,Eff_NH4_N,mg-N/L,XGBoost,validation,213,0.0094379690050026,0.0117938318864973,-0.1007614858084262,False,Tuned history
+eff_nh3_n,Eff_NH4_N,mg-N/L,XGBoost,test,211,0.0091322533188679,0.0111096060751589,-6.64568729664694e-05,False,Tuned history
+eff_nh3_n,Eff_NH4_N,mg-N/L,LSTM,train,1733,0.0706810281924601,0.4713235014135028,0.0293299802399849,False,Tuned history
+eff_nh3_n,Eff_NH4_N,mg-N/L,LSTM,validation,213,0.0110940322669123,0.0138231001932529,-0.512147903876421,False,Tuned history
+eff_nh3_n,Eff_NH4_N,mg-N/L,LSTM,test,211,0.0334789528263598,0.0501186498131122,-19.35308593406937,False,Tuned history
+eff_no3_n,Eff_NO3_N,mg-N/L,Ridge,train,1733,0.0,0.0,,True,Tuned history
+eff_no3_n,Eff_NO3_N,mg-N/L,Ridge,validation,213,0.0,0.0,,True,Tuned history
+eff_no3_n,Eff_NO3_N,mg-N/L,Ridge,test,211,0.0,0.0,,True,Tuned history
+eff_no3_n,Eff_NO3_N,mg-N/L,Random Forest,train,1733,0.0,0.0,,True,Tuned history
+eff_no3_n,Eff_NO3_N,mg-N/L,Random Forest,validation,213,0.0,0.0,,True,Tuned history
+eff_no3_n,Eff_NO3_N,mg-N/L,Random Forest,test,211,0.0,0.0,,True,Tuned history
+eff_no3_n,Eff_NO3_N,mg-N/L,XGBoost,train,1733,0.0,0.0,,True,Tuned history
+eff_no3_n,Eff_NO3_N,mg-N/L,XGBoost,validation,213,0.0,0.0,,True,Tuned history
+eff_no3_n,Eff_NO3_N,mg-N/L,XGBoost,test,211,0.0,0.0,,True,Tuned history
+eff_no3_n,Eff_NO3_N,mg-N/L,LSTM,train,1733,9.901236057006342e-05,0.0001261836662371,,True,Tuned history
+eff_no3_n,Eff_NO3_N,mg-N/L,LSTM,validation,213,7.217926598490683e-05,8.86918678919731e-05,,True,Tuned history
+eff_no3_n,Eff_NO3_N,mg-N/L,LSTM,test,211,7.485439427091047e-05,0.0001084901792816,,True,Tuned history

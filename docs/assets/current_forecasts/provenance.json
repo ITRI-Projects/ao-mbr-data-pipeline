@@ -1,0 +1,43 @@
+{
+  "source_sha256": {
+    "data/training/workbook_forecasts/metrics_summary.csv": "c233d91427c10245cff369d1dabcc01ada78b90a6fa5a2a549e2ed2c78bbfb95",
+    "data/training/expanded_history_forecasts/metrics_summary.csv": "0f503ff5232c3e847021e56d3ea9d02f1f36e766e300cafb71daabff039e52fb",
+    "data/training/tuned_history_forecasts/metrics_summary.csv": "7993313793ccaf53060fce39caeeb5b0c750a0f66c90efe944d7b3687d7cc963",
+    "data/training/tuned_history_forecasts/selected_parameters.json": "15700231015c83637d6a02c1c8cc15a0462bee7c882a4df6798dbceef687ec6f",
+    "data/training/tuned_history_forecasts/verification.json": "0f51ab2cdb0c07bfda71d9fda982d9edf7a8c5751255139edea35bf871ca9242",
+    "data/training/tuned_history_forecasts/eff_nh3_n/predictions.csv": "9ab0810c765129549e3fa4884d98dd09236fcae0d6bade94dd6b6e3874af0704",
+    "data/training/expanded_history_forecasts/eff_nh3_n/metadata.json": "e229b5731fb310d831414242cf01fbf75ac69df24db05bbe7094ac6ccba8c466",
+    "data/training/tuned_history_forecasts/eff_no3_n/predictions.csv": "19184a23788374b519509f5ec5c57bfbb597f3520676942436b576b3841bfbc6",
+    "data/training/expanded_history_forecasts/eff_no3_n/metadata.json": "98600ffd45bdccb7ae2673d6d59f3428accad557add8134b9b8f603b29c337b6",
+    "data/training/tuned_history_forecasts/a1_ch3oh_flow/predictions.csv": "f4bb2efea5c632278d2af428778f4bd5d183ce92223344bd473ba76d452bd7a5",
+    "data/training/expanded_history_forecasts/a1_ch3oh_flow/metadata.json": "7e1d62343ed79406c893c6646ce5fbec52c94306dcd1c0a7870648b31de55301",
+    "data/training/tuned_history_forecasts/a2_ch3oh_flow/predictions.csv": "e1fa7e1e95e8fa551e43359e24f7ce8200a1340b625a4ade197a8cd69ea58516",
+    "data/training/expanded_history_forecasts/a2_ch3oh_flow/metadata.json": "e7f63b90e9c341b32f3ed6b932161d6eeb71aa7ba3cc7597216b20691a52d013",
+    "data/training/tuned_history_forecasts/a1_air_flow/predictions.csv": "970758d70e012f23f47feb34c8bf9146fbb4052124c492adb0a6cd1ae52f14e4",
+    "data/training/expanded_history_forecasts/a1_air_flow/metadata.json": "4f9e028e6c728e0fdb8810225c2df111df8b7e6c33ef8181c10e3b67ba901307",
+    "data/training/tuned_history_forecasts/a2_air_flow/predictions.csv": "cb8a46b4acccff6c70da8865165a89490e2fa45736060ab0127007e4f31e9154",
+    "data/training/expanded_history_forecasts/a2_air_flow/metadata.json": "61c1eae81d9a1b04b059dcc2d06b4b3c859621efc4c05ca886f910e0fd35a02d",
+    "Sensor_Configurations.xlsx": "d4082bb806cfa9b6f4ded80e95936aaf9e7bcdd2cf9cfc2a42931b350fdb7741",
+    "data/training/expanded_history_inputs/provenance.json": "20065171ec4876a5adc290caa5d81a9227e9f3c6dc7385e7eb10fe4c501d8ab7",
+    "data/training/expanded_history_forecasts/manifest.json": "63b9f2a27274f187db96bdd2cda14c6ef2024742fa1eb632b1a2983b41e1657e",
+    "data/training/tuned_history_forecasts/manifest.json": "c6f76e9218cbd5ae4169ad828bb6c9448448857aca3c77c481fcd51d4be7b30f"
+  },
+  "scope": "Saved results; no retraining. Test-only predictions are portable snapshots.",
+  "selection": "Minimum validation RMSE per target, separately within each experiment; test scores do not select models.",
+  "test_window": "[2026-04-21, 2026-04-24)",
+  "snapshot_sha256": {
+    "a1_air_flow_test_predictions.csv": "8913d60275d7f0d7a7a72d5fcc76eae997f80aeb183f446d5997de5dcb73071e",
+    "a1_ch3oh_flow_test_predictions.csv": "b7f9cdf3dc8c15897f08a1c01798aa0c710ef0b83a0c1fbeb26eaae1ec3e917b",
+    "a2_air_flow_test_predictions.csv": "61cfbb870d5694965d8d505a4c51351a19d99ef3fe296673f0f43d9f22755ca6",
+    "a2_ch3oh_flow_test_predictions.csv": "ffa82f3af453cae12c43a4ac10146ae73f649bba34b090fe673cc41d12a0acf7",
+    "eff_nh3_n_test_predictions.csv": "e561cdc91c697712aee84a49b3489df276ac59ce489bbdf0e009c6c3d770e3c9",
+    "eff_no3_n_test_predictions.csv": "ec9a39a31c1a35e85bccf99ab32e609856bfd1e246b6d0d159ccc3d2368faa38",
+    "experiment_metrics.csv": "356bd2b2acd8028ffef78d47a3e3fe711155b63cd3fe4f575a057e44eca8ee21",
+    "feature_configuration.json": "b9a2d667aabb5609b3647ea1ce16ab007f88e93f43cdd8c226885883d9fcf329",
+    "headline_metrics.csv": "b29ccd5c1a3eefcf6769c9ac5b554c69ba5463daec406ee6334c4f76ac8b5693",
+    "selected_parameters.json": "15700231015c83637d6a02c1c8cc15a0462bee7c882a4df6798dbceef687ec6f",
+    "target_distributions.csv": "bef3d2137fdee586351f436b09742daff0ff6577d12ef561d47ffb8b14ef9bdf",
+    "validation_selected_experiment_comparison.csv": "98118c44eaa89ad05334987b12ae2ee3c46062388de31244d3e02f0056ae6cc4",
+    "verification.json": "0f51ab2cdb0c07bfda71d9fda982d9edf7a8c5751255139edea35bf871ca9242"
+  }
+}
