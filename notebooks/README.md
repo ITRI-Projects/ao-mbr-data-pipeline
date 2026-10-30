@@ -1,5 +1,17 @@
 # Cleaned data notebook
 
+## General forecasting results
+
+Open `06_multivariate_forecast_results.ipynb` for the latest saved expanded-history
+and tuned experiments. It compares all four algorithms, reports training,
+validation and fixed April 21–23 test metrics, and generates figures used by
+`docs/forecast_results_slides.md`. It reads portable result snapshots from
+`docs/assets/current_forecasts`; no retraining, SQL or Drive connection is needed.
+Run all cells with a Python environment containing NumPy, pandas, matplotlib and
+IPython. Rerunning replaces report figures and summary CSVs in that asset folder.
+
+## SQL exploration setup
+
 From the repository root, install the notebook dependencies and start Jupyter:
 
 ```bash
