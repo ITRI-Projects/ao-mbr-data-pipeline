@@ -1,6 +1,8 @@
 # Multivariate Forecast Results and Discussion — Presentation Content
 
-This revision reports the saved **expanded-history and tuned CSV experiments**. It supersedes the earlier seven-day SQL experiment narrative. Notebook 03–05 figures and persistence percentages belong to the older experiment and must not be reused as evidence for these results. No models were retrained to prepare this report.
+This revision reports the saved **expanded-history and tuned CSV experiments** in [assets/current_forecasts](assets/current_forecasts/). Headline results use the **Tuned history** experiment and its validation-selected algorithms. It supersedes the earlier seven-day SQL experiment narrative. Notebook 03–05 figures and persistence percentages belong to the older experiment and must not be reused as evidence for these results. No models were retrained to prepare this report.
+
+**Asset check (1 November 2026):** All 13 snapshot hashes in `provenance.json` match the supplied files. The numerical results below are supported by those snapshots; this date is a documentation check, not a training date. The original `data/training/` run directories and source CSVs are absent from this checkout, so the snapshots do not establish whether a newer training run exists elsewhere.
 
 ## Slide 1 — Study design and chronological evaluation
 
@@ -27,14 +29,16 @@ This revision reports the saved **expanded-history and tuned CSV experiments**. 
 
 ![R² across chronological splits](assets/current_forecasts/selected_r2_comparison.png)
 
-| Target | Validation-selected model | Training R² | Validation R² | Test R² |
-|---|---|---:|---:|---:|
-| Effluent ammonium | XGBoost | 0.472 | -0.101 | ≈0.000 |
-| Effluent nitrate | Ridge | undefined | undefined | undefined |
-| A1 methanol dosing | Ridge | 0.831 | 0.788 | 0.730 |
-| A2 methanol dosing | XGBoost | 0.945 | 0.701 | 0.693 |
-| A1 airflow | LSTM | 0.838 | 0.821 | -0.287 |
-| A2 airflow | LSTM | 0.879 | 0.921 | -0.016 |
+| Target | Validation-selected model | Training R² | Validation R² | Test R² | Test N | Test RMSE (target units) |
+|---|---|---:|---:|---:|---:|---:|
+| Effluent ammonium | XGBoost | 0.472 | -0.101 | ≈0.000 | 211 | 0.011110 mg-N/L |
+| Effluent nitrate | Ridge | undefined | undefined | undefined | 211 | 0.000000 mg-N/L |
+| A1 methanol dosing | Ridge | 0.831 | 0.788 | 0.730 | 213 | 26.470019 m3/hour |
+| A2 methanol dosing | XGBoost | 0.945 | 0.701 | 0.693 | 213 | 19.716478 m3/hour |
+| A1 airflow | LSTM | 0.838 | 0.821 | -0.287 | 211 | 3.646666 m3/min |
+| A2 airflow | LSTM | 0.879 | 0.921 | -0.016 | 211 | 2.971203 m3/min |
+
+Source: [headline_metrics.csv](assets/current_forecasts/headline_metrics.csv). Ammonium test R² is slightly negative before rounding (**−0.00006646**). RMSE values across different target units should not be ranked against one another.
 
 **Discussion:** “Methanol forecasts retain positive R² on the fixed test period. Airflow validation scores do not transfer to the later operating period. Ammonium test R² is approximately zero. Tuning improved or matched each algorithm's validation error, but did not consistently improve test performance.”
 
@@ -110,7 +114,26 @@ Use the test figure in the upper two-thirds with the selected-model callout bene
 
 **Speaker note:** “Airflow forecasts describe recorded flow, not optimized aeration setpoints or energy savings.”
 
-## Slide 10 — Conclusions and next evaluation
+## Slide 10 — Effect of expanded history and tuning
+
+| Target | Short-history test R² | Expanded-history test R² | Tuned-history test R² |
+|---|---:|---:|---:|
+| Effluent ammonium | -0.322 | -0.028 | ≈0.000 |
+| Effluent nitrate | undefined | undefined | undefined |
+| A1 methanol dosing | 0.531 | 0.733 | 0.730 |
+| A2 methanol dosing | 0.487 | 0.705 | 0.693 |
+| A1 airflow | -0.087 | -0.287 | -0.287 |
+| A2 airflow | 0.436 | 0.013 | -0.016 |
+
+Source: [validation_selected_experiment_comparison.csv](assets/current_forecasts/validation_selected_experiment_comparison.csv). Each experiment selects its own algorithm using validation error; the table compares the resulting procedures, not necessarily the same algorithm across columns. Test origins and observed labels are held fixed.
+
+- Expanded history improves the selected ammonium and methanol models' test R² relative to short history, but lowers the selected airflow models' test R².
+- Additional tuning improves ammonium test R² toward zero, slightly lowers both methanol scores and A2 airflow, and leaves A1 airflow effectively unchanged.
+- These results do not support a uniform improvement from more history or broader tuning.
+
+**Speaker note:** “The saved verification report records nonincreasing validation error for every candidate algorithm. That does not guarantee lower error on a later test period.”
+
+## Slide 11 — Conclusions and next evaluation
 
 - The approach is reportable as an **experimental multivariate time-series forecasting study using real plant operating data**.
 - Methanol forecasts generalize more consistently in this period. Ammonium and airflow remain sensitive to the evaluated operating periods.
@@ -124,12 +147,15 @@ The fixed test was excluded from automated parameter/algorithm selection, but ha
 
 ## Evidence and reproduction
 
-- [General results notebook](../notebooks/06_multivariate_forecast_results.ipynb): executed tables, all algorithm comparisons, target distributions and test plots; no retraining.
+- The supplied CSV, JSON and PNG assets are the evidence available in this checkout. The previously referenced results notebook `notebooks/06_multivariate_forecast_results.ipynb` is absent and is not required to read these saved results.
 - [Headline metrics](assets/current_forecasts/headline_metrics.csv): validation-selected models with training, validation and test R².
 - [All experiment metrics](assets/current_forecasts/experiment_metrics.csv): short-history, expanded-history and tuned runs, all algorithms and splits.
 - [Validation-selected experiment comparison](assets/current_forecasts/validation_selected_experiment_comparison.csv): comparisons use independently validation-selected models within each experiment.
 - [Feature configuration](assets/current_forecasts/feature_configuration.json) and [selected parameters](assets/current_forecasts/selected_parameters.json).
+- [Target distributions](assets/current_forecasts/target_distributions.csv) and per-target `*_test_predictions.csv` files in [current_forecasts](assets/current_forecasts/): observed test labels, origin/label times and predictions from all four algorithms.
 - [Source and snapshot hashes](assets/current_forecasts/provenance.json); [saved-model/split verification](assets/current_forecasts/verification.json).
 - Training implementation and reproduction commands: [training README](../src/training/README.md).
 
-Figures in `assets/current_forecasts` are generated from the saved test predictions by the results notebook. Historical figures in `assets/forecast_slides` and metrics in `assets/etl_report` belong to older experiments and remain separate.
+The saved verification report records unchanged sample labels/splits, nonincreasing validation error, serialized-model prediction agreement and validation-only algorithm selection for all six targets. These are recorded checks from the supplied run, not checks rerun against model files in this checkout. Reproduction requires restoring the source CSVs and original run artifacts described in the training README.
+
+Figures in `assets/current_forecasts` accompany the saved test predictions. Historical figures in `assets/forecast_slides` and metrics in `assets/etl_report` belong to older experiments and remain separate; their baseline percentages are not evidence for the tuned results above.
