@@ -108,6 +108,79 @@ def prepare(raw, config, train_end="2026-04-18", test_start="2026-04-21",
                     "excluded_missing_labels_or_boundary": int((~valid).sum())}
 
 
+
+def plot_training_report(raw, samples, predictions, scores, config, folder,
+                         train_end="2026-04-18", test_start="2026-04-21"):
+    """Compare identical forecast samples across chronological splits and models.
+
+    Missing observed labels remain gaps. Training predictions are in-sample fits.
+    """
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    import matplotlib.dates as mdates
+
+    folder = Path(folder)
+    folder.mkdir(parents=True, exist_ok=True)
+    splits = ("train", "validation", "test")
+    colors = ("steelblue", "darkorange", "seagreen")
+    boundaries = [raw.index.min(), pd.Timestamp(train_end), pd.Timestamp(test_start),
+                  raw.index.max() + pd.Timedelta(minutes=1)]
+    fig, axes = plt.subplots(2, 1, figsize=(16, 7), sharex=True)
+    axes[0].plot(raw.index, raw[config["target"]], color="black", linewidth=.7,
+                 label="Observed source; filled estimates excluded")
+    for i, split in enumerate(splits):
+        chosen = samples.split.eq(split)
+        for ax in axes:
+            ax.axvspan(boundaries[i], boundaries[i+1], color=colors[i], alpha=.12)
+        axes[1].scatter(samples.loc[chosen, "target_time"], samples.loc[chosen, "target"],
+                        s=6, color=colors[i], label=f"{split}: {chosen.sum():,} labels")
+    for ax in axes:
+        ax.legend(loc="upper left"); ax.set_ylabel(config["unit"]); ax.grid(alpha=.2)
+    axes[0].set_title(f"{config['target']}: chronological source coverage")
+    axes[1].set_title("Eligible one-hour-ahead labels; split-crossing labels purged")
+    axes[1].set_xlabel("Measurement / future-label timestamp")
+    fig.autofmt_xdate(); fig.tight_layout()
+    fig.savefig(folder / "dataset_split.png", dpi=150); plt.close(fig)
+
+    fig, axes = plt.subplots(len(predictions), 3, figsize=(21, 3 * len(predictions)),
+                             squeeze=False, sharex="col")
+    for row, (algorithm, predicted) in enumerate(predictions.items()):
+        for col, split in enumerate(splits):
+            chosen = samples.split.eq(split).to_numpy()
+            subset = samples.loc[chosen].copy()
+            subset["prediction"] = np.asarray(predicted)[chosen]
+            timeline = subset.set_index("target_time")[["target", "prediction"]]
+            timeline = timeline.reindex(pd.date_range(timeline.index.min(), timeline.index.max(), freq="20min"))
+            ax = axes[row, col]
+            ax.plot(timeline.index, timeline.target, color="black", linewidth=.85, label="Observed")
+            ax.plot(timeline.index, timeline.prediction, color=colors[col], linewidth=.9, alpha=.85, label=algorithm)
+            score = scores.loc[scores.algorithm.eq(algorithm) & scores.split.eq(split)].iloc[0]
+            ax.set_title(f"{algorithm} | {split} | n={chosen.sum():,}\n"
+                         f"MAE={score.MAE:.4g}, RMSE={score.RMSE:.4g}, R2={score.R2:.3f}")
+            ax.set_ylabel(config["unit"]); ax.grid(alpha=.2); ax.legend(fontsize=8)
+            locator = mdates.AutoDateLocator(minticks=3, maxticks=5)
+            ax.xaxis.set_major_locator(locator)
+            ax.xaxis.set_major_formatter(mdates.ConciseDateFormatter(locator))
+    fig.suptitle(f"{config['target']}: observed versus one-hour-ahead predictions\n"
+                 "Train: fitted | Validation: model selection | Test: held-out rolling forecast")
+    fig.tight_layout(rect=(0, 0, 1, .95))
+    fig.savefig(folder / "train_test_predictions.png", dpi=150); plt.close(fig)
+
+    fig, axes = plt.subplots(1, 3, figsize=(17, 5))
+    for ax, metric in zip(axes, ("MAE", "RMSE", "R2")):
+        comparison = scores.pivot(index="algorithm", columns="split", values=metric).reindex(
+            index=list(predictions), columns=list(splits))
+        comparison.plot.bar(ax=ax, color=list(colors), rot=15)
+        ax.set_title(metric + (" (higher is better)" if metric == "R2" else " (lower is better)"))
+        ax.set_ylabel("R2" if metric == "R2" else config["unit"])
+        ax.set_xlabel(""); ax.grid(axis="y", alpha=.2)
+        if metric == "R2": ax.axhline(0, color="black", linewidth=.7)
+    fig.suptitle(f"{config['target']}: algorithm metrics; training scores are in-sample")
+    fig.tight_layout(rect=(0, 0, 1, .94))
+    fig.savefig(folder / "metrics_comparison.png", dpi=150); plt.close(fig)
+
+
 def export_dataset(source, output):
     source, output = Path(source), Path(output)
     raw = pd.read_csv(source, index_col="datetime", parse_dates=True)

@@ -18,7 +18,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
-from .forecast_dataset import prepare
+from .forecast_dataset import prepare, plot_training_report
 from .workbook import read_workbook
 
 
@@ -41,35 +41,6 @@ def metrics(y, prediction):
             "RMSE": float(np.sqrt(mean_squared_error(y, prediction))),
             "R2": float(r2_score(y, prediction)) if len(y) > 1 and np.ptp(y) > 0 else np.nan,
             "constant_target": bool(np.ptp(y) == 0)}
-
-
-def plot_forecasts(samples, predictions, config, folder):
-    fig, axes = plt.subplots(4, 2, figsize=(17, 13), sharex="col", squeeze=False)
-    for row, (algorithm, predicted) in enumerate(predictions.items()):
-        for col, split in enumerate(("train", "test")):
-            chosen = samples.split.eq(split).to_numpy()
-            ax = axes[row, col]
-            ax.plot(samples.target_time[chosen], samples.target[chosen], color="black", linewidth=1, label="Observed future label")
-            ax.plot(samples.target_time[chosen], predicted[chosen], linewidth=0.9, alpha=0.8, label=algorithm)
-            ax.set_title(f"{algorithm}: {split} (n={chosen.sum()})")
-            ax.set_ylabel(config["unit"])
-            ax.grid(alpha=0.25)
-            ax.legend(fontsize=8)
-    fig.suptitle(f"{config['target']}: observed versus 1-hour-ahead predictions\nTraining fits on left; held-out rolling test forecasts on right")
-    fig.autofmt_xdate()
-    fig.tight_layout(rect=(0, 0, 1, 0.95))
-    fig.savefig(folder / "train_test_predictions.png", dpi=140)
-    plt.close(fig)
-    fig, ax = plt.subplots(figsize=(15, 4))
-    for split, color in (("train", "steelblue"), ("validation", "darkorange"), ("test", "seagreen")):
-        chosen = samples.split.eq(split)
-        ax.plot(samples.target_time[chosen], samples.target[chosen], label=split, color=color, linewidth=1)
-    ax.set(title=f"{config['target']}: chronological dataset split", ylabel=config["unit"], xlabel="Future label timestamp")
-    ax.legend()
-    fig.autofmt_xdate()
-    fig.tight_layout()
-    fig.savefig(folder / "dataset_split.png", dpi=140)
-    plt.close(fig)
 
 
 def run(args):
@@ -143,7 +114,9 @@ def run(args):
                         "label_policy": "exact observed future labels only; source mask removes estimates"})
         (folder / "metadata.json").write_text(json.dumps(details, indent=2, default=str), encoding="utf-8")
         manifest_targets[name] = {"target": config["target"], "split_counts": details["split_counts"]}
-        plot_forecasts(samples, predictions, config, folder)
+        target_scores = pd.DataFrame(summaries).query("model == @name")
+        plot_training_report(raw, samples, predictions, target_scores, config, folder,
+                             train_end=args.train_end, test_start=args.test_start)
         pd.DataFrame(summaries).query("model == @name").to_csv(folder / "metrics.csv", index=False)
     summary = pd.DataFrame(summaries)
     summary.to_csv(output / "metrics_summary.csv", index=False)
@@ -157,9 +130,9 @@ def run(args):
     fig.tight_layout();fig.savefig(output / "metrics_summary.png", dpi=150);plt.close(fig)
     html = "<html><meta charset='utf-8'><title>Forecast comparison</title><body><h1>Forecast comparison</h1>"
     html += f"<p>Train labels before {args.train_end}; validation labels before {args.test_start}; test origins from {args.test_start}. Test metrics never select models. R2 is undefined for constant labels. Recorded flows are predicted; this is not an operating recommendation.</p>"
-    html += display.fillna("undefined").to_html(index=False)
+    html += summary.round(6).fillna("undefined").to_html(index=False)
     for name in configs:
-        html += f"<h2>{name}</h2><img width='100%' src='{name}/dataset_split.png'><img width='100%' src='{name}/train_test_predictions.png'>"
+        html += f"<h2>{name}</h2><img width='100%' src='{name}/dataset_split.png'><img width='100%' src='{name}/train_test_predictions.png'><img width='100%' src='{name}/metrics_comparison.png'>"
     (output / "report.html").write_text(html + "</body></html>", encoding="utf-8")
     manifest = {"files": {str(p): hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in (args.data, args.mask, args.workbook)},
                 "train_end_exclusive": args.train_end, "test_start": args.test_start,
