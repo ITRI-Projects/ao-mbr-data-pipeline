@@ -131,10 +131,18 @@ history before April 18; validation covers April 18-20; rolling held-out forecas
 cover April 21-23. All algorithms use the same 12-step sequences, 20-minute origins,
 and exact observed one-hour-ahead targets. Validation selects model settings.
 
-`forecast_dataset.plot_training_report` generates `dataset_split.png` (raw
-observations and eligible labels), `train_test_predictions.png` (one row per
+`forecast_dataset.plot_training_report` generates `dataset_split.png` (compact final-seven-day observed
+series with train/validation/test line colors; display window only), `train_test_predictions.png` (one row per
 algorithm, with train/validation/test columns), and `metrics_comparison.png`
 (MAE, RMSE, R2 across all splits). The HTML report includes these figures and the
 complete metric table. Training plots/scores are in-sample fits. Missing observed
 labels remain gaps in forecast plots. This entry point trains models;
 `python -m src.training.forecast_dataset` still only exports input datasets.
+
+Results are written directly into the selected `--output` directory without
+parameter subfolders. A single-target run uses plain filenames such as
+`predictions.csv`, `ridge.joblib`, and `dataset_split.png`. When multiple targets
+are requested together, target names prefix per-target filenames to avoid
+collisions. The dataset split figure displays only the final seven days (April
+17-23 for the current source). This display window does not restrict training,
+preprocessing, metrics, or the other forecast plots.

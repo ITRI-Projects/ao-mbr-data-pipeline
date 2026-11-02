@@ -110,7 +110,7 @@ def prepare(raw, config, train_end="2026-04-18", test_start="2026-04-21",
 
 
 def plot_training_report(raw, samples, predictions, scores, config, folder,
-                         train_end="2026-04-18", test_start="2026-04-21"):
+                         train_end="2026-04-18", test_start="2026-04-21", prefix=""):
     """Compare identical forecast samples across chronological splits and models.
 
     Missing observed labels remain gaps. Training predictions are in-sample fits.
@@ -126,22 +126,27 @@ def plot_training_report(raw, samples, predictions, scores, config, folder,
     colors = ("steelblue", "darkorange", "seagreen")
     boundaries = [raw.index.min(), pd.Timestamp(train_end), pd.Timestamp(test_start),
                   raw.index.max() + pd.Timedelta(minutes=1)]
-    fig, axes = plt.subplots(2, 1, figsize=(16, 7), sharex=True)
-    axes[0].plot(raw.index, raw[config["target"]], color="black", linewidth=.7,
-                 label="Observed source; filled estimates excluded")
+    # Visualization only: crop the display, never the source used by prepare().
+    display_end = raw.index.max() + pd.Timedelta(minutes=1)
+    display_start = max(raw.index.min(), display_end - pd.Timedelta(days=7))
+    display_raw = raw.loc[(raw.index >= display_start) & (raw.index < display_end)]
+    fig, ax = plt.subplots(figsize=(13, 3.5))
     for i, split in enumerate(splits):
-        chosen = samples.split.eq(split)
-        for ax in axes:
-            ax.axvspan(boundaries[i], boundaries[i+1], color=colors[i], alpha=.12)
-        axes[1].scatter(samples.loc[chosen, "target_time"], samples.loc[chosen, "target"],
-                        s=6, color=colors[i], label=f"{split}: {chosen.sum():,} labels")
-    for ax in axes:
-        ax.legend(loc="upper left"); ax.set_ylabel(config["unit"]); ax.grid(alpha=.2)
-    axes[0].set_title(f"{config['target']}: chronological source coverage")
-    axes[1].set_title("Eligible one-hour-ahead labels; split-crossing labels purged")
-    axes[1].set_xlabel("Measurement / future-label timestamp")
-    fig.autofmt_xdate(); fig.tight_layout()
-    fig.savefig(folder / "dataset_split.png", dpi=150); plt.close(fig)
+        left, right = max(boundaries[i], display_start), min(boundaries[i+1], display_end)
+        if left < right:
+            # Include the following boundary point to join adjacent colored segments.
+            segment = display_raw.loc[(display_raw.index >= left) & (display_raw.index <= right)]
+            ax.plot(segment.index, segment[config["target"]], color=colors[i],
+                    linewidth=.8, label=split.capitalize())
+    ax.set_xlim(display_start, display_end)
+    ax.set(title=f"{config['target']}: final seven days (visualization only; full-history training)",
+           ylabel=config["unit"], xlabel="Measurement timestamp")
+    locator = mdates.AutoDateLocator(minticks=5, maxticks=8)
+    ax.xaxis.set_major_locator(locator)
+    ax.xaxis.set_major_formatter(mdates.ConciseDateFormatter(locator))
+    ax.legend(loc="upper left", ncol=4); ax.grid(alpha=.2)
+    fig.tight_layout()
+    fig.savefig(folder / f"{prefix}dataset_split.png", dpi=150); plt.close(fig)
 
     fig, axes = plt.subplots(len(predictions), 3, figsize=(21, 3 * len(predictions)),
                              squeeze=False, sharex="col")
@@ -165,7 +170,7 @@ def plot_training_report(raw, samples, predictions, scores, config, folder,
     fig.suptitle(f"{config['target']}: observed versus one-hour-ahead predictions\n"
                  "Train: fitted | Validation: model selection | Test: held-out rolling forecast")
     fig.tight_layout(rect=(0, 0, 1, .95))
-    fig.savefig(folder / "train_test_predictions.png", dpi=150); plt.close(fig)
+    fig.savefig(folder / f"{prefix}train_test_predictions.png", dpi=150); plt.close(fig)
 
     fig, axes = plt.subplots(1, 3, figsize=(17, 5))
     for ax, metric in zip(axes, ("MAE", "RMSE", "R2")):
@@ -178,7 +183,7 @@ def plot_training_report(raw, samples, predictions, scores, config, folder,
         if metric == "R2": ax.axhline(0, color="black", linewidth=.7)
     fig.suptitle(f"{config['target']}: algorithm metrics; training scores are in-sample")
     fig.tight_layout(rect=(0, 0, 1, .94))
-    fig.savefig(folder / "metrics_comparison.png", dpi=150); plt.close(fig)
+    fig.savefig(folder / f"{prefix}metrics_comparison.png", dpi=150); plt.close(fig)
 
 
 def export_dataset(source, output):

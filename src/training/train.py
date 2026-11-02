@@ -59,8 +59,10 @@ def run(args):
     summaries, manifest_targets = [], {}
     for name, config in configs.items():
         print(f"Training {name}: {config['target']}", flush=True)
-        folder = output / name
-        folder.mkdir(exist_ok=True)
+        folder = output
+        prefix = f"{name}_" if len(configs) > 1 else ""
+        def artifact(filename):
+            return folder / (prefix + filename)
         arrays, samples, details = prepare(
             raw, config, train_end=args.train_end, test_start=args.test_start,
             horizon_minutes=60, step_minutes=20, sequence_steps=12, prepared_inputs=data)
@@ -85,18 +87,18 @@ def run(args):
                 if score < best_score:
                     best_score, best_model = score, model
             predictions[algorithm] = best_model.predict(flat)
-            path = folder / (algorithm.lower().replace(" ", "_") + ".joblib")
+            path = artifact(algorithm.lower().replace(" ", "_") + ".joblib")
             joblib.dump(best_model, path)
             np.testing.assert_allclose(predictions[algorithm], joblib.load(path).predict(flat))
             selections[algorithm] = {"parameters": best_model.get_params(), "validation_mse": best_score}
-        predictions["LSTM"], history = train_lstm(X, y, splits, folder, epochs=args.epochs)
-        pd.DataFrame(history).to_csv(folder / "lstm_loss.csv", index=False)
+        predictions["LSTM"], history = train_lstm(X, y, splits, folder, epochs=args.epochs, prefix=prefix)
+        pd.DataFrame(history).to_csv(artifact("lstm_loss.csv"), index=False)
         fig, ax = plt.subplots(figsize=(7, 4))
         loss = pd.DataFrame(history)
         ax.plot(loss.epoch, loss.train_mse_scaled, label="Train")
         ax.plot(loss.epoch, loss.validation_mse_scaled, label="Validation")
         ax.set(xlabel="Epoch", ylabel="MSE in scaled target units", title=f"{config['target']}: LSTM loss")
-        ax.legend();fig.tight_layout();fig.savefig(folder / "lstm_loss.png", dpi=140);plt.close(fig)
+        ax.legend();fig.tight_layout();fig.savefig(artifact("lstm_loss.png"), dpi=140);plt.close(fig)
         for algorithm, predicted in predictions.items():
             if not np.isfinite(predicted).all():
                 raise ValueError(f"{name}/{algorithm}: non-finite predictions")
@@ -107,17 +109,17 @@ def run(args):
         forecasts = samples.copy()
         for algorithm, predicted in predictions.items():
             forecasts[algorithm] = predicted
-        forecasts.to_csv(folder / "predictions.csv", index=False)
-        np.savez_compressed(folder / "preprocessing_and_sequences.npz", **arrays)
+        forecasts.to_csv(artifact("predictions.csv"), index=False)
+        np.savez_compressed(artifact("preprocessing_and_sequences.npz"), **arrays)
         details.update({"workbook": config, "hyperparameter_selection": selections,
                         "added_target_history": config["target"] not in config["features"],
                         "label_policy": "exact observed future labels only; source mask removes estimates"})
-        (folder / "metadata.json").write_text(json.dumps(details, indent=2, default=str), encoding="utf-8")
+        (artifact("metadata.json")).write_text(json.dumps(details, indent=2, default=str), encoding="utf-8")
         manifest_targets[name] = {"target": config["target"], "split_counts": details["split_counts"]}
         target_scores = pd.DataFrame(summaries).query("model == @name")
         plot_training_report(raw, samples, predictions, target_scores, config, folder,
-                             train_end=args.train_end, test_start=args.test_start)
-        pd.DataFrame(summaries).query("model == @name").to_csv(folder / "metrics.csv", index=False)
+                             train_end=args.train_end, test_start=args.test_start, prefix=prefix)
+        pd.DataFrame(summaries).query("model == @name").to_csv(artifact("metrics.csv"), index=False)
     summary = pd.DataFrame(summaries)
     summary.to_csv(output / "metrics_summary.csv", index=False)
     test = summary[summary.split.eq("test")].copy()
@@ -129,10 +131,11 @@ def run(args):
     ax.set_title("Held-out test metrics: one-hour-ahead forecasts", pad=15)
     fig.tight_layout();fig.savefig(output / "metrics_summary.png", dpi=150);plt.close(fig)
     html = "<html><meta charset='utf-8'><title>Forecast comparison</title><body><h1>Forecast comparison</h1>"
-    html += f"<p>Train labels before {args.train_end}; validation labels before {args.test_start}; test origins from {args.test_start}. Test metrics never select models. R2 is undefined for constant labels. Recorded flows are predicted; this is not an operating recommendation.</p>"
+    html += f"<p>Train labels before {args.train_end}; validation labels before {args.test_start}; test origins from {args.test_start}. The split figure shows only the final seven days; training still uses all available earlier history. Test metrics never select models. R2 is undefined for constant labels. Recorded flows are predicted; this is not an operating recommendation.</p>"
     html += summary.round(6).fillna("undefined").to_html(index=False)
     for name in configs:
-        html += f"<h2>{name}</h2><img width='100%' src='{name}/dataset_split.png'><img width='100%' src='{name}/train_test_predictions.png'><img width='100%' src='{name}/metrics_comparison.png'>"
+        prefix = f"{name}_" if len(configs) > 1 else ""
+        html += f"<h2>{name}</h2><img width='100%' src='{prefix}dataset_split.png'><img width='100%' src='{prefix}train_test_predictions.png'><img width='100%' src='{prefix}metrics_comparison.png'>"
     (output / "report.html").write_text(html + "</body></html>", encoding="utf-8")
     manifest = {"files": {str(p): hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in (args.data, args.mask, args.workbook)},
                 "train_end_exclusive": args.train_end, "test_start": args.test_start,
