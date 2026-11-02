@@ -116,3 +116,25 @@ The `.training-deps/` folder is ignored by Git and leaves the global Python
 installation unchanged. WSL/Linux should install the requirements in `.venv`
 instead; Windows binary packages in `.training-deps/` cannot be used under WSL.
 
+
+## Effluent ammonia from the full Drive history
+
+Run the four-model comparison on the notebook 02 output:
+
+```bash
+python -m src.training.train --data docs/raw/data_filled.csv --mask notebooks/data/data_filled_mask.csv --targets eff_nh3_n --output data/training/effluent_ammonia_full_history
+```
+
+The matching mask removes forward-filled estimates from future labels while
+preserving the supplied unlimited-forward-filled inputs. Training uses available
+history before April 18; validation covers April 18-20; rolling held-out forecasts
+cover April 21-23. All algorithms use the same 12-step sequences, 20-minute origins,
+and exact observed one-hour-ahead targets. Validation selects model settings.
+
+`forecast_dataset.plot_training_report` generates `dataset_split.png` (raw
+observations and eligible labels), `train_test_predictions.png` (one row per
+algorithm, with train/validation/test columns), and `metrics_comparison.png`
+(MAE, RMSE, R2 across all splits). The HTML report includes these figures and the
+complete metric table. Training plots/scores are in-sample fits. Missing observed
+labels remain gaps in forecast plots. This entry point trains models;
+`python -m src.training.forecast_dataset` still only exports input datasets.
