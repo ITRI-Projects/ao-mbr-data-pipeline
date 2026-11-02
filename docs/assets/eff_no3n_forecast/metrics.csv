@@ -1,0 +1,13 @@
+model,target,unit,algorithm,split,n,MAE,RMSE,R2,constant_target
+eff_no3_n,Eff_NO3_N,mg-N/L,Ridge,train,1733,0.0,0.0,,True
+eff_no3_n,Eff_NO3_N,mg-N/L,Ridge,validation,213,0.0,0.0,,True
+eff_no3_n,Eff_NO3_N,mg-N/L,Ridge,test,211,0.0,0.0,,True
+eff_no3_n,Eff_NO3_N,mg-N/L,Random Forest,train,1733,0.0,0.0,,True
+eff_no3_n,Eff_NO3_N,mg-N/L,Random Forest,validation,213,0.0,0.0,,True
+eff_no3_n,Eff_NO3_N,mg-N/L,Random Forest,test,211,0.0,0.0,,True
+eff_no3_n,Eff_NO3_N,mg-N/L,XGBoost,train,1733,0.0,0.0,,True
+eff_no3_n,Eff_NO3_N,mg-N/L,XGBoost,validation,213,0.0,0.0,,True
+eff_no3_n,Eff_NO3_N,mg-N/L,XGBoost,test,211,0.0,0.0,,True
+eff_no3_n,Eff_NO3_N,mg-N/L,LSTM,train,1733,0.002178485174778907,0.0028593430363052104,,True
+eff_no3_n,Eff_NO3_N,mg-N/L,LSTM,validation,213,0.00258468574201557,0.003253544698145784,,True
+eff_no3_n,Eff_NO3_N,mg-N/L,LSTM,test,211,0.009333337087766819,0.02048841585772766,,True

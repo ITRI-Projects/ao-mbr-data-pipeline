@@ -37,89 +37,41 @@ Clear notebook outputs before committing to keep sensor readings out of Git.
 
 ## Google Drive CSV notebook
 
-`02_explore_google_drive_csv.ipynb` provides the same inspections and charts using
-a CSV stored on Google Drive. It runs independently of SQL Server and reads its
-Drive configuration from the repository's `.env`.
+`02_explore_google_drive_csv.ipynb` prepares sensor history without SQL Server.
+Install `notebooks/requirements-drive.txt`, configure `DRIVE_FILE_URL_OR_ID` in
+`.env`, and run the notebook in order. The Drive CSV must allow downloading.
+Alternatively, set `LOCAL_CSV_PATH` to a saved snapshot for offline execution.
 
-```bash
-.venv/bin/python -m pip install -r notebooks/requirements-drive.txt
-.venv/bin/python -m jupyterlab notebooks/02_explore_google_drive_csv.ipynb
-```
+`START_TIME = None` and `END_TIME = None` select the first through last available
+source minute. Explicit boundaries select an inclusive subset. The source is
+validated for unique, timezone-naive, minute-aligned timestamps and numeric finite
+readings (or blanks). Uniform ISO timestamps and day/month/year minute timestamps
+are supported. The complete source remains in `full_source_df`.
 
-Set the file's share link or ID in the repository's `.env` (also shown in
-`.env.example`):
+Preparation follows notebook 01: reindex to the complete minute grid and forward
+fill independently per sensor with no gap-length limit. Recorded values and zeros
+are preserved. Leading gaps and entirely unobserved sensors remain null. No
+backfill, donor replacement, smoothing, clipping, or automatic outlier deletion is
+applied. Coverage audits distinguish absent minutes from null values in existing
+rows. Bilingual raw and filled plots retain the full selected timeline. April
+21–23 shading is retained for historical test context; it does not limit the
+preparation window. Sensor behavior review uses only observations before April 21.
 
-```dotenv
-DRIVE_FILE_URL_OR_ID="https://drive.google.com/file/d/YOUR_FILE_ID/view"
-```
+The export cell writes alias-named `data_filled.csv`, `data_filled_mask.csv`, and
+`data_filled_summary.csv` to `notebooks/data/`. These replace
+any existing shared exports. Both data and Boolean masks are reloaded and checked.
+Future forecast labels must use observed values recovered with the matching mask.
 
-The file must allow downloads for **Anyone with the link**. The notebook uses
-[gdown](https://github.com/wkentaro/gdown) to handle Drive's download pages.
-No access-mode setting, Google sign-in, or Google Cloud setup is needed.
-The `.env` file is Git-ignored. After changing it, rerun the import and
-configuration cells so the notebook reloads the value. In the notebook's configuration cell, set
-`TIMESTAMP_COLUMN` to the CSV's timestamp header (default: `datetime`). Timestamp
-header matching ignores capitalization and surrounding whitespace, so `DateTime`
-also works with the default. Multiple matching timestamp headers are rejected.
-The remaining columns should be numeric sensor readings; blanks remain missing
-in the original `df`. `START_TIME` and `END_TIME` filter the downloaded data,
-with inclusive start and end minute timestamps. Each load
-downloads the current CSV in full, so the file must fit in memory. The notebook
-reads an uploaded CSV, not a Google Sheets document.
+Reproducibility files in `notebooks/data/` include original CSV bytes in
+`google_drive_download.csv`, full numeric source in `google_drive_full_raw.csv`,
+selected original-tag observations in `google_drive_raw.csv`, the alias-named raw
+minute grid in `google_drive_raw_grid.csv`, daily coverage in
+`google_drive_window_coverage.csv`, and source hash, coverage, alias mapping and
+fill policy in `data_source.json`. The remote Drive file is unchanged.
 
-The notebook reports missing readings and plots each sensor over time. It also
-validates and plots `70mlssa2aerobic` separately, showing a message when that
-column has no recorded values in the selected window. An earlier example
-previews unlimited forward filling in `70coda1inf` for comparison.
-
-The **A2 aerobic tank: MLSS and surrounding parameters** cell follows the
-bilingual sensor plots. It shows MLSS, DO, ORP, pH, and aeration airflow on a
-shared time axis with larger bilingual labels and valid/missing counts. An
-entirely missing sensor is explicitly marked without substituting zero readings.
-Adjust `A2_FONT_SIZE` and `A2_FIGSIZE` for presentation, or set
-`SAVE_A2_FIGURE = False` to display only. By default it saves a 200-DPI image to
-`notebooks/data/a2_aerobic_sensor_context.png`; rerunning replaces that image.
-
-Notebook 02 matches notebook 01: `START_TIME = "2026-04-14 00:00:00"`
-through inclusive `END_TIME = "2026-04-23 23:59:00"`. Training covers seven
-calendar days, April 14–20; testing covers April 21–23. No April 24 source rows
-or future prediction timestamps are included.
-The configured CSV currently uses ISO timestamps; the loader also supports day/month/year minute timestamps.
-The complete downloaded numeric CSV remains in `full_source_df`; `df` contains
-only the selected raw observations.
-
-The filling section retains all 14,400 minutes and independently carries each
-sensor's last observation forward across gaps of any length. Leading gaps and
-entirely unobserved sensors remain null, including A2 MLSS when no reading is
-available. Historical donor substitution is no longer used. Raw observations
-stay unchanged; `df_fill_mask` marks every filled cell. Per-sensor and daily
-counts, a daily null heatmap, stacked filling bars and observed/filled timelines
-show missingness before and after filling. Absent timestamps are counted separately.
-
-Run the export cell to replace local `google_drive_filled.csv`,
-`google_drive_fill_mask.csv`, `google_drive_fill_summary.csv` and
-`google_drive_window_coverage.csv` in `notebooks/data/`. It preserves the shared SQL exports by default. Enable `EXPORT_SHARED_DATA`
-explicitly to replace them with Drive data using configured sensor aliases. The Drive
-source stays unchanged. Notebooks 04–05 require separate 20-minute aggregates.
-Forecast comparison continues to use raw observed aggregates and observed future
-labels, excluding filled estimates. Clear notebook outputs before committing.
-
-The Google Drive sensor plots show English and Traditional Chinese together.
-The plot cell preserves `CJK_FONT` from earlier cells and registers Windows
-Microsoft JhengHei automatically under WSL. For other setups, set a font file
-path before running the plot cell:
-
-```python
-CJK_FONT_PATH = "/mnt/c/Windows/Fonts/msjh.ttc"  # WSL
-# CJK_FONT_PATH = r"C:\Windows\Fonts\msjh.ttc"   # Windows kernel
-```
-
-The file must exist on the machine running the Python kernel. The cell prints
-the selected font file and checks its Chinese glyph coverage. Fonts are
-registered immediately using
-[Matplotlib's font manager](https://matplotlib.org/stable/api/font_manager_api.html);
-there is no need to restart the kernel. If a requested font name is unavailable,
-set `CJK_FONT_PATH` to a Traditional Chinese font file accessible to the kernel.
+The notebook auto-detects a CJK font. Override `CJK_FONT` or `CJK_FONT_PATH` if
+needed; on Windows Microsoft JhengHei is normally available. The executed notebook
+contains source readings and plots; clear outputs before committing if required.
 
 ## Restarted SQL dataset review (notebook 01)
 

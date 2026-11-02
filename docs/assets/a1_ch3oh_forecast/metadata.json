@@ -1,0 +1,139 @@
+{
+  "target": "A1_FQ_CH3OH",
+  "features": [
+    "A1_Qin",
+    "A1_COD_in",
+    "A1_FQ_CH3OH",
+    "A1_Q_r1",
+    "A1_A_PH",
+    "A1_A_ORP",
+    "A1_A_DO",
+    "A1_A_MLSS",
+    "Eff_NH4_N"
+  ],
+  "excluded_no_training_sequence_support": [],
+  "excluded_training_constant_or_unobserved": [
+    "A1_NH3_N",
+    "Eff_NO3_N"
+  ],
+  "split_counts": {
+    "test": 213,
+    "train": 1746,
+    "validation": 213
+  },
+  "target_unique_by_split": {
+    "test": 158,
+    "train": 1209,
+    "validation": 205
+  },
+  "scheduled_origins_after_warmup": 2182,
+  "excluded_missing_labels_or_boundary": 10,
+  "workbook": {
+    "name": "a1_ch3oh_flow",
+    "target": "A1_FQ_CH3OH",
+    "features": [
+      "A1_Qin",
+      "A1_COD_in",
+      "A1_FQ_CH3OH",
+      "A1_Q_r1",
+      "A1_NH3_N",
+      "A1_A_PH",
+      "A1_A_ORP",
+      "A1_A_DO",
+      "A1_A_MLSS",
+      "Eff_NH4_N",
+      "Eff_NO3_N"
+    ],
+    "unit": "m3/hour",
+    "heading": "A1 CH3OH Flow",
+    "workbook_marked_targets": [
+      "A1_FQ_CH3OH"
+    ],
+    "target_mark_corrected": false
+  },
+  "hyperparameter_selection": {
+    "Ridge": {
+      "parameters": {
+        "alpha": 1.0,
+        "copy_X": true,
+        "fit_intercept": true,
+        "max_iter": null,
+        "positive": false,
+        "random_state": null,
+        "solver": "auto",
+        "tol": 0.0001
+      },
+      "validation_mse": 538.6487273700656
+    },
+    "Random Forest": {
+      "parameters": {
+        "bootstrap": true,
+        "ccp_alpha": 0.0,
+        "criterion": "squared_error",
+        "max_depth": 5,
+        "max_features": 1.0,
+        "max_leaf_nodes": null,
+        "max_samples": null,
+        "min_impurity_decrease": 0.0,
+        "min_samples_leaf": 3,
+        "min_samples_split": 2,
+        "min_weight_fraction_leaf": 0.0,
+        "monotonic_cst": null,
+        "n_estimators": 120,
+        "n_jobs": 2,
+        "oob_score": false,
+        "random_state": 42,
+        "verbose": 0,
+        "warm_start": false
+      },
+      "validation_mse": 953.1567462629897
+    },
+    "XGBoost": {
+      "parameters": {
+        "objective": "reg:squarederror",
+        "base_score": null,
+        "booster": null,
+        "callbacks": null,
+        "colsample_bylevel": null,
+        "colsample_bynode": null,
+        "colsample_bytree": null,
+        "device": null,
+        "early_stopping_rounds": null,
+        "enable_categorical": false,
+        "eval_metric": null,
+        "feature_types": null,
+        "feature_weights": null,
+        "gamma": null,
+        "grow_policy": null,
+        "importance_type": null,
+        "interaction_constraints": null,
+        "learning_rate": 0.04,
+        "max_bin": null,
+        "max_cat_threshold": null,
+        "max_cat_to_onehot": null,
+        "max_delta_step": null,
+        "max_depth": 2,
+        "max_leaves": null,
+        "min_child_weight": null,
+        "missing": NaN,
+        "monotone_constraints": null,
+        "multi_strategy": null,
+        "n_estimators": 150,
+        "n_jobs": 2,
+        "num_parallel_tree": null,
+        "random_state": 42,
+        "reg_alpha": null,
+        "reg_lambda": null,
+        "sampling_method": null,
+        "scale_pos_weight": null,
+        "subsample": null,
+        "tree_method": null,
+        "validate_parameters": null,
+        "verbosity": null
+      },
+      "validation_mse": 734.7413501469301
+    }
+  },
+  "added_target_history": false,
+  "label_policy": "exact observed future labels only; source mask removes estimates"
+}

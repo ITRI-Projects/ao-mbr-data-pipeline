@@ -85,34 +85,55 @@ eligibility and scaling; these are recomputed without using test observations.
 
 ## Validation-based hyperparameter tuning
 
-After the expanded run, execute `python -m src.training.tune`. This reuses the
-frozen expanded arrays and chronological splits, searching 16 Ridge, 24 Random
-Forest, 32 XGBoost and five LSTM configurations per varying target. The existing
-fitted model is also a candidate. LSTM searches hidden width, learning rate and
-weight decay with up to 100 epochs and validation early stopping. Constant
-training targets retain existing models because their R2 cannot be optimized.
+Tune one saved single-parameter run into a separate flat result directory:
 
-Selection minimizes April 18–20 validation MSE, equivalent to maximizing R2 for
-the same nonconstant validation labels. April 21–23 test results never choose
-parameters or algorithms. Training-only preprocessing remains frozen; models
-are not refitted on validation. Results, search trials, selected parameters,
-before/after comparisons and plots are saved in
-`data/training/tuned_history_forecasts/`. The report selects each target's
-algorithm by validation error, not by test performance. The already inspected
-test period should be followed by a new independent evaluation period.
-Run `python -m src.training.audit_tuning` to verify unchanged labels/splits,
-nonincreasing validation error, validation-only algorithm choices and predictions
-from the serialized models. Results are saved as `verification.json`.
-
-For the workspace-local Windows dependency installation used during verification,
-start a PowerShell session at the repository root and run:
-
-```powershell
-$env:PYTHONPATH = (Resolve-Path .training-deps).ProviderPath
-python -m src.training.train
+```bash
+python -m src.training.tune --source data/training/effluent_ammonia_full_history --output data/training/effluent_ammonia_tuned
 ```
 
-The `.training-deps/` folder is ignored by Git and leaves the global Python
-installation unchanged. WSL/Linux should install the requirements in `.venv`
-instead; Windows binary packages in `.training-deps/` cannot be used under WSL.
+The defaults search 16 Ridge, 24 Random Forest, 32 XGBoost, and five LSTM
+configurations (up to 100 epochs with validation early stopping), in addition to
+the existing baseline models. The training sequences, preprocessing, labels, and
+chronological splits are frozen. Selection minimizes validation MSE. Test scores
+do not select parameters. The original training results are preserved.
 
+Tune one algorithm with `--algorithms ridge`, `--algorithms random_forest`,
+`--algorithms xgboost`, or `--algorithms lstm`. Use a distinct output directory for
+each run. `--epochs`, `--tree-trials`, and `--xgb-trials` control search cost.
+
+Outputs include `report.html`, `predictions.csv`, `metrics_summary.csv`,
+`comparison.csv` (baseline versus tuned scores), `search_trials.csv`,
+`selected_parameters.json`, selected fitted models, frozen sequences, source
+metadata and hashes, and split/prediction/metric comparison plots. LSTM candidate
+checkpoints and losses use flat prefixed filenames. No subfolders are created.
+The split plot shows only seven days; training still uses all baseline history.
+
+## Effluent ammonia from the full Drive history
+
+Run the four-model comparison on the notebook 02 output:
+
+```bash
+python -m src.training.train --data docs/raw/data_filled.csv --mask notebooks/data/data_filled_mask.csv --targets eff_nh3_n --output data/training/effluent_ammonia_full_history
+```
+
+The matching mask removes forward-filled estimates from future labels while
+preserving the supplied unlimited-forward-filled inputs. Training uses available
+history before April 18; validation covers April 18-20; rolling held-out forecasts
+cover April 21-23. All algorithms use the same 12-step sequences, 20-minute origins,
+and exact observed one-hour-ahead targets. Validation selects model settings.
+
+`forecast_dataset.plot_training_report` generates `dataset_split.png` (compact final-seven-day observed
+series with train/validation/test line colors; display window only), `train_test_predictions.png` (one row per
+algorithm, with train/validation/test columns), and `metrics_comparison.png`
+(MAE, RMSE, R2 across all splits). The HTML report includes these figures and the
+complete metric table. Training plots/scores are in-sample fits. Missing observed
+labels remain gaps in forecast plots. This entry point trains models;
+`python -m src.training.forecast_dataset` still only exports input datasets.
+
+Results are written directly into the selected `--output` directory without
+parameter subfolders. A single-target run uses plain filenames such as
+`predictions.csv`, `ridge.joblib`, and `dataset_split.png`. When multiple targets
+are requested together, target names prefix per-target filenames to avoid
+collisions. The dataset split figure displays only the final seven days (April
+17-23 for the current source). This display window does not restrict training,
+preprocessing, metrics, or the other forecast plots.

@@ -1,6 +1,8 @@
-"""Tune on April 18–20 only, using frozen expanded-history arrays and splits."""
-import json
+"""Tune one saved parameter run using frozen arrays and validation-only selection."""
+import argparse
 import hashlib
+import json
+import shutil
 from pathlib import Path
 
 import joblib
@@ -13,115 +15,157 @@ from sklearn.metrics import mean_squared_error
 from xgboost import XGBRegressor
 
 from .lstm import train_lstm
-from .train import metrics, plot_forecasts
+from .train import metrics, load_source
+from .forecast_dataset import plot_training_report
+
+ALGORITHMS = {"ridge": "Ridge", "random_forest": "Random Forest", "xgboost": "XGBoost", "lstm": "LSTM"}
+
+
+def run(args):
+    source, output = Path(args.source).resolve(), Path(args.output).resolve()
+    if source == output or source in output.parents or output in source.parents:
+        raise ValueError("Use a separate output directory outside the baseline run.")
+    array_path = source / "preprocessing_and_sequences.npz"
+    metadata = json.loads((source / "metadata.json").read_text(encoding="utf-8"))
+    source_manifest = json.loads((source / "manifest.json").read_text(encoding="utf-8"))
+    config = metadata["workbook"]
+    with np.load(array_path) as saved:
+        arrays = {k: saved[k] for k in saved.files}
+    X = np.concatenate([arrays["X"], arrays["missing"].astype(np.float32)], axis=2)
+    y, split = arrays["y"], arrays["split"]
+    flat = X.reshape(len(X), -1)
+    train, val = split == "train", split == "validation"
+    samples = pd.read_csv(source / "predictions.csv", parse_dates=["origin", "target_time"])
+    np.testing.assert_allclose(samples.target, y)
+    np.testing.assert_array_equal(samples.split, split)
+    np.testing.assert_array_equal(samples.origin.to_numpy(), arrays["origin"])
+    np.testing.assert_array_equal(samples.target_time.to_numpy(), arrays["target_time"])
+    # Plot the exact original source; reject changed inputs rather than mixing runs.
+    source_files = list(source_manifest["files"])
+    for filename in source_files:
+        if hashlib.sha256(Path(filename).read_bytes()).hexdigest() != source_manifest["files"][filename]:
+            raise ValueError(f"Baseline source file changed: {filename}")
+    _, raw = load_source(source_files[0], source_files[1])
+    spaces = {
+        "ridge": [{"alpha": float(a)} for a in np.logspace(-3, 6, 16)],
+        "random_forest": list(ParameterSampler({"n_estimators": [200, 400], "max_depth": [3, 5, 8, 12, None],
+            "min_samples_leaf": [1, 3, 6, 12], "max_features": [0.5, 0.8, 1.0]}, n_iter=args.tree_trials, random_state=42)),
+        "xgboost": list(ParameterSampler({"n_estimators": [100, 250, 500], "max_depth": [1, 2, 3, 5],
+            "learning_rate": [0.015, 0.04, 0.08], "min_child_weight": [1, 5, 15],
+            "subsample": [0.7, 1.0], "colsample_bytree": [0.7, 1.0],
+            "reg_lambda": [1., 10., 50.], "reg_alpha": [0., 0.1, 1.]}, n_iter=args.xgb_trials, random_state=42)),
+    }
+    output.mkdir(parents=True, exist_ok=True)
+    summaries, trials, chosen, predictions = [], [], [], {}
+    constant = np.ptp(y[train]) == 0
+    for key in args.algorithms:
+        algorithm = ALGORITHMS[key]
+        print(f"Tuning {config['name']}: {algorithm}", flush=True)
+        filename = "lstm.pt" if key == "lstm" else key + ".joblib"
+        if key == "lstm":
+            best_prediction = samples[algorithm].to_numpy()
+            best = mean_squared_error(y[val], best_prediction[val])
+            shutil.copy2(source / filename, output / filename)
+            best_settings = {"candidate": "baseline"}
+            trials.append({"algorithm": algorithm, "candidate": "baseline", "validation_mse": best})
+            settings_list = [] if constant else [(12, .001, 0.), (24, .001, .0001),
+                (48, .001, .0001), (12, .003, .001), (48, .003, .001)]
+            for i, (hidden, lr, decay) in enumerate(settings_list):
+                settings = {"hidden": hidden, "learning_rate": lr, "weight_decay": decay, "epochs": args.epochs}
+                prefix = f"lstm_candidate_{i}_"
+                predicted, history = train_lstm(X, y, split, output, epochs=args.epochs,
+                    hidden=hidden, learning_rate=lr, weight_decay=decay, prefix=prefix)
+                pd.DataFrame(history).to_csv(output / f"{prefix}loss.csv", index=False)
+                score = mean_squared_error(y[val], predicted[val])
+                print(f"  LSTM candidate {i + 1}/{len(settings_list)}: validation MSE={score:.8g}", flush=True)
+                trials.append({"algorithm": algorithm, "candidate": i, "parameters": json.dumps(settings), "validation_mse": score})
+                if score < best:
+                    best, best_prediction, best_settings = score, predicted, settings
+                    shutil.copy2(output / f"{prefix}lstm.pt", output / filename)
+        else:
+            best_model = joblib.load(source / filename)
+            best_prediction = best_model.predict(flat)
+            best = mean_squared_error(y[val], best_prediction[val])
+            trials.append({"algorithm": algorithm, "candidate": "baseline", "validation_mse": best})
+            for i, settings in enumerate([] if constant else spaces[key]):
+                if key == "ridge": model = Ridge(**settings)
+                elif key == "random_forest": model = RandomForestRegressor(**settings, random_state=42, n_jobs=2)
+                else: model = XGBRegressor(**settings, objective="reg:squarederror", random_state=42, n_jobs=2)
+                model.fit(flat[train], y[train])
+                score = mean_squared_error(y[val], model.predict(flat[val]))
+                print(f"  {algorithm} candidate {i + 1}/{len(spaces[key])}: validation MSE={score:.8g}", flush=True)
+                trials.append({"algorithm": algorithm, "candidate": i, "parameters": json.dumps(settings), "validation_mse": score})
+                if score < best:
+                    best, best_model = score, model
+            best_prediction = best_model.predict(flat)
+            best_settings = best_model.get_params()
+            joblib.dump(best_model, output / filename)
+            np.testing.assert_allclose(best_prediction, joblib.load(output / filename).predict(flat))
+        if not np.isfinite(best_prediction).all():
+            raise ValueError(f"Non-finite {algorithm} predictions")
+        if key == "lstm":
+            import torch
+            from .lstm import SequenceRegressor
+            saved = torch.load(output / filename, map_location="cpu", weights_only=True)
+            restored = SequenceRegressor(saved["input_features"], saved["hidden"])
+            restored.load_state_dict(saved["state_dict"])
+            restored.eval()
+            with torch.no_grad():
+                reloaded = restored(torch.tensor(X, dtype=torch.float32)).numpy() * saved["target_scale"] + saved["target_center"]
+            np.testing.assert_allclose(best_prediction, reloaded, rtol=1e-5, atol=1e-7)
+        predictions[algorithm] = best_prediction
+        chosen.append({"algorithm": algorithm, "parameters": best_settings, "validation_mse": best})
+        for part in ("train", "validation", "test"):
+            keep = split == part
+            summaries.append({"model": config["name"], "target": config["target"], "unit": config["unit"],
+                "algorithm": algorithm, "split": part, **metrics(y[keep], best_prediction[keep])})
+        pd.DataFrame(trials).to_csv(output / "search_trials.csv", index=False)
+    result = pd.DataFrame(summaries)
+    forecasts = samples.drop(columns=list(ALGORITHMS.values()), errors="ignore")
+    for algorithm, predicted in predictions.items(): forecasts[algorithm] = predicted
+    forecasts.to_csv(output / "predictions.csv", index=False)
+    result.to_csv(output / "metrics_summary.csv", index=False)
+    result.to_csv(output / "metrics.csv", index=False)
+    baseline = pd.read_csv(source / "metrics_summary.csv")
+    comparison = baseline.merge(result, on=["model", "target", "unit", "algorithm", "split"],
+        suffixes=("_before", "_tuned"), validate="one_to_one")
+    comparison.to_csv(output / "comparison.csv", index=False)
+    assert (comparison.loc[comparison.split.eq("validation"), "RMSE_tuned"].to_numpy()
+        <= comparison.loc[comparison.split.eq("validation"), "RMSE_before"].to_numpy() + 1e-7).all()
+    (output / "selected_parameters.json").write_text(json.dumps(chosen, indent=2, default=str), encoding="utf-8")
+    np.savez_compressed(output / "preprocessing_and_sequences.npz", **arrays)
+    (output / "metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
+    plot_training_report(raw, forecasts, predictions, result, config, output,
+        train_end=source_manifest["train_end_exclusive"], test_start=source_manifest["test_start"])
+    html = "<html><meta charset='utf-8'><title>Tuned forecast comparison</title><h1>Validation-only hyperparameter tuning</h1>"
+    html += "<p>Frozen baseline sequences and full-history training. Parameters minimize validation MSE; test never selects models. Split figure displays only seven days. Training scores are in-sample.</p>"
+    html += result.round(6).to_html(index=False)
+    html += "<h2>Baseline versus tuned metrics</h2>" + comparison.round(6).to_html(index=False)
+    for filename in ("dataset_split.png", "train_test_predictions.png", "metrics_comparison.png"):
+        html += f"<img width='100%' src='{filename}'>"
+    (output / "report.html").write_text(html + "</html>", encoding="utf-8")
+    manifest = dict(source_manifest)
+    manifest.update({"baseline_source": str(source), "arrays_sha256": hashlib.sha256(array_path.read_bytes()).hexdigest(),
+        "selection": "minimum validation MSE including baseline candidate", "test_used_for_selection": False,
+        "algorithms": args.algorithms, "max_lstm_epochs": args.epochs})
+    (output / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    print(result.loc[result.split.eq("test")].to_string(index=False), flush=True)
+    print(f"Report: {output / 'report.html'}", flush=True)
+    return result
 
 
 def main():
-    source = Path("data/training/expanded_history_forecasts")
-    output = Path("data/training/tuned_history_forecasts")
-    output.mkdir(parents=True, exist_ok=True)
-    summary, trials, chosen = [], [], []
-    manifest = {"selection": "minimum validation MSE, equivalent to maximum R2 for a fixed nonconstant validation target",
-                "test_used_for_selection": False, "seed": 42, "source": str(source), "arrays_sha256": {}}
-    for folder in sorted(source.iterdir()):
-        if not (folder / "preprocessing_and_sequences.npz").exists():
-            continue
-        name = folder.name
-        print(f"Tuning {name}", flush=True)
-        dest = output / name
-        dest.mkdir(exist_ok=True)
-        array_path = folder / "preprocessing_and_sequences.npz"
-        manifest["arrays_sha256"][name] = hashlib.sha256(array_path.read_bytes()).hexdigest()
-        with np.load(array_path) as arrays:
-            X = np.concatenate([arrays["X"], arrays["missing"].astype(np.float32)], axis=2)
-            y, split = arrays["y"], arrays["split"]
-        train, val = split == "train", split == "validation"
-        flat = X.reshape(len(X), -1)
-        samples = pd.read_csv(folder / "predictions.csv", parse_dates=["origin", "target_time"])
-        metadata = json.loads((folder / "metadata.json").read_text())
-        config = metadata["workbook"]
-        predictions = {}
-        # Include each existing fitted model so validation performance cannot regress.
-        spaces = {
-            "Ridge": [{"alpha": float(a)} for a in np.logspace(-3, 6, 16)],
-            "Random Forest": list(ParameterSampler({"n_estimators": [200, 400], "max_depth": [3, 5, 8, 12, None],
-                "min_samples_leaf": [1, 3, 6, 12], "max_features": [0.5, 0.8, 1.0]}, n_iter=24, random_state=42)),
-            "XGBoost": list(ParameterSampler({"n_estimators": [100, 250, 500], "max_depth": [1, 2, 3, 5],
-                "learning_rate": [0.015, 0.04, 0.08], "min_child_weight": [1, 5, 15],
-                "subsample": [0.7, 1.0], "colsample_bytree": [0.7, 1.0],
-                "reg_lambda": [1., 10., 50.], "reg_alpha": [0., 0.1, 1.]}, n_iter=32, random_state=42))}
-        constant = np.ptp(y[train]) == 0
-        for algorithm, params in spaces.items():
-            filename = algorithm.lower().replace(" ", "_") + ".joblib"
-            best_model = joblib.load(folder / filename)
-            best = mean_squared_error(y[val], best_model.predict(flat[val]))
-            trials.append({"model": name, "algorithm": algorithm, "candidate": "existing", "validation_mse": best})
-            for i, settings in enumerate([] if constant else params):
-                if algorithm == "Ridge":
-                    model = Ridge(**settings)
-                elif algorithm == "Random Forest":
-                    model = RandomForestRegressor(**settings, random_state=42, n_jobs=2)
-                else:
-                    model = XGBRegressor(**settings, objective="reg:squarederror", random_state=42, n_jobs=2)
-                model.fit(flat[train], y[train])
-                score = mean_squared_error(y[val], model.predict(flat[val]))
-                trials.append({"model": name, "algorithm": algorithm, "candidate": i,
-                               "parameters": json.dumps(settings), "validation_mse": score})
-                if score < best:
-                    best, best_model = score, model
-            joblib.dump(best_model, dest / filename)
-            predictions[algorithm] = best_model.predict(flat)
-            np.testing.assert_allclose(predictions[algorithm], joblib.load(dest / filename).predict(flat))
-            chosen.append({"model": name, "algorithm": algorithm, "parameters": best_model.get_params(), "validation_mse": best})
-        # Default LSTM is retained as a candidate; tune width, learning rate and regularization.
-        import shutil
-        best_prediction = samples["LSTM"].to_numpy()
-        best = mean_squared_error(y[val], best_prediction[val])
-        trials.append({"model": name, "algorithm": "LSTM", "candidate": "existing", "validation_mse": best})
-        shutil.copy2(folder / "lstm.pt", dest / "lstm.pt")
-        winner = {"candidate": "existing"}
-        lstm_settings = [] if constant else [(12, .001, 0.), (24, .001, .0001), (48, .001, .0001), (12, .003, .001), (48, .003, .001)]
-        for i, (hidden, lr, decay) in enumerate(lstm_settings):
-            candidate = dest / f"lstm_candidate_{i}"
-            candidate.mkdir(exist_ok=True)
-            predicted, history = train_lstm(X, y, split, candidate, epochs=100, hidden=hidden,
-                                            learning_rate=lr, weight_decay=decay)
-            score = mean_squared_error(y[val], predicted[val])
-            settings = {"hidden": hidden, "learning_rate": lr, "weight_decay": decay, "max_epochs": 100}
-            pd.DataFrame(history).to_csv(candidate / "loss.csv", index=False)
-            trials.append({"model": name, "algorithm": "LSTM", "candidate": i, "parameters": json.dumps(settings), "validation_mse": score})
-            if score < best:
-                best, best_prediction, winner = score, predicted, settings
-                shutil.copy2(candidate / "lstm.pt", dest / "lstm.pt")
-        predictions["LSTM"] = best_prediction
-        chosen.append({"model": name, "algorithm": "LSTM", "parameters": winner, "validation_mse": best})
-        for algorithm, predicted in predictions.items():
-            samples[algorithm] = predicted
-            for part in ("train", "validation", "test"):
-                keep = split == part
-                summary.append({"model": name, "target": config["target"], "unit": config["unit"],
-                                "algorithm": algorithm, "split": part, **metrics(y[keep], predicted[keep])})
-        samples.to_csv(dest / "predictions.csv", index=False)
-        plot_forecasts(samples, predictions, config, dest)
-        pd.DataFrame(summary).to_csv(output / "metrics_summary.csv", index=False)
-        pd.DataFrame(trials).to_csv(output / "search_trials.csv", index=False)
-        (output / "selected_parameters.json").write_text(json.dumps(chosen, indent=2, default=str))
-    result = pd.DataFrame(summary)
-    baseline = pd.read_csv(source / "metrics_summary.csv")
-    comparison = baseline.merge(result, on=["model", "target", "unit", "algorithm", "split"], suffixes=("_before", "_tuned"), validate="one_to_one")
-    comparison.to_csv(output / "comparison.csv", index=False)
-    # Choose the algorithm by validation, never by the test result.
-    validation = result.query("split == 'validation'")
-    winners = validation.loc[validation.groupby("model").RMSE.idxmin(), ["model", "algorithm"]]
-    selected = result.merge(winners, on=["model", "algorithm"])
-    selected.to_csv(output / "validation_selected_models.csv", index=False)
-    html = "<html><meta charset='utf-8'><h1>Validation-selected hyperparameter tuning</h1><p>Training ends April 17. Validation April 18–20. Fixed test April 21–23. Test results never select parameters or algorithms. Constant targets have undefined R2. This test period has already been inspected; a later independent period is needed for confirmation.</p>"
-    html += selected.to_html(index=False)
-    for name in winners.model:
-        html += f"<h2>{name}</h2><img width='100%' src='{name}/train_test_predictions.png'>"
-    (output / "report.html").write_text(html + "</html>")
-    (output / "manifest.json").write_text(json.dumps(manifest, indent=2))
-    print(selected.to_string(index=False), flush=True)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--source", required=True, help="Flat baseline result directory for one parameter")
+    parser.add_argument("--output", required=True, help="Separate flat result directory")
+    parser.add_argument("--algorithms", nargs="+", choices=list(ALGORITHMS), default=list(ALGORITHMS))
+    parser.add_argument("--epochs", type=int, default=100, help="Maximum LSTM epochs; validation early stopping applies")
+    parser.add_argument("--tree-trials", type=int, default=24)
+    parser.add_argument("--xgb-trials", type=int, default=32)
+    args = parser.parse_args()
+    if min(args.epochs, args.tree_trials, args.xgb_trials) < 1:
+        parser.error("Epochs and trial counts must be positive")
+    run(args)
 
 
 if __name__ == "__main__":

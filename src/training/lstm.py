@@ -15,7 +15,7 @@ class SequenceRegressor(nn.Module):
         return self.output(sequence[:, -1]).squeeze(-1)
 
 
-def train_lstm(X, y, split, folder, epochs=60, seed=42, hidden=24, learning_rate=0.003, weight_decay=0.0):
+def train_lstm(X, y, split, folder, epochs=60, seed=42, hidden=24, learning_rate=0.003, weight_decay=0.0, prefix=""):
     torch.set_num_threads(2)
     torch.manual_seed(seed)
     torch.use_deterministic_algorithms(True)
@@ -55,7 +55,7 @@ def train_lstm(X, y, split, folder, epochs=60, seed=42, hidden=24, learning_rate
     model.eval()
     with torch.no_grad():
         predicted = model(x).numpy() * scale + center
-    path = folder / "lstm.pt"
+    path = folder / f"{prefix}lstm.pt"
     torch.save({"state_dict": state, "input_features": X.shape[2], "hidden": hidden,
                 "target_center": center, "target_scale": scale, "best_epoch": best_epoch}, path)
     saved = torch.load(path, map_location="cpu", weights_only=True)
