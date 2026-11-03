@@ -1,0 +1,46 @@
+{
+  "files": {
+    "docs/raw/data_filled.csv": "19d2da3b9b9d6f7926bc157af8f43a80317c3d20831326dbe269d97466620c9d",
+    "notebooks/data/data_filled_mask.csv": "ebec8b71f8298828a28f4059c34e88ad6878d6b943691ba120f81fccd32fcbb9",
+    "Sensor_Configurations.xlsx": "d4082bb806cfa9b6f4ded80e95936aaf9e7bcdd2cf9cfc2a42931b350fdb7741"
+  },
+  "train_end_exclusive": "2026-04-18",
+  "test_start": "2026-04-21",
+  "horizon_minutes": 60,
+  "sequence_steps": 12,
+  "origin_interval_minutes": 20,
+  "seed": 42,
+  "max_lstm_epochs": 100,
+  "targets": {
+    "a1_air_flow": {
+      "target": "Q_A1_air",
+      "split_counts": {
+        "test": 211,
+        "train": 1730,
+        "validation": 212
+      }
+    }
+  },
+  "versions": {
+    "numpy": "2.4.6",
+    "pandas": "3.0.6",
+    "scikit-learn": "1.9.1",
+    "xgboost": "3.2.0",
+    "torch": "2.14.1"
+  },
+  "limitations": [
+    "Short previously inspected source period; independent future evaluation needed.",
+    "Upstream observations rely on source fill mask accuracy.",
+    "Rolling test forecasts use past available test observations."
+  ],
+  "baseline_source": "/home/itri/projects/ao-mbr-data-pipeline/docs/assets/a1_air_forecast",
+  "arrays_sha256": "8089167e998bb256d00866ebfb811ac6b98bed3ea5521fc5f625d300a17f5d2e",
+  "selection": "minimum validation MSE including baseline candidate",
+  "test_used_for_selection": false,
+  "algorithms": [
+    "ridge",
+    "random_forest",
+    "xgboost",
+    "lstm"
+  ]
+}
