@@ -1,0 +1,181 @@
+model,heading,sensor,checked,green_target_mark,confirmed_target,cell
+eff_nh3_n,Eff NH3-N,A1_Qin,True,False,Eff_NH4_N,G30
+eff_nh3_n,Eff NH3-N,A2_Qin,True,False,Eff_NH4_N,G31
+eff_nh3_n,Eff NH3-N,A1_COD_in,True,False,Eff_NH4_N,G32
+eff_nh3_n,Eff NH3-N,A1_FQ_CH3OH,False,False,Eff_NH4_N,G33
+eff_nh3_n,Eff NH3-N,A1_Q_r1,False,False,Eff_NH4_N,G34
+eff_nh3_n,Eff NH3-N,A2_COD_in,True,False,Eff_NH4_N,G35
+eff_nh3_n,Eff NH3-N,A2_Q_r1,False,False,Eff_NH4_N,G36
+eff_nh3_n,Eff NH3-N,A2_FQ_CH3OH,False,False,Eff_NH4_N,G37
+eff_nh3_n,Eff NH3-N,A1_NH3_N,True,False,Eff_NH4_N,G38
+eff_nh3_n,Eff NH3-N,A2_NH3_N,True,False,Eff_NH4_N,G39
+eff_nh3_n,Eff NH3-N,A1_A_PH,False,False,Eff_NH4_N,G40
+eff_nh3_n,Eff NH3-N,A1_A_ORP,False,False,Eff_NH4_N,G41
+eff_nh3_n,Eff NH3-N,A1_A_DO,False,False,Eff_NH4_N,G42
+eff_nh3_n,Eff NH3-N,A1_A_MLSS,False,False,Eff_NH4_N,G43
+eff_nh3_n,Eff NH3-N,A2_A_PH,False,False,Eff_NH4_N,G44
+eff_nh3_n,Eff NH3-N,A2_A_ORP,False,False,Eff_NH4_N,G45
+eff_nh3_n,Eff NH3-N,A2_A_DO,False,False,Eff_NH4_N,G46
+eff_nh3_n,Eff NH3-N,A2_A_MLSS,False,False,Eff_NH4_N,G47
+eff_nh3_n,Eff NH3-N,A1_O_PH,True,False,Eff_NH4_N,G48
+eff_nh3_n,Eff NH3-N,A1_O_ORP,True,False,Eff_NH4_N,G49
+eff_nh3_n,Eff NH3-N,A1_O_DO,True,False,Eff_NH4_N,G50
+eff_nh3_n,Eff NH3-N,A1_O_MLSS,True,False,Eff_NH4_N,G51
+eff_nh3_n,Eff NH3-N,A2_O_PH,True,False,Eff_NH4_N,G52
+eff_nh3_n,Eff NH3-N,A2_O_ORP,True,False,Eff_NH4_N,G53
+eff_nh3_n,Eff NH3-N,A2_O_DO,True,False,Eff_NH4_N,G54
+eff_nh3_n,Eff NH3-N,A2_O_MLSS,True,False,Eff_NH4_N,G55
+eff_nh3_n,Eff NH3-N,Q_A1_air,True,False,Eff_NH4_N,G56
+eff_nh3_n,Eff NH3-N,Q_A2_air,True,False,Eff_NH4_N,G57
+eff_nh3_n,Eff NH3-N,Eff_NH4_N,True,True,Eff_NH4_N,G58
+eff_nh3_n,Eff NH3-N,Eff_NO3_N,False,False,Eff_NH4_N,G59
+eff_no3_n,Eff NO3-N,A1_Qin,True,False,Eff_NO3_N,H30
+eff_no3_n,Eff NO3-N,A2_Qin,True,False,Eff_NO3_N,H31
+eff_no3_n,Eff NO3-N,A1_COD_in,True,False,Eff_NO3_N,H32
+eff_no3_n,Eff NO3-N,A1_FQ_CH3OH,True,False,Eff_NO3_N,H33
+eff_no3_n,Eff NO3-N,A1_Q_r1,True,False,Eff_NO3_N,H34
+eff_no3_n,Eff NO3-N,A2_COD_in,True,False,Eff_NO3_N,H35
+eff_no3_n,Eff NO3-N,A2_Q_r1,True,False,Eff_NO3_N,H36
+eff_no3_n,Eff NO3-N,A2_FQ_CH3OH,True,False,Eff_NO3_N,H37
+eff_no3_n,Eff NO3-N,A1_NH3_N,True,False,Eff_NO3_N,H38
+eff_no3_n,Eff NO3-N,A2_NH3_N,True,False,Eff_NO3_N,H39
+eff_no3_n,Eff NO3-N,A1_A_PH,True,False,Eff_NO3_N,H40
+eff_no3_n,Eff NO3-N,A1_A_ORP,True,False,Eff_NO3_N,H41
+eff_no3_n,Eff NO3-N,A1_A_DO,True,False,Eff_NO3_N,H42
+eff_no3_n,Eff NO3-N,A1_A_MLSS,True,False,Eff_NO3_N,H43
+eff_no3_n,Eff NO3-N,A2_A_PH,True,False,Eff_NO3_N,H44
+eff_no3_n,Eff NO3-N,A2_A_ORP,True,False,Eff_NO3_N,H45
+eff_no3_n,Eff NO3-N,A2_A_DO,True,False,Eff_NO3_N,H46
+eff_no3_n,Eff NO3-N,A2_A_MLSS,True,False,Eff_NO3_N,H47
+eff_no3_n,Eff NO3-N,A1_O_PH,False,False,Eff_NO3_N,H48
+eff_no3_n,Eff NO3-N,A1_O_ORP,False,False,Eff_NO3_N,H49
+eff_no3_n,Eff NO3-N,A1_O_DO,False,False,Eff_NO3_N,H50
+eff_no3_n,Eff NO3-N,A1_O_MLSS,False,False,Eff_NO3_N,H51
+eff_no3_n,Eff NO3-N,A2_O_PH,False,False,Eff_NO3_N,H52
+eff_no3_n,Eff NO3-N,A2_O_ORP,False,False,Eff_NO3_N,H53
+eff_no3_n,Eff NO3-N,A2_O_DO,False,False,Eff_NO3_N,H54
+eff_no3_n,Eff NO3-N,A2_O_MLSS,False,False,Eff_NO3_N,H55
+eff_no3_n,Eff NO3-N,Q_A1_air,True,False,Eff_NO3_N,H56
+eff_no3_n,Eff NO3-N,Q_A2_air,True,False,Eff_NO3_N,H57
+eff_no3_n,Eff NO3-N,Eff_NH4_N,True,False,Eff_NO3_N,H58
+eff_no3_n,Eff NO3-N,Eff_NO3_N,True,True,Eff_NO3_N,H59
+a1_ch3oh_flow,A1 CH3OH Flow,A1_Qin,True,False,A1_FQ_CH3OH,I30
+a1_ch3oh_flow,A1 CH3OH Flow,A2_Qin,False,False,A1_FQ_CH3OH,I31
+a1_ch3oh_flow,A1 CH3OH Flow,A1_COD_in,True,False,A1_FQ_CH3OH,I32
+a1_ch3oh_flow,A1 CH3OH Flow,A1_FQ_CH3OH,True,True,A1_FQ_CH3OH,I33
+a1_ch3oh_flow,A1 CH3OH Flow,A1_Q_r1,True,False,A1_FQ_CH3OH,I34
+a1_ch3oh_flow,A1 CH3OH Flow,A2_COD_in,False,False,A1_FQ_CH3OH,I35
+a1_ch3oh_flow,A1 CH3OH Flow,A2_Q_r1,False,False,A1_FQ_CH3OH,I36
+a1_ch3oh_flow,A1 CH3OH Flow,A2_FQ_CH3OH,False,False,A1_FQ_CH3OH,I37
+a1_ch3oh_flow,A1 CH3OH Flow,A1_NH3_N,True,False,A1_FQ_CH3OH,I38
+a1_ch3oh_flow,A1 CH3OH Flow,A2_NH3_N,False,False,A1_FQ_CH3OH,I39
+a1_ch3oh_flow,A1 CH3OH Flow,A1_A_PH,True,False,A1_FQ_CH3OH,I40
+a1_ch3oh_flow,A1 CH3OH Flow,A1_A_ORP,True,False,A1_FQ_CH3OH,I41
+a1_ch3oh_flow,A1 CH3OH Flow,A1_A_DO,True,False,A1_FQ_CH3OH,I42
+a1_ch3oh_flow,A1 CH3OH Flow,A1_A_MLSS,True,False,A1_FQ_CH3OH,I43
+a1_ch3oh_flow,A1 CH3OH Flow,A2_A_PH,False,False,A1_FQ_CH3OH,I44
+a1_ch3oh_flow,A1 CH3OH Flow,A2_A_ORP,False,False,A1_FQ_CH3OH,I45
+a1_ch3oh_flow,A1 CH3OH Flow,A2_A_DO,False,False,A1_FQ_CH3OH,I46
+a1_ch3oh_flow,A1 CH3OH Flow,A2_A_MLSS,False,False,A1_FQ_CH3OH,I47
+a1_ch3oh_flow,A1 CH3OH Flow,A1_O_PH,False,False,A1_FQ_CH3OH,I48
+a1_ch3oh_flow,A1 CH3OH Flow,A1_O_ORP,False,False,A1_FQ_CH3OH,I49
+a1_ch3oh_flow,A1 CH3OH Flow,A1_O_DO,False,False,A1_FQ_CH3OH,I50
+a1_ch3oh_flow,A1 CH3OH Flow,A1_O_MLSS,False,False,A1_FQ_CH3OH,I51
+a1_ch3oh_flow,A1 CH3OH Flow,A2_O_PH,False,False,A1_FQ_CH3OH,I52
+a1_ch3oh_flow,A1 CH3OH Flow,A2_O_ORP,False,False,A1_FQ_CH3OH,I53
+a1_ch3oh_flow,A1 CH3OH Flow,A2_O_DO,False,False,A1_FQ_CH3OH,I54
+a1_ch3oh_flow,A1 CH3OH Flow,A2_O_MLSS,False,False,A1_FQ_CH3OH,I55
+a1_ch3oh_flow,A1 CH3OH Flow,Q_A1_air,False,False,A1_FQ_CH3OH,I56
+a1_ch3oh_flow,A1 CH3OH Flow,Q_A2_air,False,False,A1_FQ_CH3OH,I57
+a1_ch3oh_flow,A1 CH3OH Flow,Eff_NH4_N,True,False,A1_FQ_CH3OH,I58
+a1_ch3oh_flow,A1 CH3OH Flow,Eff_NO3_N,True,False,A1_FQ_CH3OH,I59
+a2_ch3oh_flow,A2 CH3OH Flow,A1_Qin,False,False,A2_FQ_CH3OH,J30
+a2_ch3oh_flow,A2 CH3OH Flow,A2_Qin,True,False,A2_FQ_CH3OH,J31
+a2_ch3oh_flow,A2 CH3OH Flow,A1_COD_in,False,False,A2_FQ_CH3OH,J32
+a2_ch3oh_flow,A2 CH3OH Flow,A1_FQ_CH3OH,False,False,A2_FQ_CH3OH,J33
+a2_ch3oh_flow,A2 CH3OH Flow,A1_Q_r1,False,False,A2_FQ_CH3OH,J34
+a2_ch3oh_flow,A2 CH3OH Flow,A2_COD_in,True,False,A2_FQ_CH3OH,J35
+a2_ch3oh_flow,A2 CH3OH Flow,A2_Q_r1,True,False,A2_FQ_CH3OH,J36
+a2_ch3oh_flow,A2 CH3OH Flow,A2_FQ_CH3OH,True,True,A2_FQ_CH3OH,J37
+a2_ch3oh_flow,A2 CH3OH Flow,A1_NH3_N,False,False,A2_FQ_CH3OH,J38
+a2_ch3oh_flow,A2 CH3OH Flow,A2_NH3_N,True,False,A2_FQ_CH3OH,J39
+a2_ch3oh_flow,A2 CH3OH Flow,A1_A_PH,False,False,A2_FQ_CH3OH,J40
+a2_ch3oh_flow,A2 CH3OH Flow,A1_A_ORP,False,False,A2_FQ_CH3OH,J41
+a2_ch3oh_flow,A2 CH3OH Flow,A1_A_DO,False,False,A2_FQ_CH3OH,J42
+a2_ch3oh_flow,A2 CH3OH Flow,A1_A_MLSS,False,False,A2_FQ_CH3OH,J43
+a2_ch3oh_flow,A2 CH3OH Flow,A2_A_PH,True,False,A2_FQ_CH3OH,J44
+a2_ch3oh_flow,A2 CH3OH Flow,A2_A_ORP,True,False,A2_FQ_CH3OH,J45
+a2_ch3oh_flow,A2 CH3OH Flow,A2_A_DO,True,False,A2_FQ_CH3OH,J46
+a2_ch3oh_flow,A2 CH3OH Flow,A2_A_MLSS,True,False,A2_FQ_CH3OH,J47
+a2_ch3oh_flow,A2 CH3OH Flow,A1_O_PH,False,False,A2_FQ_CH3OH,J48
+a2_ch3oh_flow,A2 CH3OH Flow,A1_O_ORP,False,False,A2_FQ_CH3OH,J49
+a2_ch3oh_flow,A2 CH3OH Flow,A1_O_DO,False,False,A2_FQ_CH3OH,J50
+a2_ch3oh_flow,A2 CH3OH Flow,A1_O_MLSS,False,False,A2_FQ_CH3OH,J51
+a2_ch3oh_flow,A2 CH3OH Flow,A2_O_PH,False,False,A2_FQ_CH3OH,J52
+a2_ch3oh_flow,A2 CH3OH Flow,A2_O_ORP,False,False,A2_FQ_CH3OH,J53
+a2_ch3oh_flow,A2 CH3OH Flow,A2_O_DO,False,False,A2_FQ_CH3OH,J54
+a2_ch3oh_flow,A2 CH3OH Flow,A2_O_MLSS,False,False,A2_FQ_CH3OH,J55
+a2_ch3oh_flow,A2 CH3OH Flow,Q_A1_air,False,False,A2_FQ_CH3OH,J56
+a2_ch3oh_flow,A2 CH3OH Flow,Q_A2_air,False,False,A2_FQ_CH3OH,J57
+a2_ch3oh_flow,A2 CH3OH Flow,Eff_NH4_N,True,False,A2_FQ_CH3OH,J58
+a2_ch3oh_flow,A2 CH3OH Flow,Eff_NO3_N,True,False,A2_FQ_CH3OH,J59
+a1_air_flow,A1 Aeration Flow,A1_Qin,True,False,Q_A1_air,K30
+a1_air_flow,A1 Aeration Flow,A2_Qin,False,False,Q_A1_air,K31
+a1_air_flow,A1 Aeration Flow,A1_COD_in,False,False,Q_A1_air,K32
+a1_air_flow,A1 Aeration Flow,A1_FQ_CH3OH,True,False,Q_A1_air,K33
+a1_air_flow,A1 Aeration Flow,A1_Q_r1,True,False,Q_A1_air,K34
+a1_air_flow,A1 Aeration Flow,A2_COD_in,False,False,Q_A1_air,K35
+a1_air_flow,A1 Aeration Flow,A2_Q_r1,False,False,Q_A1_air,K36
+a1_air_flow,A1 Aeration Flow,A2_FQ_CH3OH,False,False,Q_A1_air,K37
+a1_air_flow,A1 Aeration Flow,A1_NH3_N,True,False,Q_A1_air,K38
+a1_air_flow,A1 Aeration Flow,A2_NH3_N,False,False,Q_A1_air,K39
+a1_air_flow,A1 Aeration Flow,A1_A_PH,False,False,Q_A1_air,K40
+a1_air_flow,A1 Aeration Flow,A1_A_ORP,False,False,Q_A1_air,K41
+a1_air_flow,A1 Aeration Flow,A1_A_DO,False,False,Q_A1_air,K42
+a1_air_flow,A1 Aeration Flow,A1_A_MLSS,False,False,Q_A1_air,K43
+a1_air_flow,A1 Aeration Flow,A2_A_PH,False,False,Q_A1_air,K44
+a1_air_flow,A1 Aeration Flow,A2_A_ORP,False,False,Q_A1_air,K45
+a1_air_flow,A1 Aeration Flow,A2_A_DO,False,False,Q_A1_air,K46
+a1_air_flow,A1 Aeration Flow,A2_A_MLSS,False,False,Q_A1_air,K47
+a1_air_flow,A1 Aeration Flow,A1_O_PH,True,False,Q_A1_air,K48
+a1_air_flow,A1 Aeration Flow,A1_O_ORP,True,False,Q_A1_air,K49
+a1_air_flow,A1 Aeration Flow,A1_O_DO,True,False,Q_A1_air,K50
+a1_air_flow,A1 Aeration Flow,A1_O_MLSS,True,False,Q_A1_air,K51
+a1_air_flow,A1 Aeration Flow,A2_O_PH,False,False,Q_A1_air,K52
+a1_air_flow,A1 Aeration Flow,A2_O_ORP,False,False,Q_A1_air,K53
+a1_air_flow,A1 Aeration Flow,A2_O_DO,False,False,Q_A1_air,K54
+a1_air_flow,A1 Aeration Flow,A2_O_MLSS,False,False,Q_A1_air,K55
+a1_air_flow,A1 Aeration Flow,Q_A1_air,False,False,Q_A1_air,K56
+a1_air_flow,A1 Aeration Flow,Q_A2_air,True,True,Q_A1_air,K57
+a1_air_flow,A1 Aeration Flow,Eff_NH4_N,False,False,Q_A1_air,K58
+a1_air_flow,A1 Aeration Flow,Eff_NO3_N,False,False,Q_A1_air,K59
+a2_air_flow,A2 Aeration Flow,A1_Qin,False,False,Q_A2_air,L30
+a2_air_flow,A2 Aeration Flow,A2_Qin,True,False,Q_A2_air,L31
+a2_air_flow,A2 Aeration Flow,A1_COD_in,False,False,Q_A2_air,L32
+a2_air_flow,A2 Aeration Flow,A1_FQ_CH3OH,False,False,Q_A2_air,L33
+a2_air_flow,A2 Aeration Flow,A1_Q_r1,False,False,Q_A2_air,L34
+a2_air_flow,A2 Aeration Flow,A2_COD_in,True,False,Q_A2_air,L35
+a2_air_flow,A2 Aeration Flow,A2_Q_r1,True,False,Q_A2_air,L36
+a2_air_flow,A2 Aeration Flow,A2_FQ_CH3OH,True,False,Q_A2_air,L37
+a2_air_flow,A2 Aeration Flow,A1_NH3_N,False,False,Q_A2_air,L38
+a2_air_flow,A2 Aeration Flow,A2_NH3_N,True,False,Q_A2_air,L39
+a2_air_flow,A2 Aeration Flow,A1_A_PH,False,False,Q_A2_air,L40
+a2_air_flow,A2 Aeration Flow,A1_A_ORP,False,False,Q_A2_air,L41
+a2_air_flow,A2 Aeration Flow,A1_A_DO,False,False,Q_A2_air,L42
+a2_air_flow,A2 Aeration Flow,A1_A_MLSS,False,False,Q_A2_air,L43
+a2_air_flow,A2 Aeration Flow,A2_A_PH,False,False,Q_A2_air,L44
+a2_air_flow,A2 Aeration Flow,A2_A_ORP,False,False,Q_A2_air,L45
+a2_air_flow,A2 Aeration Flow,A2_A_DO,False,False,Q_A2_air,L46
+a2_air_flow,A2 Aeration Flow,A2_A_MLSS,False,False,Q_A2_air,L47
+a2_air_flow,A2 Aeration Flow,A1_O_PH,False,False,Q_A2_air,L48
+a2_air_flow,A2 Aeration Flow,A1_O_ORP,False,False,Q_A2_air,L49
+a2_air_flow,A2 Aeration Flow,A1_O_DO,False,False,Q_A2_air,L50
+a2_air_flow,A2 Aeration Flow,A1_O_MLSS,False,False,Q_A2_air,L51
+a2_air_flow,A2 Aeration Flow,A2_O_PH,True,False,Q_A2_air,L52
+a2_air_flow,A2 Aeration Flow,A2_O_ORP,True,False,Q_A2_air,L53
+a2_air_flow,A2 Aeration Flow,A2_O_DO,True,False,Q_A2_air,L54
+a2_air_flow,A2 Aeration Flow,A2_O_MLSS,True,False,Q_A2_air,L55
+a2_air_flow,A2 Aeration Flow,Q_A1_air,False,False,Q_A2_air,L56
+a2_air_flow,A2 Aeration Flow,Q_A2_air,False,False,Q_A2_air,L57
+a2_air_flow,A2 Aeration Flow,Eff_NH4_N,True,True,Q_A2_air,L58
+a2_air_flow,A2 Aeration Flow,Eff_NO3_N,False,False,Q_A2_air,L59
