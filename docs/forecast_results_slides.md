@@ -1,161 +1,124 @@
-# Multivariate Forecast Results and Discussion — Presentation Content
+# Multivariate Forecast Results and Discussion
 
-This revision reports the saved **expanded-history and tuned CSV experiments** in [assets/current_forecasts](assets/current_forecasts/). Headline results use the **Tuned history** experiment and its validation-selected algorithms. It supersedes the earlier seven-day SQL experiment narrative. Notebook 03–05 figures and persistence percentages belong to the older experiment and must not be reused as evidence for these results. No models were retrained to prepare this report.
+## Slide 1 — Forecast design and chronological evaluation
 
-**Asset check (1 November 2026):** All 13 snapshot hashes in `provenance.json` match the supplied files. The numerical results below are supported by those snapshots; this date is a documentation check, not a training date. The original `data/training/` run directories and source CSVs are absent from this checkout, so the snapshots do not establish whether a newer training run exists elsewhere.
+- Source history spans 24 March 2026 13:00 through 23 April 2026 23:59.
+- Training uses available history through April 17. Validation covers April 18–20. The rolling test covers April 21–23.
+- Each forecast predicts the observed value one hour ahead. Forecasts are issued every 20 minutes and use 12 input steps spanning 3 hours 40 minutes.
+- Models include Ridge, Random Forest, XGBoost and LSTM. The fill mask excludes carried-forward estimates from future labels.
 
-## Slide 1 — Study design and chronological evaluation
+## Slide 2 — How baseline and tuned models were compared
 
-- Real treatment-plant operating data: **24 March 2026 13:00–23 April 2026 23:59**.
-- Training: available March 24–April 17 history. Validation: **April 18–20**. Fixed rolling test: **April 21–23**.
-- Predict the **exact observed minute value one hour after each origin**, with origins spaced 20 minutes apart.
-- Twelve input samples at 20-minute spacing span **3 hours 40 minutes** and end at the forecast origin.
-- Algorithms: **Ridge, Random Forest, XGBoost and LSTM**.
+- Baseline refers to the original training run. The tuned runs reuse its prepared inputs and chronological splits.
+- The search minimizes validation MSE and includes the fitted baseline model as a candidate. The test period evaluates the resulting models.
+- Each arrow shows baseline → tuned for the same algorithm. Training R² measures in-sample fit. Negative test R² indicates higher squared error than the retrospective test-set mean.
+- Saved prediction files agree on forecast origins, target times, split assignments and observed labels for all five available pairs.
 
-**Speaker notes:** “Future labels crossing training or validation boundaries were purged. Filled estimates cannot become future labels. Test observations may enter later histories once available, as in rolling operation. Time stamps retain the source's timezone-naive representation. This is not a forecast of the whole test period made at its start.”
+## Slide 3 — Held-out performance of validation-selected models
 
-## Slide 2 — Preparation, features and hyperparameter selection
+For each paired target, the table uses the algorithm with the lowest tuned validation RMSE and compares it with that same algorithm's baseline. Test RMSE stays in the target's original units.
 
-- Expanded history uses **notebook 02's sensor-specific preparation policy**, rather than notebook 01's unlimited forward filling.
-- Carry-forward age limits: flow **2 min**, chemistry **5 min**, MLSS **15 min**. Longer and leading gaps remain missing.
-- Workbook checkmarked sensor inputs plus historical target values. Constant/unobserved/unsupported training inputs are excluded.
-- Remaining imputation and scaling fit training only; models receive missingness channels.
-- Tune using **April 18–20 validation MSE**. On fixed nonconstant labels this also maximizes R². Existing fitted models remain candidates; no combined training/validation refit is performed.
-- Final algorithm selection also uses validation error, **not test rankings**.
+| Target | Algorithm | Test N | Test R² | Test RMSE |
+|---|---|---:|---:|---:|
+| Effluent ammonium | XGBoost | 211 | -0.060 → -0.000013 | 0.011436 → 0.011109 mg-N/L |
+| Effluent nitrate | Ridge (baseline tie) | 211 | undefined → — | 0.000000 → — mg-N/L |
+| A1 methanol dosing | Ridge | 213 | 0.732 → 0.730 | 26.368808 → 26.492304 m3/hour |
+| A2 methanol dosing | XGBoost | 213 | 0.581 → 0.640 | 23.050518 → 21.378594 m3/hour |
+| A1 aeration airflow | LSTM | 211 | -0.289 → -0.289 | 3.649801 → 3.649800 m3/min |
+| A2 aeration airflow | LSTM | 211 | -0.293 → 0.082 | 3.352191 → 2.825258 m3/min |
 
-**Speaker notes:** “Raw operating changes are preserved. Large values alone do not identify sensor faults. Airflow target mappings follow the confirmed headings: A1 = Q_A1_air and A2 = Q_A2_air. Test inputs, masks, origins and labels match the earlier experiment. The latest runs have no persistence baseline, so we do not claim improvement over persistence.”
+## Slide 4 — Effluent ammonium
 
-## Slide 3 — Overall results: validation-selected models
+Held-out test samples **211**. MAE and RMSE in **mg-N/L**.
 
-![R² across chronological splits](assets/current_forecasts/selected_r2_comparison.png)
+| Algorithm | Train R² | Validation R² | Test R² | Test MAE | Test RMSE |
+|---|---:|---:|---:|---:|---:|
+| Ridge | 0.425 → 0.004 | -87.034 → -15.502 | -141.572 → -14.808 | 0.101064 → 0.042626 | 0.132648 → 0.044170 |
+| Random Forest | 0.769 → 0.367 | -2.033 → -0.338 | -0.101 → -46.474 | 0.009745 → 0.069990 | 0.011656 → 0.076544 |
+| XGBoost | 0.881 → 0.476 | -0.231 → -0.107 | -0.060 → -0.000013 | 0.009118 → 0.009128 | 0.011436 → 0.011109 |
+| LSTM | 0.053 → 0.042 | -0.811 → -0.588 | -5.480 → -2.034 | 0.020905 → 0.016295 | 0.028279 → 0.019351 |
 
-| Target | Validation-selected model | Training R² | Validation R² | Test R² | Test N | Test RMSE (target units) |
-|---|---|---:|---:|---:|---:|---:|
-| Effluent ammonium | XGBoost | 0.472 | -0.101 | ≈0.000 | 211 | 0.011110 mg-N/L |
-| Effluent nitrate | Ridge | undefined | undefined | undefined | 211 | 0.000000 mg-N/L |
-| A1 methanol dosing | Ridge | 0.831 | 0.788 | 0.730 | 213 | 26.470019 m3/hour |
-| A2 methanol dosing | XGBoost | 0.945 | 0.701 | 0.693 | 213 | 19.716478 m3/hour |
-| A1 airflow | LSTM | 0.838 | 0.821 | -0.287 | 211 | 3.646666 m3/min |
-| A2 airflow | LSTM | 0.879 | 0.921 | -0.016 | 211 | 2.971203 m3/min |
+**XGBoost** has the lowest tuned validation RMSE. Its test RMSE moved from **0.011436** to **0.011109 mg-N/L**.
 
-Source: [headline_metrics.csv](assets/current_forecasts/headline_metrics.csv). Ammonium test R² is slightly negative before rounding (**−0.00006646**). RMSE values across different target units should not be ranked against one another.
+[Baseline metrics](assets/eff_nh3n_forecast/metrics_summary.csv) · [Baseline forecast plots](assets/eff_nh3n_forecast/train_test_predictions.png) · [Tuning comparison](assets/eff_nh3n_forecast_tuned/comparison.csv) · [Tuned forecast plots](assets/eff_nh3n_forecast_tuned/train_test_predictions.png)
 
-**Discussion:** “Methanol forecasts retain positive R² on the fixed test period. Airflow validation scores do not transfer to the later operating period. Ammonium test R² is approximately zero. Tuning improved or matched each algorithm's validation error, but did not consistently improve test performance.”
+## Slide 5 — Effluent nitrate
 
-Training R² is in-sample fit. Negative test R² means greater squared error than the retrospective test-set mean reference. Nitrate R² is undefined because its recorded signal is constant. R² does not establish acceptability against a plant-specific error threshold.
+Held-out test samples **211**. MAE and RMSE in **mg-N/L**.
 
-## Graph slide layout
+| Algorithm | Train R² | Validation R² | Test R² | Test MAE | Test RMSE |
+|---|---:|---:|---:|---:|---:|
+| Ridge | undefined → — | undefined → — | undefined → — | 0.000000 → — | 0.000000 → — |
+| Random Forest | undefined → — | undefined → — | undefined → — | 0.000000 → — | 0.000000 → — |
+| XGBoost | undefined → — | undefined → — | undefined → — | 0.000000 → — | 0.000000 → — |
+| LSTM | undefined → — | undefined → — | undefined → — | 0.009333 → — | 0.020488 → — |
 
-Use the test figure in the upper two-thirds with the selected-model callout beneath. Black is observed; the validation-selected algorithm is emphasized and the other tuned algorithms are dashed. The x-axis is future label time. All algorithms use the same observed labels within a target. Do not select a different headline model because its test score is higher.
+The nitrate target is constant across all three splits. Ridge, Random Forest and XGBoost tie at zero baseline error. R² is undefined. The assets contain no tuned nitrate run, so the tuned values are shown as dashes.
 
-## Slide 4 — Effluent Ammonium Forecast
+[Baseline metrics](assets/eff_no3n_forecast/metrics_summary.csv) · [Baseline forecast plots](assets/eff_no3n_forecast/train_test_predictions.png)
 
-![Effluent ammonium test forecasts](assets/current_forecasts/eff_nh3_n_test_comparison.png)
+## Slide 6 — A1 methanol dosing
 
-**Validation-selected model: XGBoost.** Test N = **211**; MAE **0.009132**; RMSE **0.011110 mg-N/L**; R² **≈0.000**.
+Held-out test samples **213**. MAE and RMSE in **m3/hour**.
 
-- The selected XGBoost model has test R² approximately zero. Small absolute error within this narrow test range does not establish reliable forecasting of concentration changes.
-- Training includes values up to 7.652 mg-N/L, while validation and test maxima are below 0.225 mg-N/L. These represent reported real operating variability and are preserved; the discrepancy should be evaluated across operating conditions.
+| Algorithm | Train R² | Validation R² | Test R² | Test MAE | Test RMSE |
+|---|---:|---:|---:|---:|---:|
+| Ridge | 0.831 → 0.831 | 0.788 → 0.788 | 0.732 → 0.730 | 17.854024 → 17.958605 | 26.368808 → 26.492304 |
+| Random Forest | 0.924 → 0.907 | 0.624 → 0.772 | 0.679 → 0.796 | 18.965436 → 15.365409 | 28.865771 → 23.011795 |
+| XGBoost | 0.878 → 0.981 | 0.710 → 0.774 | 0.777 → 0.710 | 16.397944 → 20.541751 | 24.052408 → 27.450109 |
+| LSTM | 0.831 → 0.811 | 0.713 → 0.748 | 0.741 → 0.698 | 17.641619 → 19.962884 | 25.907472 → 28.020748 |
 
-**Speaker note:** “Use the measured name ammonium / NH4-N. The task eff_nh3_n predicts Eff_NH4_N.”
+**Ridge** has the lowest tuned validation RMSE. Its test RMSE moved from **26.368808** to **26.492304 m3/hour**.
 
-## Slide 5 — Effluent Nitrate Forecast
+[Baseline metrics](assets/a1_ch3oh_forecast/metrics_summary.csv) · [Baseline forecast plots](assets/a1_ch3oh_forecast/train_test_predictions.png) · [Tuning comparison](assets/a1_ch3oh_forecast_tuned/comparison.csv) · [Tuned forecast plots](assets/a1_ch3oh_forecast_tuned/train_test_predictions.png)
 
-![Effluent nitrate test forecasts](assets/current_forecasts/eff_no3_n_test_comparison.png)
+## Slide 7 — A2 methanol dosing
 
-**Validation-selected model: Ridge.** Test N = **211**; MAE **0.000000**; RMSE **0.000000 mg-N/L**; R² **undefined**.
+Held-out test samples **213**. MAE and RMSE in **m3/hour**.
 
-- The recorded target remains constant at 5.0 mg-N/L. Ridge and tree models have zero error; LSTM can deviate from the constant signal.
-- R² is undefined. This experiment cannot establish the ability to forecast nitrate changes.
+| Algorithm | Train R² | Validation R² | Test R² | Test MAE | Test RMSE |
+|---|---:|---:|---:|---:|---:|
+| Ridge | 0.803 → 0.804 | 0.650 → 0.650 | 0.607 → 0.608 | 14.527613 → 14.538199 | 22.313058 → 22.288170 |
+| Random Forest | 0.926 → 0.908 | 0.598 → 0.651 | 0.559 → 0.653 | 14.666775 → 12.977797 | 23.654645 → 20.987292 |
+| XGBoost | 0.869 → 0.955 | 0.676 → 0.684 | 0.581 → 0.640 | 16.124259 → 14.865253 | 23.050518 → 21.378594 |
+| LSTM | 0.805 → 0.775 | 0.572 → 0.619 | 0.634 → 0.600 | 16.136361 → 16.917903 | 21.531232 → 22.516322 |
 
-**Speaker note:** “A constant recorded value is a limitation of this evaluation, not sufficient evidence of a sensor fault.”
+**XGBoost** has the lowest tuned validation RMSE. Its test RMSE moved from **23.050518** to **21.378594 m3/hour**.
 
-## Slide 6 — A1 Methanol Dosing Forecast
+[Baseline metrics](assets/a2_ch3oh_forecast/metrics_summary.csv) · [Baseline forecast plots](assets/a2_ch3oh_forecast/train_test_predictions.png) · [Tuning comparison](assets/a2_ch3oh_forecast_tuned/comparison.csv) · [Tuned forecast plots](assets/a2_ch3oh_forecast_tuned/train_test_predictions.png)
 
-![A1 methanol dosing test forecasts](assets/current_forecasts/a1_ch3oh_flow_test_comparison.png)
+## Slide 8 — A1 aeration airflow
 
-**Validation-selected model: Ridge.** Test N = **213**; MAE **17.871515**; RMSE **26.470019 m3/hour**; R² **0.730**.
+Held-out test samples **211**. MAE and RMSE in **m3/min**.
 
-- Ridge is selected by validation error and retains positive test R², but predicts negative flow during some low-flow periods. Those predictions are shown without clipping and limit physical plausibility.
-- Tuned Random Forest has a higher retrospective test R² (0.793), but is not substituted as the headline model after seeing the test result.
+| Algorithm | Train R² | Validation R² | Test R² | Test MAE | Test RMSE |
+|---|---:|---:|---:|---:|---:|
+| Ridge | 0.680 → 0.672 | 0.596 → 0.600 | 0.213 → 0.242 | 1.600886 → 1.547761 | 2.850983 → 2.797598 |
+| Random Forest | 0.872 → 0.813 | -2.877 → 0.275 | 0.140 → 0.229 | 1.842058 → 1.564249 | 2.980221 → 2.821518 |
+| XGBoost | 0.860 → 0.677 | -6.029 → 0.630 | 0.084 → 0.073 | 2.025419 → 1.898258 | 3.075671 → 3.094388 |
+| LSTM | 0.838 → 0.838 | 0.821 → 0.821 | -0.289 → -0.289 | 2.034440 → 2.034440 | 3.649801 → 3.649800 |
 
-**Speaker note:** “Recorded dosing is forecast; optimal chemical doses and chemical savings were not evaluated.”
+**LSTM** has the lowest tuned validation RMSE. Its test RMSE moved from **3.649801** to **3.649800 m3/min**.
 
-## Slide 7 — A2 Methanol Dosing Forecast
+[Baseline metrics](assets/a1_air_forecast/metrics_summary.csv) · [Baseline forecast plots](assets/a1_air_forecast/train_test_predictions.png) · [Tuning comparison](assets/a1_air_forecast_tuned/comparison.csv) · [Tuned forecast plots](assets/a1_air_forecast_tuned/train_test_predictions.png)
 
-![A2 methanol dosing test forecasts](assets/current_forecasts/a2_ch3oh_flow_test_comparison.png)
+## Slide 9 — A2 aeration airflow
 
-**Validation-selected model: XGBoost.** Test N = **213**; MAE **13.529343**; RMSE **19.716478 m3/hour**; R² **0.693**.
+Held-out test samples **211**. MAE and RMSE in **m3/min**.
 
-- Validation selects XGBoost. Test R² remains positive, supporting partial predictability of the recorded dosing pattern.
-- XGBoost validation R² increased from 0.682 to 0.701, while test R² decreased from 0.705 to 0.693. Improved validation fit does not guarantee improved later forecasts.
+| Algorithm | Train R² | Validation R² | Test R² | Test MAE | Test RMSE |
+|---|---:|---:|---:|---:|---:|
+| Ridge | 0.797 → 0.796 | 0.737 → 0.738 | 0.182 → 0.197 | 1.624938 → 1.607041 | 2.666906 → 2.642164 |
+| Random Forest | 0.928 → 0.893 | 0.721 → 0.821 | 0.323 → 0.409 | 1.347319 → 1.186022 | 2.426060 → 2.265884 |
+| XGBoost | 0.910 → 0.709 | -0.059 → 0.848 | 0.217 → 0.292 | 1.548305 → 1.460398 | 2.608962 → 2.480585 |
+| LSTM | 0.833 → 0.852 | 0.742 → 0.879 | -0.293 → 0.082 | 2.050190 → 1.740633 | 3.352191 → 2.825258 |
 
-**Speaker note:** “Recorded dosing is forecast; optimal chemical doses and chemical savings were not evaluated.”
+**LSTM** has the lowest tuned validation RMSE. Its test RMSE moved from **3.352191** to **2.825258 m3/min**.
 
-## Slide 8 — A1 Aeration Airflow Forecast
+[Baseline metrics](assets/a2_air_forecast/metrics_summary.csv) · [Baseline forecast plots](assets/a2_air_forecast/train_test_predictions.png) · [Tuning comparison](assets/a2_air_forecast_tuned/comparison.csv) · [Tuned forecast plots](assets/a2_air_forecast_tuned/train_test_predictions.png)
 
-![A1 airflow test forecasts](assets/current_forecasts/a1_air_flow_test_comparison.png)
+## Slide 10 — What changed after tuning
 
-**Validation-selected model: LSTM.** Test N = **211**; MAE **2.025027**; RMSE **3.646666 m3/min**; R² **-0.287**.
-
-- Validation selects LSTM, with validation R² 0.821 but negative test R². The validation-to-test gap limits operational confidence.
-- Tuned Ridge achieves positive test R² (0.240), but choosing it from that test result would be retrospective selection. Validate algorithm choice across additional chronological periods.
-
-**Speaker note:** “Airflow forecasts describe recorded flow, not optimized aeration setpoints or energy savings.”
-
-## Slide 9 — A2 Aeration Airflow Forecast
-
-![A2 airflow test forecasts](assets/current_forecasts/a2_air_flow_test_comparison.png)
-
-**Validation-selected model: LSTM.** Test N = **211**; MAE **1.899255**; RMSE **2.971203 m3/min**; R² **-0.016**.
-
-- Tuned LSTM has validation R² 0.921, but test R² is slightly negative. High validation fit does not establish operational reliability.
-- Tuned Random Forest has test R² 0.492. This descriptive comparison motivates broader chronological evaluation rather than replacing the selected algorithm based on the same test.
-
-**Speaker note:** “Airflow forecasts describe recorded flow, not optimized aeration setpoints or energy savings.”
-
-## Slide 10 — Effect of expanded history and tuning
-
-| Target | Short-history test R² | Expanded-history test R² | Tuned-history test R² |
-|---|---:|---:|---:|
-| Effluent ammonium | -0.322 | -0.028 | ≈0.000 |
-| Effluent nitrate | undefined | undefined | undefined |
-| A1 methanol dosing | 0.531 | 0.733 | 0.730 |
-| A2 methanol dosing | 0.487 | 0.705 | 0.693 |
-| A1 airflow | -0.087 | -0.287 | -0.287 |
-| A2 airflow | 0.436 | 0.013 | -0.016 |
-
-Source: [validation_selected_experiment_comparison.csv](assets/current_forecasts/validation_selected_experiment_comparison.csv). Each experiment selects its own algorithm using validation error; the table compares the resulting procedures, not necessarily the same algorithm across columns. Test origins and observed labels are held fixed.
-
-- Expanded history improves the selected ammonium and methanol models' test R² relative to short history, but lowers the selected airflow models' test R².
-- Additional tuning improves ammonium test R² toward zero, slightly lowers both methanol scores and A2 airflow, and leaves A1 airflow effectively unchanged.
-- These results do not support a uniform improvement from more history or broader tuning.
-
-**Speaker note:** “The saved verification report records nonincreasing validation error for every candidate algorithm. That does not guarantee lower error on a later test period.”
-
-## Slide 11 — Conclusions and next evaluation
-
-- The approach is reportable as an **experimental multivariate time-series forecasting study using real plant operating data**.
-- Methanol forecasts generalize more consistently in this period. Ammonium and airflow remain sensitive to the evaluated operating periods.
-- More historical data benefited several candidates. Wider hyperparameter tuning did not consistently improve unseen-period performance.
-- Preserve real transitions and unusual events. Exclude or correct observations only with independent evidence of measurement faults.
-- Add persistence on the same labels, use multiple chronological validation windows, and confirm the frozen procedure on a new later operating period.
-
-**Closing statement:** “These results demonstrate target-dependent forecasting performance under real operational variability. They support continued validation and model development, but do not yet establish a dependable plant-control system or chemical and energy savings.”
-
-The fixed test was excluded from automated parameter/algorithm selection, but has been repeatedly inspected during development. Later independent evaluation is needed. Flow units are inherited from the workbook and require instrument-scaling confirmation. MAE/RMSE remain in target units; percentage improvement over persistence is unavailable for the latest runs.
-
-## Evidence and reproduction
-
-- The supplied CSV, JSON and PNG assets are the evidence available in this checkout. The previously referenced results notebook `notebooks/06_multivariate_forecast_results.ipynb` is absent and is not required to read these saved results.
-- [Headline metrics](assets/current_forecasts/headline_metrics.csv): validation-selected models with training, validation and test R².
-- [All experiment metrics](assets/current_forecasts/experiment_metrics.csv): short-history, expanded-history and tuned runs, all algorithms and splits.
-- [Validation-selected experiment comparison](assets/current_forecasts/validation_selected_experiment_comparison.csv): comparisons use independently validation-selected models within each experiment.
-- [Feature configuration](assets/current_forecasts/feature_configuration.json) and [selected parameters](assets/current_forecasts/selected_parameters.json).
-- [Target distributions](assets/current_forecasts/target_distributions.csv) and per-target `*_test_predictions.csv` files in [current_forecasts](assets/current_forecasts/): observed test labels, origin/label times and predictions from all four algorithms.
-- [Source and snapshot hashes](assets/current_forecasts/provenance.json); [saved-model/split verification](assets/current_forecasts/verification.json).
-- Training implementation and reproduction commands: [training README](../src/training/README.md).
-
-The saved verification report records unchanged sample labels/splits, nonincreasing validation error, serialized-model prediction agreement and validation-only algorithm selection for all six targets. These are recorded checks from the supplied run, not checks rerun against model files in this checkout. Reproduction requires restoring the source CSVs and original run artifacts described in the training README.
-
-Figures in `assets/current_forecasts` accompany the saved test predictions. Historical figures in `assets/forecast_slides` and metrics in `assets/etl_report` belong to older experiments and remain separate; their baseline percentages are not evidence for the tuned results above.
+- Test RMSE improved in **14 of 20** paired algorithm comparisons, worsened in **6**, and stayed within 0.000000001 of baseline in **0**.
+- The highest tuned test R² was **0.796** across the five paired targets. Nitrate is reported separately because its observed labels are constant and its tuned run is missing.
+- All comparisons use the saved forecasts in the linked asset folders.
