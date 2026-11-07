@@ -1,4 +1,5 @@
 import tempfile
+import os
 from pathlib import Path
 import unittest
 from unittest.mock import Mock, patch
@@ -17,8 +18,10 @@ class CSVLoaderTests(unittest.TestCase):
     def test_workbook_aliases_and_windows_path(self):
         mapping = csv_loader.read_aliases()
         self.assertEqual(mapping['70flowa1qin'], 'A1_Qin')
-        self.assertEqual(mapping['70flowa1aerobic'], 'Q_A1_air')
-        self.assertEqual(str(csv_loader.local_path(r'C:\Users\Bryan\Downloads\clean.csv')), '/mnt/c/Users/Bryan/Downloads/clean.csv')
+        self.assertEqual(mapping['70flowa1aerobic'], 'A1_Q_air')
+        expected = (r'C:\Users\Bryan\Downloads\clean.csv' if os.name == 'nt'
+                    else '/mnt/c/Users/Bryan/Downloads/clean.csv')
+        self.assertEqual(str(csv_loader.local_path(r'C:\Users\Bryan\Downloads\clean.csv')), expected)
         aliases, rows = csv_loader.read_clean_csv(self.path, mapping)
         self.assertEqual(aliases, ['A1_Qin', 'A1_COD_in'])
         self.assertEqual(rows[0][1:], (3.5, None))
