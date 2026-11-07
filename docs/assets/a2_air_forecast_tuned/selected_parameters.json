@@ -2,7 +2,7 @@
   {
     "algorithm": "Ridge",
     "parameters": {
-      "alpha": 15.848931924611142,
+      "alpha": 63095.7344480193,
       "copy_X": true,
       "fit_intercept": true,
       "max_iter": null,
@@ -11,7 +11,7 @@
       "solver": "auto",
       "tol": 0.0001
     },
-    "validation_mse": 0.6256094836373917
+    "validation_mse": 0.2085093406117833
   },
   {
     "algorithm": "Random Forest",
@@ -19,12 +19,12 @@
       "bootstrap": true,
       "ccp_alpha": 0.0,
       "criterion": "squared_error",
-      "max_depth": null,
-      "max_features": 0.8,
+      "max_depth": 5,
+      "max_features": 0.5,
       "max_leaf_nodes": null,
       "max_samples": null,
       "min_impurity_decrease": 0.0,
-      "min_samples_leaf": 6,
+      "min_samples_leaf": 12,
       "min_samples_split": 2,
       "min_weight_fraction_leaf": 0.0,
       "monotonic_cst": null,
@@ -35,7 +35,7 @@
       "verbose": 0,
       "warm_start": false
     },
-    "validation_mse": 0.4288142747502071
+    "validation_mse": 0.36835176645818607
   },
   {
     "algorithm": "XGBoost",
@@ -49,7 +49,7 @@
       "colsample_bytree": 0.7,
       "device": null,
       "early_stopping_rounds": null,
-      "enable_categorical": false,
+      "enable_categorical": true,
       "eval_metric": null,
       "feature_types": null,
       "feature_weights": null,
@@ -81,16 +81,16 @@
       "validate_parameters": null,
       "verbosity": null
     },
-    "validation_mse": 0.36219872540642967
+    "validation_mse": 0.23860178336746699
   },
   {
     "algorithm": "LSTM",
     "parameters": {
-      "hidden": 48,
-      "learning_rate": 0.003,
-      "weight_decay": 0.001,
+      "hidden": 12,
+      "learning_rate": 0.001,
+      "weight_decay": 0.0,
       "epochs": 100
     },
-    "validation_mse": 0.2888514828133755
+    "validation_mse": 0.21334095120825178
   }
 ]

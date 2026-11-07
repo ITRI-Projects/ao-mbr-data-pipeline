@@ -15,7 +15,7 @@ from sklearn.metrics import mean_squared_error
 from xgboost import XGBRegressor
 
 from .lstm import train_lstm
-from .train import metrics, load_source
+from .train import metrics, load_source, prediction_offset
 from .forecast_dataset import plot_training_report
 
 ALGORITHMS = {"ridge": "Ridge", "random_forest": "Random Forest", "xgboost": "XGBoost", "lstm": "LSTM"}
@@ -35,6 +35,9 @@ def run(args):
     y, split = arrays["y"], arrays["split"]
     flat = X.reshape(len(X), -1)
     train, val = split == "train", split == "validation"
+    prediction_mode = metadata.get("prediction_mode", "absolute")
+    offset = prediction_offset(arrays, config["target"], prediction_mode)
+    model_y = y - offset
     samples = pd.read_csv(source / "predictions.csv", parse_dates=["origin", "target_time"])
     np.testing.assert_allclose(samples.target, y)
     np.testing.assert_array_equal(samples.split, split)
@@ -57,7 +60,7 @@ def run(args):
     }
     output.mkdir(parents=True, exist_ok=True)
     summaries, trials, chosen, predictions = [], [], [], {}
-    constant = np.ptp(y[train]) == 0
+    constant = np.ptp(model_y[train]) == 0
     for key in args.algorithms:
         algorithm = ALGORITHMS[key]
         print(f"Tuning {config['name']}: {algorithm}", flush=True)
@@ -73,8 +76,9 @@ def run(args):
             for i, (hidden, lr, decay) in enumerate(settings_list):
                 settings = {"hidden": hidden, "learning_rate": lr, "weight_decay": decay, "epochs": args.epochs}
                 prefix = f"lstm_candidate_{i}_"
-                predicted, history = train_lstm(X, y, split, output, epochs=args.epochs,
+                raw_prediction, history = train_lstm(X, model_y, split, output, epochs=args.epochs,
                     hidden=hidden, learning_rate=lr, weight_decay=decay, prefix=prefix)
+                predicted = raw_prediction + offset
                 pd.DataFrame(history).to_csv(output / f"{prefix}loss.csv", index=False)
                 score = mean_squared_error(y[val], predicted[val])
                 print(f"  LSTM candidate {i + 1}/{len(settings_list)}: validation MSE={score:.8g}", flush=True)
@@ -84,23 +88,23 @@ def run(args):
                     shutil.copy2(output / f"{prefix}lstm.pt", output / filename)
         else:
             best_model = joblib.load(source / filename)
-            best_prediction = best_model.predict(flat)
+            best_prediction = best_model.predict(flat) + offset
             best = mean_squared_error(y[val], best_prediction[val])
             trials.append({"algorithm": algorithm, "candidate": "baseline", "validation_mse": best})
             for i, settings in enumerate([] if constant else spaces[key]):
                 if key == "ridge": model = Ridge(**settings)
                 elif key == "random_forest": model = RandomForestRegressor(**settings, random_state=42, n_jobs=2)
                 else: model = XGBRegressor(**settings, objective="reg:squarederror", random_state=42, n_jobs=2)
-                model.fit(flat[train], y[train])
-                score = mean_squared_error(y[val], model.predict(flat[val]))
+                model.fit(flat[train], model_y[train])
+                score = mean_squared_error(y[val], model.predict(flat[val]) + offset[val])
                 print(f"  {algorithm} candidate {i + 1}/{len(spaces[key])}: validation MSE={score:.8g}", flush=True)
                 trials.append({"algorithm": algorithm, "candidate": i, "parameters": json.dumps(settings), "validation_mse": score})
                 if score < best:
                     best, best_model = score, model
-            best_prediction = best_model.predict(flat)
+            best_prediction = best_model.predict(flat) + offset
             best_settings = best_model.get_params()
             joblib.dump(best_model, output / filename)
-            np.testing.assert_allclose(best_prediction, joblib.load(output / filename).predict(flat))
+            np.testing.assert_allclose(best_prediction, joblib.load(output / filename).predict(flat) + offset)
         if not np.isfinite(best_prediction).all():
             raise ValueError(f"Non-finite {algorithm} predictions")
         if key == "lstm":
@@ -111,7 +115,8 @@ def run(args):
             restored.load_state_dict(saved["state_dict"])
             restored.eval()
             with torch.no_grad():
-                reloaded = restored(torch.tensor(X, dtype=torch.float32)).numpy() * saved["target_scale"] + saved["target_center"]
+                reloaded = (restored(torch.tensor(X, dtype=torch.float32)).numpy()
+                            * saved["target_scale"] + saved["target_center"] + offset)
             np.testing.assert_allclose(best_prediction, reloaded, rtol=1e-5, atol=1e-7)
         predictions[algorithm] = best_prediction
         chosen.append({"algorithm": algorithm, "parameters": best_settings, "validation_mse": best})
