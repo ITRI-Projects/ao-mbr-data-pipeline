@@ -42,6 +42,25 @@ def metrics(y, prediction):
             "R2": float(r2_score(y, prediction)) if len(y) > 1 and np.ptp(y) > 0 else np.nan,
             "constant_target": bool(np.ptp(y) == 0)}
 
+PREDICTION_MODES = ("absolute", "delta")
+
+
+def prediction_offset(arrays, target, mode):
+    """Return the level added to raw model output to obtain absolute forecasts."""
+    if mode not in PREDICTION_MODES:
+        raise ValueError(f"Unknown prediction mode: {mode}")
+    if mode == "absolute":
+        return np.zeros(len(arrays["y"]), dtype=float)
+    names = [str(name) for name in arrays["feature_names"]]
+    if target not in names:
+        raise ValueError(f"Delta prediction requires target history for {target}.")
+    index = names.index(target)
+    offset = (arrays["X"][:, -1, index].astype(float) * arrays["scale"][index]
+              + arrays["center"][index])
+    if not np.isfinite(offset).all():
+        raise ValueError(f"Delta prediction has non-finite origin values for {target}.")
+    return offset
+
 
 def run(args):
     from xgboost import XGBRegressor
@@ -70,6 +89,8 @@ def run(args):
         X = np.concatenate([arrays["X"], arrays["missing"].astype(np.float32)], axis=2)
         flat = X.reshape(len(X), -1)
         y, splits = arrays["y"], arrays["split"]
+        offset = prediction_offset(arrays, config["target"], args.prediction_mode)
+        model_y = y - offset
         train, val = splits == "train", splits == "validation"
         models = {
             "Ridge": [Ridge(alpha=a) for a in (1., 10., 100.)],
@@ -82,16 +103,17 @@ def run(args):
         for algorithm, candidates in models.items():
             best_score, best_model = float("inf"), None
             for model in candidates:
-                model.fit(flat[train], y[train])
-                score = mean_squared_error(y[val], model.predict(flat[val]))
+                model.fit(flat[train], model_y[train])
+                score = mean_squared_error(y[val], model.predict(flat[val]) + offset[val])
                 if score < best_score:
                     best_score, best_model = score, model
-            predictions[algorithm] = best_model.predict(flat)
+            predictions[algorithm] = best_model.predict(flat) + offset
             path = artifact(algorithm.lower().replace(" ", "_") + ".joblib")
             joblib.dump(best_model, path)
-            np.testing.assert_allclose(predictions[algorithm], joblib.load(path).predict(flat))
+            np.testing.assert_allclose(predictions[algorithm], joblib.load(path).predict(flat) + offset)
             selections[algorithm] = {"parameters": best_model.get_params(), "validation_mse": best_score}
-        predictions["LSTM"], history = train_lstm(X, y, splits, folder, epochs=args.epochs, prefix=prefix)
+        lstm_prediction, history = train_lstm(X, model_y, splits, folder, epochs=args.epochs, prefix=prefix)
+        predictions["LSTM"] = lstm_prediction + offset
         pd.DataFrame(history).to_csv(artifact("lstm_loss.csv"), index=False)
         fig, ax = plt.subplots(figsize=(7, 4))
         loss = pd.DataFrame(history)
@@ -112,6 +134,8 @@ def run(args):
         forecasts.to_csv(artifact("predictions.csv"), index=False)
         np.savez_compressed(artifact("preprocessing_and_sequences.npz"), **arrays)
         details.update({"workbook": config, "hyperparameter_selection": selections,
+                        "prediction_mode": args.prediction_mode,
+                        "model_target": "future_minus_origin" if args.prediction_mode == "delta" else "future_absolute",
                         "added_target_history": config["target"] not in config["features"],
                         "label_policy": "exact observed future labels only; source mask removes estimates"})
         (artifact("metadata.json")).write_text(json.dumps(details, indent=2, default=str), encoding="utf-8")
@@ -139,6 +163,7 @@ def run(args):
     (output / "report.html").write_text(html + "</body></html>", encoding="utf-8")
     manifest = {"files": {str(p): hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in (args.data, args.mask, args.workbook)},
                 "train_end_exclusive": args.train_end, "test_start": args.test_start,
+                "prediction_mode": args.prediction_mode,
                 "horizon_minutes": 60, "sequence_steps": 12, "origin_interval_minutes": 20,
                 "seed": 42, "max_lstm_epochs": args.epochs, "targets": manifest_targets,
                 "versions": {p: importlib.metadata.version(p) for p in ("numpy", "pandas", "scikit-learn", "xgboost", "torch")},
@@ -161,6 +186,7 @@ def main():
     parser.add_argument("--test-start", default="2026-04-21")
     parser.add_argument("--epochs", type=int, default=60)
     parser.add_argument("--targets", nargs="*", help="Optional model names, e.g. eff_nh3_n a1_air_flow")
+    parser.add_argument("--prediction-mode", choices=PREDICTION_MODES, default="delta")
     args = parser.parse_args()
     if args.epochs < 1:
         parser.error("--epochs must be positive")
