@@ -27,7 +27,10 @@ def main():
         pd.testing.assert_frame_equal(a[["origin", "target_time", "split", "target"]],
                                       b[["origin", "target_time", "split", "target"]])
         with np.load(old / name / "preprocessing_and_sequences.npz") as arrays:
-            X = np.concatenate([arrays["X"], arrays["missing"].astype(np.float32)], axis=2)
+            channels = [arrays["X"], arrays["missing"].astype(np.float32)]
+            if "quality" in arrays:
+                channels.append(arrays["quality"].astype(np.float32))
+            X = np.concatenate(channels, axis=2)
         flat = X.reshape(len(X), -1)
         for algorithm in ("Ridge", "Random Forest", "XGBoost"):
             model = joblib.load(new / name / (algorithm.lower().replace(" ", "_") + ".joblib"))

@@ -31,7 +31,10 @@ def run(args):
     config = metadata["workbook"]
     with np.load(array_path) as saved:
         arrays = {k: saved[k] for k in saved.files}
-    X = np.concatenate([arrays["X"], arrays["missing"].astype(np.float32)], axis=2)
+    channels = [arrays["X"], arrays["missing"].astype(np.float32)]
+    if "quality" in arrays:
+        channels.append(arrays["quality"].astype(np.float32))
+    X = np.concatenate(channels, axis=2)
     y, split = arrays["y"], arrays["split"]
     flat = X.reshape(len(X), -1)
     train, val = split == "train", split == "validation"
@@ -48,7 +51,8 @@ def run(args):
     for filename in source_files:
         if hashlib.sha256(Path(filename).read_bytes()).hexdigest() != source_manifest["files"][filename]:
             raise ValueError(f"Baseline source file changed: {filename}")
-    _, raw = load_source(source_files[0], source_files[1])
+    load_paths = source_files[:5] if len(source_files) >= 6 else source_files[:2]
+    _, raw = load_source(*load_paths)
     spaces = {
         "ridge": [{"alpha": float(a)} for a in np.logspace(-3, 6, 16)],
         "random_forest": list(ParameterSampler({"n_estimators": [200, 400], "max_depth": [3, 5, 8, 12, None],

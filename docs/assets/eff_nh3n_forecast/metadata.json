@@ -19,8 +19,8 @@
     "A2_NH3_N"
   ],
   "split_counts": {
-    "test": 211,
-    "train": 1733,
+    "test": 178,
+    "train": 1681,
     "validation": 213
   },
   "target_unique_by_split": {
@@ -29,7 +29,8 @@
     "validation": 157
   },
   "scheduled_origins_after_warmup": 2182,
-  "excluded_missing_labels_or_boundary": 25,
+  "excluded_missing_labels_boundary_or_corruption": 110,
+  "excluded_corrupt_sequence_or_label": 36,
   "workbook": {
     "name": "eff_nh3_n",
     "target": "Eff_NH4_N",
@@ -53,7 +54,8 @@
     "workbook_marked_targets": [
       "Eff_NH4_N"
     ],
-    "target_mark_corrected": false
+    "target_mark_corrected": false,
+    "excluded_unavailable_features": []
   },
   "hyperparameter_selection": {
     "Ridge": {
@@ -67,14 +69,14 @@
         "solver": "auto",
         "tol": 0.0001
       },
-      "validation_mse": 0.010220601623857335
+      "validation_mse": 0.015120056419628514
     },
     "Random Forest": {
       "parameters": {
         "bootstrap": true,
         "ccp_alpha": 0.0,
         "criterion": "squared_error",
-        "max_depth": 5,
+        "max_depth": 10,
         "max_features": 1.0,
         "max_leaf_nodes": null,
         "max_samples": null,
@@ -90,7 +92,7 @@
         "verbose": 0,
         "warm_start": false
       },
-      "validation_mse": 0.0005328369899749634
+      "validation_mse": 0.0009719969132072833
     },
     "XGBoost": {
       "parameters": {
@@ -135,11 +137,13 @@
         "validate_parameters": null,
         "verbosity": null
       },
-      "validation_mse": 0.00027329173670323455
+      "validation_mse": 0.00020840815572687913
     }
   },
   "prediction_mode": "delta",
   "model_target": "future_minus_origin",
   "added_target_history": false,
-  "label_policy": "exact observed future labels only; source mask removes estimates"
+  "excluded_unavailable_workbook_features": [],
+  "label_policy": "exact observed future labels only; fill, fault and replacement masks remove estimates",
+  "input_channels": "scaled readings, missing flags, and fill/fault/replacement quality flags"
 }

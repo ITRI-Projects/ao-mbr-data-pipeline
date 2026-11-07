@@ -6,6 +6,7 @@ import argparse
 import hashlib
 import importlib.metadata
 import json
+from dataclasses import dataclass
 from pathlib import Path
 
 import joblib
@@ -21,19 +22,106 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from .forecast_dataset import prepare, plot_training_report
 from .workbook import read_workbook
 
+MASK_FILENAMES = (
+    "data_filled_mask.csv",
+    "data_sensor_fault_mask.csv",
+    "data_short_error_replacement_mask.csv",
+    "data_synchronized_corrupt_mask.csv",
+)
 
-def load_source(data_path, mask_path):
+
+def discover_mask_paths(data_path):
+    """Find notebook 02 mask exports beside the selected data CSV."""
+    folder = Path(data_path).resolve().parent
+    paths = tuple(folder / filename for filename in MASK_FILENAMES)
+    missing = [str(path) for path in paths if not path.is_file()]
+    if missing:
+        raise FileNotFoundError(
+            "Training requires the four mask exports beside the data CSV. "
+            f"Missing: {missing}"
+        )
+    return paths
+
+
+def _read_boolean_frame(path, index, columns, label):
+    if path is None:
+        return pd.DataFrame(False, index=index, columns=columns)
+    text = pd.read_csv(path, index_col="datetime", parse_dates=True, dtype=str)
+    if not text.index.equals(index) or not text.columns.equals(columns):
+        raise ValueError(f"Data and {label} must have identical timestamps and sensors.")
+    if not text.isin(["True", "False"]).all().all():
+        raise ValueError(f"{label} must contain only True/False values.")
+    return text.eq("True")
+
+
+def _read_synchronized_mask(path):
+    if path is None:
+        return None
+    text = pd.read_csv(path, index_col="datetime", parse_dates=True, dtype=str)
+    if text.shape[1] != 1 or not text.iloc[:, 0].isin(["True", "False"]).all():
+        raise ValueError("Synchronized mask must contain one True/False column.")
+    if text.index.has_duplicates or not text.index.is_monotonic_increasing:
+        raise ValueError("Synchronized mask timestamps must be unique and sorted.")
+    return text.iloc[:, 0].eq("True").rename("synchronized_corrupt")
+
+
+@dataclass(frozen=True)
+class TrainingSource:
+    data: pd.DataFrame
+    observed: pd.DataFrame
+    quality_mask: pd.DataFrame
+    synchronized_mask: pd.Series
+
+    def __iter__(self):
+        """Preserve the historical ``data, observed = load_source(...)`` API."""
+        yield self.data
+        yield self.observed
+
+
+def load_source(data_path, mask_path, fault_mask_path=None,
+                replacement_mask_path=None, synchronized_mask_path=None):
     data = pd.read_csv(data_path, index_col="datetime", parse_dates=True)
-    mask_text = pd.read_csv(mask_path, index_col="datetime", parse_dates=True, dtype=str)
-    if not data.index.equals(mask_text.index) or not data.columns.equals(mask_text.columns):
-        raise ValueError("Data and fill mask must have identical timestamps and sensors.")
-    if not mask_text.isin(["True", "False"]).all().all():
-        raise ValueError("Mask must contain only True/False values; missing or estimated labels are forbidden.")
-    mask = mask_text.eq("True")
+    if (data.empty or data.index.has_duplicates or not data.index.is_monotonic_increasing
+            or not data.columns.is_unique):
+        raise ValueError("Training data must have unique sorted timestamps and sensors.")
+    fill_mask = _read_boolean_frame(mask_path, data.index, data.columns, "fill mask")
+    fault_mask = _read_boolean_frame(
+        fault_mask_path, data.index, data.columns, "sensor fault mask"
+    )
+    replacement_mask = _read_boolean_frame(
+        replacement_mask_path, data.index, data.columns, "short-error replacement mask"
+    )
     data = data.apply(pd.to_numeric, errors="raise")
-    if np.isinf(data.to_numpy(dtype=float)).any() or (mask & data.isna()).any().any():
-        raise ValueError("Invalid data or a fill mask marking missing values as estimates.")
-    return data, data.where(~mask)
+    if np.isinf(data.to_numpy(dtype=float)).any():
+        raise ValueError("Infinite training readings are invalid.")
+    invalid_fill = fill_mask & data.isna() & ~fault_mask
+    if invalid_fill.any().any() or (replacement_mask & data.isna()).any().any():
+        raise ValueError(
+            "Fill and replacement masks may only mark populated estimates, except fills later removed as faults."
+        )
+    if (replacement_mask & ~fault_mask).any().any():
+        raise ValueError("Every short-error replacement must also be marked as a sensor fault.")
+
+    synchronized = _read_synchronized_mask(synchronized_mask_path)
+    if synchronized is None:
+        synchronized = pd.Series(False, index=data.index, name="synchronized_corrupt")
+    elif synchronized.reindex(data.index, fill_value=False).any():
+        raise ValueError("Synchronized corrupt timestamps must be absent from the cleaned data.")
+    start = min(data.index.min(), synchronized.index.min())
+    end = max(data.index.max(), synchronized.index.max())
+    minute_index = pd.date_range(start, end, freq="min", name="datetime")
+    data = data.reindex(minute_index)
+    fill_mask = fill_mask.reindex(minute_index, fill_value=False)
+    fault_mask = fault_mask.reindex(minute_index, fill_value=False)
+    replacement_mask = replacement_mask.reindex(minute_index, fill_value=False)
+    synchronized = synchronized.reindex(minute_index, fill_value=False)
+    synchronized_cells = pd.DataFrame(
+        np.broadcast_to(synchronized.to_numpy()[:, None], data.shape),
+        index=data.index, columns=data.columns,
+    )
+    quality_mask = fill_mask | fault_mask | replacement_mask | synchronized_cells
+    observed = data.mask(fill_mask | fault_mask | replacement_mask | synchronized_cells)
+    return TrainingSource(data, observed, quality_mask, synchronized)
 
 
 def metrics(y, prediction):
@@ -65,13 +153,40 @@ def prediction_offset(arrays, target, mode):
 def run(args):
     from xgboost import XGBRegressor
     from .lstm import train_lstm
-    data, raw = load_source(args.data, args.mask)
+    mask_paths = discover_mask_paths(args.data)
+    source = load_source(
+        args.data, *mask_paths,
+    )
+    data, raw = source
     configs, audit = read_workbook(args.workbook)
     if args.targets:
         unknown = set(args.targets) - set(configs)
         if unknown:
             raise ValueError(f"Unknown target models: {sorted(unknown)}")
         configs = {k: v for k, v in configs.items() if k in args.targets}
+    skipped_targets = {}
+    available_configs = {}
+    for name, config in configs.items():
+        if config["target"] not in data.columns:
+            skipped_targets[name] = {
+                "target": config["target"], "reason": "target_absent_from_cleaned_data"
+            }
+            continue
+        unavailable = [feature for feature in config["features"] if feature not in data.columns]
+        revised = dict(config)
+        revised["features"] = [
+            feature for feature in config["features"] if feature in data.columns
+        ]
+        revised["excluded_unavailable_features"] = unavailable
+        available_configs[name] = revised
+    if args.targets and skipped_targets:
+        raise ValueError(
+            "Requested targets were removed from the cleaned data: "
+            f"{sorted(skipped_targets)}"
+        )
+    configs = available_configs
+    if not configs:
+        raise ValueError("No trainable targets remain in the cleaned data.")
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(audit).to_csv(output / "workbook_feature_audit.csv", index=False)
@@ -84,9 +199,14 @@ def run(args):
             return folder / (prefix + filename)
         arrays, samples, details = prepare(
             raw, config, train_end=args.train_end, test_start=args.test_start,
-            horizon_minutes=60, step_minutes=20, sequence_steps=12, prepared_inputs=data)
+            horizon_minutes=60, step_minutes=20, sequence_steps=12,
+            prepared_inputs=data, input_quality_mask=source.quality_mask,
+            excluded_timestamps=source.synchronized_mask)
         # Workbook inputs are authoritative; target history is an explicitly added autoregressive input.
-        X = np.concatenate([arrays["X"], arrays["missing"].astype(np.float32)], axis=2)
+        X = np.concatenate([
+            arrays["X"], arrays["missing"].astype(np.float32),
+            arrays["quality"].astype(np.float32),
+        ], axis=2)
         flat = X.reshape(len(X), -1)
         y, splits = arrays["y"], arrays["split"]
         offset = prediction_offset(arrays, config["target"], args.prediction_mode)
@@ -137,7 +257,9 @@ def run(args):
                         "prediction_mode": args.prediction_mode,
                         "model_target": "future_minus_origin" if args.prediction_mode == "delta" else "future_absolute",
                         "added_target_history": config["target"] not in config["features"],
-                        "label_policy": "exact observed future labels only; source mask removes estimates"})
+                        "excluded_unavailable_workbook_features": config["excluded_unavailable_features"],
+                        "label_policy": "exact observed future labels only; fill, fault and replacement masks remove estimates",
+                        "input_channels": "scaled readings, missing flags, and fill/fault/replacement quality flags"})
         (artifact("metadata.json")).write_text(json.dumps(details, indent=2, default=str), encoding="utf-8")
         manifest_targets[name] = {"target": config["target"], "split_counts": details["split_counts"]}
         target_scores = pd.DataFrame(summaries).query("model == @name")
@@ -161,14 +283,16 @@ def run(args):
         prefix = f"{name}_" if len(configs) > 1 else ""
         html += f"<h2>{name}</h2><img width='100%' src='{prefix}dataset_split.png'><img width='100%' src='{prefix}train_test_predictions.png'><img width='100%' src='{prefix}metrics_comparison.png'>"
     (output / "report.html").write_text(html + "</body></html>", encoding="utf-8")
-    manifest = {"files": {str(p): hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in (args.data, args.mask, args.workbook)},
+    source_files = [args.data, *mask_paths, args.workbook]
+    manifest = {"files": {str(p): hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in source_files},
                 "train_end_exclusive": args.train_end, "test_start": args.test_start,
                 "prediction_mode": args.prediction_mode,
                 "horizon_minutes": 60, "sequence_steps": 12, "origin_interval_minutes": 20,
                 "seed": 42, "max_lstm_epochs": args.epochs, "targets": manifest_targets,
+                "skipped_targets": skipped_targets,
                 "versions": {p: importlib.metadata.version(p) for p in ("numpy", "pandas", "scikit-learn", "xgboost", "torch")},
                 "limitations": ["Short previously inspected source period; independent future evaluation needed.",
-                                "Upstream observations rely on source fill mask accuracy.",
+                                "Upstream observations rely on fill and sensor-quality mask accuracy.",
                                 "Rolling test forecasts use past available test observations."]}
     (output / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     print(display.to_string(index=False))
@@ -178,8 +302,7 @@ def run(args):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--data", default="notebooks/data/data_filled.csv")
-    parser.add_argument("--mask", default="docs/raw/data_filled_mask.csv")
+    parser.add_argument("--data", default="docs/raw/data_filled.csv")
     parser.add_argument("--workbook", default="Sensor_Configurations.xlsx")
     parser.add_argument("--output", default="data/training/workbook_forecasts")
     parser.add_argument("--train-end", default="2026-04-18")

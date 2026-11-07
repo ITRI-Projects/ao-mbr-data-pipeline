@@ -35,3 +35,23 @@ class ForecastDatasetTests(unittest.TestCase):
     def test_duplicate_times_are_rejected(self):
         with self.assertRaises(ValueError):
             prepare(pd.concat([self.raw.iloc[:1], self.raw]), self.config)
+
+    def test_sequences_and_labels_touching_synchronized_corruption_are_excluded(self):
+        excluded = pd.Series(False, index=self.raw.index)
+        corrupt_time = pd.Timestamp("2026-04-16 00:00")
+        excluded.loc[corrupt_time] = True
+        quality = pd.DataFrame(False, index=self.raw.index, columns=self.raw.columns)
+        quality.loc["2026-04-15 12:00", "x"] = True
+
+        arrays, samples, details = prepare(
+            self.raw, self.config, prepared_inputs=self.raw,
+            input_quality_mask=quality, excluded_timestamps=excluded,
+        )
+
+        history_start = samples.origin - pd.Timedelta(minutes=220)
+        self.assertFalse(
+            ((history_start <= corrupt_time) & (samples.origin >= corrupt_time)).any()
+        )
+        self.assertFalse((samples.target_time == corrupt_time).any())
+        self.assertGreater(details["excluded_corrupt_sequence_or_label"], 0)
+        self.assertEqual(arrays["quality"].shape, arrays["missing"].shape)
