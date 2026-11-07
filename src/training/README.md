@@ -7,23 +7,27 @@ python -m pip install -r src/training/requirements.txt
 python -m src.training.train
 ```
 
-The defaults consume `notebooks/data/data_filled.csv` and
-`notebooks/data/data_filled_mask.csv` exported by notebook 02. The mask is required
-so filled estimates cannot become future measured labels. Input preparation is
-used as exported: the trainer does not apply another uniform fill policy.
+The defaults consume `docs/raw/data_filled.csv` plus the fill, sensor-fault,
+short-error-replacement, and synchronized-corruption masks exported by notebook
+02. Filled, faulty, and repaired values cannot become future measured labels.
+Synchronized corrupt intervals are restored as gaps on the minute grid, and any
+forecast sequence or label touching them is excluded. Input preparation is used
+as exported: the trainer does not apply another uniform fill policy.
 
 `Sensor_Configurations.xlsx` supplies the six prediction groups, checkmarked
 inputs, aliases (falling back to the source column for airflow) and units.
 The owner confirmed that the airflow targets should follow the headings:
-A1 = `Q_A1_air`, A2 = `Q_A2_air`. Their inconsistent green workbook marks are
+A1 = `A1_Q_air`, A2 = `A2_Q_air`. Their inconsistent green workbook marks are
 recorded in the exported audit rather than changing the workbook. Current target
-history is added once as an explicit autoregressive input. Constant, unobserved
-or unsampled training inputs are excluded and recorded in each model metadata.
+history is added once as an explicit autoregressive input. Sensors removed from
+the cleaned CSV are removed from workbook feature lists; a model is skipped when
+its target was removed. Other constant, unobserved, or unsampled training inputs
+are excluded and recorded in each model metadata.
 
 All four algorithms receive identical 12-step sequences at 20-minute origins
 and exact observed labels 60 minutes later. LSTM uses the ordered sequences;
 Ridge, Random Forest and XGBoost use the same sequences flattened. Missingness
-channels accompany training-only imputation and scaling. LSTM target scaling
+and source-quality channels accompany training-only imputation and scaling. LSTM target scaling
 also fits training only. Future labels crossing split boundaries are purged.
 
 Defaults train on April 14-17, validate on April 18-20 and test on April 21-23.
@@ -113,11 +117,11 @@ The split plot shows only seven days; training still uses all baseline history.
 Run the four-model comparison on the notebook 02 output:
 
 ```bash
-python -m src.training.train --data docs/raw/data_filled.csv --mask notebooks/data/data_filled_mask.csv --targets eff_nh3_n --output data/training/effluent_ammonia_full_history
+python -m src.training.train --targets eff_nh3_n --output data/training/effluent_ammonia_full_history
 ```
 
-The matching mask removes forward-filled estimates from future labels while
-preserving the supplied unlimited-forward-filled inputs. Training uses available
+The matching masks remove forward-filled, faulty, and repaired estimates from
+future labels while retaining eligible prepared inputs and their quality flags. Training uses available
 history before April 18; validation covers April 18-20; rolling held-out forecasts
 cover April 21-23. All algorithms use the same 12-step sequences, 20-minute origins,
 and exact observed one-hour-ahead targets. Validation selects model settings.
