@@ -17,7 +17,8 @@ CONFIG_MODULES = ("eff_nh3_n", "eff_no3_n", "a1_ch3oh_flow",
 
 
 def prepare(raw, config, train_end="2026-04-18", test_start="2026-04-21",
-            horizon_minutes=60, step_minutes=20, sequence_steps=12, max_age_minutes=5, prepared_inputs=None):
+            horizon_minutes=60, step_minutes=20, sequence_steps=12, max_age_minutes=5,
+            prepared_inputs=None, input_quality_mask=None, excluded_timestamps=None):
     """Use exact future observed labels and past/current inputs only.
 
     Validation is April 18-20 by default; train labels cannot cross April 18,
@@ -59,13 +60,25 @@ def prepare(raw, config, train_end="2026-04-18", test_start="2026-04-21",
         if not prepared_inputs.index.equals(grid.index) or not set(retained).issubset(prepared_inputs.columns):
             raise ValueError("Prepared inputs must align exactly with the source minute grid.")
         causal = prepared_inputs[retained]
+    if input_quality_mask is None:
+        input_quality_mask = pd.DataFrame(False, index=grid.index, columns=grid.columns)
+    elif (not input_quality_mask.index.equals(grid.index)
+          or not set(retained).issubset(input_quality_mask.columns)):
+        raise ValueError("Input quality mask must align exactly with the source minute grid.")
+    if excluded_timestamps is None:
+        excluded_timestamps = pd.Series(False, index=grid.index)
+    elif not excluded_timestamps.index.equals(grid.index):
+        raise ValueError("Excluded timestamps must align exactly with the source minute grid.")
+    excluded_timestamps = excluded_timestamps.astype(bool)
     origins = pd.date_range(grid.index.min().ceil(f"{step_minutes}min"),
                             grid.index.max(), freq=f"{step_minutes}min")
     values = causal.reindex(origins).to_numpy(dtype=float)
+    quality_values = input_quality_mask[retained].reindex(origins).to_numpy(dtype=bool)
     # Ordered sequences end at each forecast origin, including that origin.
     positions = np.arange(sequence_steps - 1, len(origins))
     offsets = np.arange(sequence_steps - 1, -1, -1)
     X = values[positions[:, None] - offsets]
+    quality = quality_values[positions[:, None] - offsets]
     origins = origins[positions]
     label_times = origins + pd.Timedelta(minutes=horizon_minutes)
     y = grid[target].reindex(label_times).to_numpy(dtype=float)
@@ -73,14 +86,23 @@ def prepare(raw, config, train_end="2026-04-18", test_start="2026-04-21",
     split[(origins < train_end) & (label_times < train_end)] = "train"
     split[(origins >= train_end) & (origins < test_start) & (label_times < test_start)] = "validation"
     split[(origins >= test_start) & (label_times <= grid.index.max())] = "test"
-    valid = np.isfinite(y) & (split != "purged")
-    X, y, origins, label_times, split = X[valid], y[valid], origins[valid], label_times[valid], split[valid]
+    history_starts = origins - pd.Timedelta(minutes=step_minutes * (sequence_steps - 1))
+    corrupt_sequence = np.array([
+        excluded_timestamps.loc[start:origin].any()
+        for start, origin in zip(history_starts, origins)
+    ])
+    corrupt_label = excluded_timestamps.reindex(label_times, fill_value=False).to_numpy()
+    valid = np.isfinite(y) & (split != "purged") & ~corrupt_sequence & ~corrupt_label
+    X, quality, y, origins, label_times, split = (
+        X[valid], quality[valid], y[valid], origins[valid], label_times[valid], split[valid]
+    )
     if any(not np.any(split == s) for s in ("train", "validation", "test")):
         raise ValueError(f"{target}: at least one split has no measured labels.")
     supported = np.isfinite(X[split == "train"]).any(axis=(0, 1))
     sequence_excluded = [name for name, keep in zip(retained, supported) if not keep]
     retained = [name for name, keep in zip(retained, supported) if keep]
     X = X[:, :, supported]
+    quality = quality[:, :, supported]
     if not retained:
         raise ValueError("No observed training sequence inputs remain.")
     missing = np.isnan(X)
@@ -95,8 +117,9 @@ def prepare(raw, config, train_end="2026-04-18", test_start="2026-04-21",
     scaled = ((imputed - center) / scale).astype(np.float32)
     metadata = pd.DataFrame({"origin": origins, "target_time": label_times,
                              "split": split, "target": y,
-                             "missing_input_fraction": missing.mean(axis=(1, 2))})
-    return dict(X_raw=X, X=scaled, missing=missing, y=y, split=split,
+                             "missing_input_fraction": missing.mean(axis=(1, 2)),
+                             "quality_flagged_input_fraction": quality.mean(axis=(1, 2))})
+    return dict(X_raw=X, X=scaled, missing=missing, quality=quality, y=y, split=split,
                 origin=origins.to_numpy(), target_time=label_times.to_numpy(),
                 feature_names=np.asarray(retained), median=medians, center=center, scale=scale), metadata, {
                     "target": target, "features": retained,
@@ -105,7 +128,8 @@ def prepare(raw, config, train_end="2026-04-18", test_start="2026-04-21",
                     "split_counts": metadata.groupby("split").size().to_dict(),
                     "target_unique_by_split": metadata.groupby("split")["target"].nunique().to_dict(),
                     "scheduled_origins_after_warmup": len(positions),
-                    "excluded_missing_labels_or_boundary": int((~valid).sum())}
+                    "excluded_missing_labels_boundary_or_corruption": int((~valid).sum()),
+                    "excluded_corrupt_sequence_or_label": int((corrupt_sequence | corrupt_label).sum())}
 
 
 
@@ -208,7 +232,9 @@ def export_dataset(source, output):
         flat = pd.DataFrame(arrays["X"].reshape(len(samples), -1), columns=features)
         masks = pd.DataFrame(arrays["missing"].reshape(len(samples), -1).astype(int),
                              columns=[f"{f}__missing" for f in features])
-        flat = pd.concat([samples.reset_index(drop=True), flat, masks], axis=1)
+        quality = pd.DataFrame(arrays["quality"].reshape(len(samples), -1).astype(int),
+                               columns=[f"{f}__quality_flagged" for f in features])
+        flat = pd.concat([samples.reset_index(drop=True), flat, masks, quality], axis=1)
         for split in ("train", "validation", "test"):
             flat.loc[flat["split"] == split].to_csv(folder / f"{split}.csv", index=False)
         reports[name] = details

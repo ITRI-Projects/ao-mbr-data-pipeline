@@ -12,7 +12,9 @@ short-error-replacement, and synchronized-corruption masks exported by notebook
 02. Filled, faulty, and repaired values cannot become future measured labels.
 Synchronized corrupt intervals are restored as gaps on the minute grid, and any
 forecast sequence or label touching them is excluded. Input preparation is used
-as exported: the trainer does not apply another uniform fill policy.
+as exported: the trainer does not apply another uniform fill policy. Selecting
+`--data` automatically discovers all four standard mask filenames in the same
+directory; masks are not separate command-line inputs.
 
 `Sensor_Configurations.xlsx` supplies the six prediction groups, checkmarked
 inputs, aliases (falling back to the source column for airflow) and units.
@@ -57,7 +59,7 @@ Examples:
 
 ```bash
 python -m src.training.train --targets eff_nh3_n a1_air_flow --epochs 40
-python -m src.training.train --data path/data_filled.csv --mask path/data_filled_mask.csv --output data/training/another_run
+python -m src.training.train --data path/data_filled.csv --output data/training/another_run
 ```
 
 Modules: `workbook.py` reads the feature matrix; `train.py` orchestrates models
@@ -73,7 +75,7 @@ with the same sensor-specific fill limits as notebook 02, then train separately:
 
 ```bash
 python -m src.training.expand_history
-python -m src.training.train --data data/training/expanded_history_inputs/data_filled.csv --mask data/training/expanded_history_inputs/data_filled_mask.csv --output data/training/expanded_history_forecasts
+python -m src.training.train --data data/training/expanded_history_inputs/data_filled.csv --output data/training/expanded_history_forecasts
 python -m src.training.compare_history
 ```
 
