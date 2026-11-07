@@ -1,16 +1,16 @@
 {
-  "target": "Q_A2_air",
+  "target": "A2_Q_air",
   "features": [
     "A2_Qin",
     "A2_COD_in",
     "A2_Q_r1",
     "A2_FQ_CH3OH",
-    "A2_O_PH",
-    "A2_O_ORP",
-    "A2_O_DO",
-    "A2_O_MLSS",
+    "O_PH",
+    "O_ORP",
+    "O_DO",
+    "O_MLSS",
     "Eff_NH4_N",
-    "Q_A2_air"
+    "A2_Q_air"
   ],
   "excluded_no_training_sequence_support": [],
   "excluded_training_constant_or_unobserved": [
@@ -30,17 +30,17 @@
   "excluded_missing_labels_or_boundary": 30,
   "workbook": {
     "name": "a2_air_flow",
-    "target": "Q_A2_air",
+    "target": "A2_Q_air",
     "features": [
       "A2_Qin",
       "A2_COD_in",
       "A2_Q_r1",
       "A2_FQ_CH3OH",
       "A2_NH3_N",
-      "A2_O_PH",
-      "A2_O_ORP",
-      "A2_O_DO",
-      "A2_O_MLSS",
+      "O_PH",
+      "O_ORP",
+      "O_DO",
+      "O_MLSS",
       "Eff_NH4_N"
     ],
     "unit": "m3/min",
@@ -53,7 +53,7 @@
   "hyperparameter_selection": {
     "Ridge": {
       "parameters": {
-        "alpha": 10.0,
+        "alpha": 1.0,
         "copy_X": true,
         "fit_intercept": true,
         "max_iter": null,
@@ -62,14 +62,14 @@
         "solver": "auto",
         "tol": 0.0001
       },
-      "validation_mse": 0.6277040597894148
+      "validation_mse": 0.6661196127302532
     },
     "Random Forest": {
       "parameters": {
         "bootstrap": true,
         "ccp_alpha": 0.0,
         "criterion": "squared_error",
-        "max_depth": 10,
+        "max_depth": 5,
         "max_features": 1.0,
         "max_leaf_nodes": null,
         "max_samples": null,
@@ -85,7 +85,7 @@
         "verbose": 0,
         "warm_start": false
       },
-      "validation_mse": 0.6667981444165239
+      "validation_mse": 0.9974696601049914
     },
     "XGBoost": {
       "parameters": {
@@ -98,7 +98,7 @@
         "colsample_bytree": null,
         "device": null,
         "early_stopping_rounds": null,
-        "enable_categorical": false,
+        "enable_categorical": true,
         "eval_metric": null,
         "feature_types": null,
         "feature_weights": null,
@@ -111,7 +111,7 @@
         "max_cat_threshold": null,
         "max_cat_to_onehot": null,
         "max_delta_step": null,
-        "max_depth": 2,
+        "max_depth": 4,
         "max_leaves": null,
         "min_child_weight": null,
         "missing": NaN,
@@ -130,7 +130,7 @@
         "validate_parameters": null,
         "verbosity": null
       },
-      "validation_mse": 2.5308265753899066
+      "validation_mse": 6.228683945834954
     }
   },
   "added_target_history": true,

@@ -5,10 +5,10 @@
     "A1_COD_in",
     "A1_FQ_CH3OH",
     "A1_Q_r1",
-    "A1_A_PH",
-    "A1_A_ORP",
-    "A1_A_DO",
-    "A1_A_MLSS",
+    "A_PH",
+    "A_ORP",
+    "A_DO",
+    "A_MLSS",
     "Eff_NH4_N"
   ],
   "excluded_no_training_sequence_support": [],
@@ -37,10 +37,10 @@
       "A1_FQ_CH3OH",
       "A1_Q_r1",
       "A1_NH3_N",
-      "A1_A_PH",
-      "A1_A_ORP",
-      "A1_A_DO",
-      "A1_A_MLSS",
+      "A_PH",
+      "A_ORP",
+      "A_DO",
+      "A_MLSS",
       "Eff_NH4_N",
       "Eff_NO3_N"
     ],
@@ -86,7 +86,7 @@
         "verbose": 0,
         "warm_start": false
       },
-      "validation_mse": 953.1567462629897
+      "validation_mse": 953.1567462629896
     },
     "XGBoost": {
       "parameters": {
@@ -99,7 +99,7 @@
         "colsample_bytree": null,
         "device": null,
         "early_stopping_rounds": null,
-        "enable_categorical": false,
+        "enable_categorical": true,
         "eval_metric": null,
         "feature_types": null,
         "feature_weights": null,
@@ -131,7 +131,7 @@
         "validate_parameters": null,
         "verbosity": null
       },
-      "validation_mse": 734.7413501469301
+      "validation_mse": 741.7826976703782
     }
   },
   "added_target_history": false,

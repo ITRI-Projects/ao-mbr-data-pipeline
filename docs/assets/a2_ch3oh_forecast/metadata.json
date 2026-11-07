@@ -5,10 +5,10 @@
     "A2_COD_in",
     "A2_Q_r1",
     "A2_FQ_CH3OH",
-    "A2_A_PH",
-    "A2_A_ORP",
-    "A2_A_DO",
-    "A2_A_MLSS",
+    "A_PH",
+    "A_ORP",
+    "A_DO",
+    "A_MLSS",
     "Eff_NH4_N"
   ],
   "excluded_no_training_sequence_support": [],
@@ -37,10 +37,10 @@
       "A2_Q_r1",
       "A2_FQ_CH3OH",
       "A2_NH3_N",
-      "A2_A_PH",
-      "A2_A_ORP",
-      "A2_A_DO",
-      "A2_A_MLSS",
+      "A_PH",
+      "A_ORP",
+      "A_DO",
+      "A_MLSS",
       "Eff_NH4_N",
       "Eff_NO3_N"
     ],
@@ -63,7 +63,7 @@
         "solver": "auto",
         "tol": 0.0001
       },
-      "validation_mse": 623.1734871508276
+      "validation_mse": 580.914361467018
     },
     "Random Forest": {
       "parameters": {
@@ -86,7 +86,7 @@
         "verbose": 0,
         "warm_start": false
       },
-      "validation_mse": 714.9383815153725
+      "validation_mse": 685.1499452816648
     },
     "XGBoost": {
       "parameters": {
@@ -99,7 +99,7 @@
         "colsample_bytree": null,
         "device": null,
         "early_stopping_rounds": null,
-        "enable_categorical": false,
+        "enable_categorical": true,
         "eval_metric": null,
         "feature_types": null,
         "feature_weights": null,
@@ -112,7 +112,7 @@
         "max_cat_threshold": null,
         "max_cat_to_onehot": null,
         "max_delta_step": null,
-        "max_depth": 2,
+        "max_depth": 4,
         "max_leaves": null,
         "min_child_weight": null,
         "missing": NaN,
@@ -131,7 +131,7 @@
         "validate_parameters": null,
         "verbosity": null
       },
-      "validation_mse": 577.3034195728434
+      "validation_mse": 582.3607671933221
     }
   },
   "added_target_history": false,

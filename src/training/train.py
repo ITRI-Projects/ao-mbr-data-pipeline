@@ -154,7 +154,7 @@ def run(args):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data", default="notebooks/data/data_filled.csv")
-    parser.add_argument("--mask", default="notebooks/data/data_filled_mask.csv")
+    parser.add_argument("--mask", default="docs/raw/data_filled_mask.csv")
     parser.add_argument("--workbook", default="Sensor_Configurations.xlsx")
     parser.add_argument("--output", default="data/training/workbook_forecasts")
     parser.add_argument("--train-end", default="2026-04-18")

@@ -1,15 +1,15 @@
 {
-  "target": "Q_A1_air",
+  "target": "A1_Q_air",
   "features": [
     "A1_Qin",
     "A1_FQ_CH3OH",
     "A1_Q_r1",
-    "A1_O_PH",
-    "A1_O_ORP",
-    "A1_O_DO",
-    "A1_O_MLSS",
-    "Q_A2_air",
-    "Q_A1_air"
+    "O_PH",
+    "O_ORP",
+    "O_DO",
+    "O_MLSS",
+    "A2_Q_air",
+    "A1_Q_air"
   ],
   "excluded_no_training_sequence_support": [],
   "excluded_training_constant_or_unobserved": [
@@ -29,22 +29,22 @@
   "excluded_missing_labels_or_boundary": 29,
   "workbook": {
     "name": "a1_air_flow",
-    "target": "Q_A1_air",
+    "target": "A1_Q_air",
     "features": [
       "A1_Qin",
       "A1_FQ_CH3OH",
       "A1_Q_r1",
       "A1_NH3_N",
-      "A1_O_PH",
-      "A1_O_ORP",
-      "A1_O_DO",
-      "A1_O_MLSS",
-      "Q_A2_air"
+      "O_PH",
+      "O_ORP",
+      "O_DO",
+      "O_MLSS",
+      "A2_Q_air"
     ],
     "unit": "m3/min",
     "heading": "A1 Aeration Flow",
     "workbook_marked_targets": [
-      "Q_A2_air"
+      "A2_Q_air"
     ],
     "target_mark_corrected": true
   },
@@ -60,7 +60,7 @@
         "solver": "auto",
         "tol": 0.0001
       },
-      "validation_mse": 0.3734585782963978
+      "validation_mse": 0.3821765971955805
     },
     "Random Forest": {
       "parameters": {
@@ -83,7 +83,7 @@
         "verbose": 0,
         "warm_start": false
       },
-      "validation_mse": 3.5800400340611116
+      "validation_mse": 3.3105018493252922
     },
     "XGBoost": {
       "parameters": {
@@ -96,7 +96,7 @@
         "colsample_bytree": null,
         "device": null,
         "early_stopping_rounds": null,
-        "enable_categorical": false,
+        "enable_categorical": true,
         "eval_metric": null,
         "feature_types": null,
         "feature_weights": null,
@@ -128,7 +128,7 @@
         "validate_parameters": null,
         "verbosity": null
       },
-      "validation_mse": 6.489952442407644
+      "validation_mse": 8.017032025233657
     }
   },
   "added_target_history": true,

@@ -1,8 +1,8 @@
 {
   "files": {
-    "docs/raw/data_filled.csv": "19d2da3b9b9d6f7926bc157af8f43a80317c3d20831326dbe269d97466620c9d",
-    "notebooks/data/data_filled_mask.csv": "ebec8b71f8298828a28f4059c34e88ad6878d6b943691ba120f81fccd32fcbb9",
-    "Sensor_Configurations.xlsx": "d4082bb806cfa9b6f4ded80e95936aaf9e7bcdd2cf9cfc2a42931b350fdb7741"
+    "docs/raw/data_filled.csv": "1ff56a7356fe47ee7667a65e625e846280cea377449a0eb024d5b35554bcf419",
+    "docs/raw/data_filled_mask.csv": "06ac15c7f7639dfd11a444e404a206f5e39fd07bfce539a13cb3bf8616e0c12b",
+    "Sensor_Configurations.xlsx": "35d1280b8c06541aa528b2df1f12df56232104d028fae19534414e1d6fbffa0b"
   },
   "train_end_exclusive": "2026-04-18",
   "test_start": "2026-04-21",
@@ -13,7 +13,7 @@
   "max_lstm_epochs": 60,
   "targets": {
     "a2_air_flow": {
-      "target": "Q_A2_air",
+      "target": "A2_Q_air",
       "split_counts": {
         "test": 211,
         "train": 1729,
@@ -22,11 +22,11 @@
     }
   },
   "versions": {
-    "numpy": "2.4.6",
+    "numpy": "2.5.3",
     "pandas": "3.0.6",
     "scikit-learn": "1.9.1",
-    "xgboost": "3.2.0",
-    "torch": "2.14.1"
+    "xgboost": "3.4.1",
+    "torch": "2.14.1+cpu"
   },
   "limitations": [
     "Short previously inspected source period; independent future evaluation needed.",

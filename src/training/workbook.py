@@ -4,8 +4,15 @@ from openpyxl import load_workbook
 # Airflow targets follow the headings, explicitly confirmed by the project owner.
 TARGETS = {"Eff NH3-N": "Eff_NH4_N", "Eff NO3-N": "Eff_NO3_N",
            "A1 CH3OH Flow": "A1_FQ_CH3OH", "A2 CH3OH Flow": "A2_FQ_CH3OH",
-           "A1 Aeration Flow": "Q_A1_air", "A2 Aeration Flow": "Q_A2_air"}
+           "A1 Aeration Flow": "A1_Q_air", "A2 Aeration Flow": "A2_Q_air"}
 NAMES = ("eff_nh3_n", "eff_no3_n", "a1_ch3oh_flow", "a2_ch3oh_flow", "a1_air_flow", "a2_air_flow")
+
+COMBINED_SENSOR_ALIASES = {
+    f"A{line}_{tank}_{parameter}": f"{tank}_{parameter}"
+    for line in (1, 2)
+    for tank in ("A", "O")
+    for parameter in ("DO", "MLSS", "ORP", "PH")
+}
 
 
 def read_workbook(path):
@@ -27,7 +34,8 @@ def read_workbook(path):
                 alias = row[3].value or row[1].value
                 if not row[4].value:
                     continue
-                alias = str(alias).strip()
+                source_alias = str(alias).strip()
+                alias = COMBINED_SENSOR_ALIASES.get(source_alias, source_alias)
                 if alias == target:
                     unit = str(row[2].value or "dimensionless")
                 c = row[predictions[heading] - 1]
@@ -38,10 +46,12 @@ def read_workbook(path):
                     if green:
                         marked.append(alias)
                 audit.append({"model": name, "heading": heading, "sensor": alias,
+                              "source_sensor": source_alias,
                               "checked": checked, "green_target_mark": bool(green),
                               "confirmed_target": target, "cell": c.coordinate})
             if unit is None:
                 raise ValueError(f"Target {target} is absent from the sensor rows.")
+            features = list(dict.fromkeys(features))
             configs[name] = {"name": name, "target": target, "features": features,
                              "unit": unit, "heading": heading, "workbook_marked_targets": marked,
                              "target_mark_corrected": marked != [target]}
