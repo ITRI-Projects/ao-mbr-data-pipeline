@@ -63,7 +63,7 @@
         "solver": "auto",
         "tol": 0.0001
       },
-      "validation_mse": 580.914361467018
+      "validation_mse": 579.4752455153603
     },
     "Random Forest": {
       "parameters": {
@@ -86,7 +86,7 @@
         "verbose": 0,
         "warm_start": false
       },
-      "validation_mse": 685.1499452816648
+      "validation_mse": 614.9157002317894
     },
     "XGBoost": {
       "parameters": {
@@ -131,9 +131,11 @@
         "validate_parameters": null,
         "verbosity": null
       },
-      "validation_mse": 582.3607671933221
+      "validation_mse": 609.6185147604658
     }
   },
+  "prediction_mode": "delta",
+  "model_target": "future_minus_origin",
   "added_target_history": false,
   "label_policy": "exact observed future labels only; source mask removes estimates"
 }
