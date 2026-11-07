@@ -1,7 +1,10 @@
 {
   "files": {
-    "docs/raw/data_filled.csv": "1ff56a7356fe47ee7667a65e625e846280cea377449a0eb024d5b35554bcf419",
-    "docs/raw/data_filled_mask.csv": "06ac15c7f7639dfd11a444e404a206f5e39fd07bfce539a13cb3bf8616e0c12b",
+    "docs/raw/data_filled.csv": "36d9b3c47bcd4c9aa23c0ed2a105e28108d03d5fa1b0144115721f9bba1c6027",
+    "/home/bryan1010/projects/ao-mbr-data-pipeline/docs/raw/data_filled_mask.csv": "f5435c00559dc4b558c5131fe9d2bb37d4306a6e5eee0eb0e483d3bc5ae0fedc",
+    "/home/bryan1010/projects/ao-mbr-data-pipeline/docs/raw/data_sensor_fault_mask.csv": "ba8d1c7ec27d7a47f0e83d618b3f0f4e21dc76c8e6a251f108c8d84d3cc1b1fb",
+    "/home/bryan1010/projects/ao-mbr-data-pipeline/docs/raw/data_short_error_replacement_mask.csv": "f911b252fd3e8b05668b7e0103eec368c9cc3e36e32dbe74fcf6da14aad0e4d7",
+    "/home/bryan1010/projects/ao-mbr-data-pipeline/docs/raw/data_synchronized_corrupt_mask.csv": "0ae887b6f217bf4efb6920d167e0579edaafafcd8b597f340fac259c5baa6b00",
     "Sensor_Configurations.xlsx": "35d1280b8c06541aa528b2df1f12df56232104d028fae19534414e1d6fbffa0b"
   },
   "train_end_exclusive": "2026-04-18",
@@ -16,12 +19,13 @@
     "a2_ch3oh_flow": {
       "target": "A2_FQ_CH3OH",
       "split_counts": {
-        "test": 213,
-        "train": 1746,
+        "test": 180,
+        "train": 1717,
         "validation": 213
       }
     }
   },
+  "skipped_targets": {},
   "versions": {
     "numpy": "2.5.3",
     "pandas": "3.0.6",
@@ -31,7 +35,7 @@
   },
   "limitations": [
     "Short previously inspected source period; independent future evaluation needed.",
-    "Upstream observations rely on source fill mask accuracy.",
+    "Upstream observations rely on fill and sensor-quality mask accuracy.",
     "Rolling test forecasts use past available test observations."
   ]
 }

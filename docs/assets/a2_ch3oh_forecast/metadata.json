@@ -7,27 +7,28 @@
     "A2_FQ_CH3OH",
     "A_PH",
     "A_ORP",
-    "A_DO",
     "A_MLSS",
     "Eff_NH4_N"
   ],
   "excluded_no_training_sequence_support": [],
   "excluded_training_constant_or_unobserved": [
     "A2_NH3_N",
+    "A_DO",
     "Eff_NO3_N"
   ],
   "split_counts": {
-    "test": 213,
-    "train": 1746,
+    "test": 180,
+    "train": 1717,
     "validation": 213
   },
   "target_unique_by_split": {
     "test": 172,
-    "train": 1559,
+    "train": 1558,
     "validation": 204
   },
   "scheduled_origins_after_warmup": 2182,
-  "excluded_missing_labels_or_boundary": 10,
+  "excluded_missing_labels_boundary_or_corruption": 72,
+  "excluded_corrupt_sequence_or_label": 36,
   "workbook": {
     "name": "a2_ch3oh_flow",
     "target": "A2_FQ_CH3OH",
@@ -49,7 +50,8 @@
     "workbook_marked_targets": [
       "A2_FQ_CH3OH"
     ],
-    "target_mark_corrected": false
+    "target_mark_corrected": false,
+    "excluded_unavailable_features": []
   },
   "hyperparameter_selection": {
     "Ridge": {
@@ -63,14 +65,14 @@
         "solver": "auto",
         "tol": 0.0001
       },
-      "validation_mse": 579.4752455153603
+      "validation_mse": 540.030828057636
     },
     "Random Forest": {
       "parameters": {
         "bootstrap": true,
         "ccp_alpha": 0.0,
         "criterion": "squared_error",
-        "max_depth": 5,
+        "max_depth": 10,
         "max_features": 1.0,
         "max_leaf_nodes": null,
         "max_samples": null,
@@ -86,7 +88,7 @@
         "verbose": 0,
         "warm_start": false
       },
-      "validation_mse": 614.9157002317894
+      "validation_mse": 602.956211896071
     },
     "XGBoost": {
       "parameters": {
@@ -131,11 +133,13 @@
         "validate_parameters": null,
         "verbosity": null
       },
-      "validation_mse": 609.6185147604658
+      "validation_mse": 586.8547681340355
     }
   },
   "prediction_mode": "delta",
   "model_target": "future_minus_origin",
   "added_target_history": false,
-  "label_policy": "exact observed future labels only; source mask removes estimates"
+  "excluded_unavailable_workbook_features": [],
+  "label_policy": "exact observed future labels only; fill, fault and replacement masks remove estimates",
+  "input_channels": "scaled readings, missing flags, and fill/fault/replacement quality flags"
 }
