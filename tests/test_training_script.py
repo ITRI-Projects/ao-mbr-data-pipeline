@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 from src.training.workbook import read_workbook
-from src.training.train import load_source, metrics
+from src.training.train import load_source, metrics, prediction_offset
 from src.training.forecast_dataset import prepare
 
 
@@ -40,6 +40,19 @@ class TrainingScriptTests(unittest.TestCase):
         result = metrics(np.ones(3), np.zeros(3))
         self.assertTrue(np.isnan(result["R2"]))
         self.assertEqual(result["RMSE"], 1.)
+
+    def test_delta_prediction_offset_restores_current_target_level(self):
+        arrays = {
+            "y": np.array([20., 30.]),
+            "feature_names": np.array(["x", "target"]),
+            "X": np.array([[[0., 1.]], [[0., 2.]]], dtype=np.float32),
+            "center": np.array([0., 10.]),
+            "scale": np.array([1., 2.]),
+        }
+        np.testing.assert_allclose(
+            prediction_offset(arrays, "target", "delta"), [12., 14.])
+        np.testing.assert_array_equal(
+            prediction_offset(arrays, "target", "absolute"), [0., 0.])
 
     def test_supplied_preparation_is_used_without_refilling(self):
         index = pd.date_range("2026-04-14", "2026-04-23 23:59", freq="min")
