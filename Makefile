@@ -5,7 +5,7 @@ VENV ?= .venv
 VENV_PYTHON := $(VENV)/bin/python
 export CSV_TIMESTAMP_FORMAT
 
-MASK ?= notebooks/data/data_filled_mask.csv
+MASK ?= docs/raw/data_filled_mask.csv
 
 .PHONY: help venv install dev load db-check check train tune
 
@@ -42,6 +42,13 @@ check:
 	"$(VENV_PYTHON)" -m compileall -q main.py src config
 	"$(VENV_PYTHON)" -m pip check
 
+# Supported TARGET values (omit TARGET to train all models):
+#   eff_nh3_n       -> Eff_NH4_N
+#   eff_no3_n       -> Eff_NO3_N
+#   a1_ch3oh_flow   -> A1_FQ_CH3OH
+#   a2_ch3oh_flow   -> A2_FQ_CH3OH
+#   a1_air_flow     -> A1_Q_air
+#   a2_air_flow     -> A2_Q_air
 train:
 	$(if $(strip $(DATA)),,$(error Set DATA to the prepared CSV path))
 	$(if $(strip $(OUTPUT)),,$(error Set OUTPUT to the training results directory))
