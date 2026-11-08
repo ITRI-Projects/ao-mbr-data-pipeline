@@ -102,7 +102,7 @@ class TrainingScriptTests(unittest.TestCase):
             prediction_offset(arrays, "target", "absolute"), [0., 0.])
 
     def test_supplied_preparation_is_used_without_refilling(self):
-        index = pd.date_range("2026-04-14", "2026-04-23 23:59", freq="min")
+        index = pd.date_range("2026-04-03 23:00", "2026-04-23 23:59", freq="min")
         raw = pd.DataFrame({"x": np.arange(len(index), dtype=float), "y": np.arange(len(index), dtype=float)}, index=index)
         inputs = raw.copy()
         inputs.loc["2026-04-15 00:20", "x"] = np.nan
