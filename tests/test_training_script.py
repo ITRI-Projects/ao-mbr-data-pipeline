@@ -6,11 +6,20 @@ import numpy as np
 import pandas as pd
 
 from src.training.workbook import read_workbook
-from src.training.train import discover_mask_paths, load_source, metrics, prediction_offset
+from src.training.train import (
+    DEFAULT_PREDICTION_MODE,
+    discover_mask_paths,
+    load_source,
+    metrics,
+    prediction_offset,
+)
 from src.training.forecast_dataset import prepare
 
 
 class TrainingScriptTests(unittest.TestCase):
+    def test_absolute_prediction_is_the_default(self):
+        self.assertEqual(DEFAULT_PREDICTION_MODE, "absolute")
+
     def test_masks_are_discovered_beside_data(self):
         with tempfile.TemporaryDirectory(dir=Path.cwd()) as folder:
             folder = Path(folder)
