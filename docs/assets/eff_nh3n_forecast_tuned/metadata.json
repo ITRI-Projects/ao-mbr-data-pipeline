@@ -13,23 +13,29 @@
     "A2_Q_air",
     "Eff_NH4_N"
   ],
+  "train_start": "2026-04-04 00:00:00",
+  "train_end_exclusive": "2026-04-18 00:00:00",
+  "test_start": "2026-04-21 00:00:00",
+  "horizon_minutes": 10,
+  "label_representation": "absolute_future_value",
+  "origin_interval_minutes": 10,
+  "sequence_steps": 7,
+  "history_minutes": 60,
   "excluded_no_training_sequence_support": [],
-  "excluded_training_constant_or_unobserved": [
-    "A1_NH3_N",
-    "A2_NH3_N"
-  ],
+  "excluded_training_constant_or_unobserved": [],
   "split_counts": {
-    "test": 211,
-    "train": 1733,
-    "validation": 213
+    "test": 362,
+    "train": 2005,
+    "validation": 432
   },
   "target_unique_by_split": {
-    "test": 140,
-    "train": 573,
-    "validation": 157
+    "test": 226,
+    "train": 629,
+    "validation": 256
   },
-  "scheduled_origins_after_warmup": 2182,
-  "excluded_missing_labels_or_boundary": 25,
+  "scheduled_origins_after_warmup": 4380,
+  "excluded_missing_labels_boundary_or_corruption": 1581,
+  "excluded_corrupt_sequence_or_label": 67,
   "workbook": {
     "name": "eff_nh3_n",
     "target": "Eff_NH4_N",
@@ -38,8 +44,6 @@
       "A2_Qin",
       "A1_COD_in",
       "A2_COD_in",
-      "A1_NH3_N",
-      "A2_NH3_N",
       "O_PH",
       "O_ORP",
       "O_DO",
@@ -53,7 +57,11 @@
     "workbook_marked_targets": [
       "Eff_NH4_N"
     ],
-    "target_mark_corrected": false
+    "target_mark_corrected": false,
+    "excluded_unavailable_features": [
+      "A1_NH3_N",
+      "A2_NH3_N"
+    ]
   },
   "hyperparameter_selection": {
     "Ridge": {
@@ -67,7 +75,7 @@
         "solver": "auto",
         "tol": 0.0001
       },
-      "validation_mse": 0.010220601623857335
+      "validation_mse": 0.00014222821560093358
     },
     "Random Forest": {
       "parameters": {
@@ -90,7 +98,7 @@
         "verbose": 0,
         "warm_start": false
       },
-      "validation_mse": 0.0005328369899749634
+      "validation_mse": 0.00013146678177171472
     },
     "XGBoost": {
       "parameters": {
@@ -135,11 +143,16 @@
         "validate_parameters": null,
         "verbosity": null
       },
-      "validation_mse": 0.00027329173670323455
+      "validation_mse": 0.00013151028421734334
     }
   },
-  "prediction_mode": "delta",
-  "model_target": "future_minus_origin",
+  "prediction_mode": "absolute",
+  "model_target": "future_absolute",
   "added_target_history": false,
-  "label_policy": "exact observed future labels only; source mask removes estimates"
+  "excluded_unavailable_workbook_features": [
+    "A1_NH3_N",
+    "A2_NH3_N"
+  ],
+  "label_policy": "exact observed future labels only; fill, fault and replacement masks remove estimates",
+  "input_channels": "scaled readings, missing flags, and fill/fault/replacement quality flags"
 }
