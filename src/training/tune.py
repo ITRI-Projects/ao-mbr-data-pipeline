@@ -39,6 +39,8 @@ def run(args):
     flat = X.reshape(len(X), -1)
     train, val = split == "train", split == "validation"
     prediction_mode = metadata.get("prediction_mode", "absolute")
+    if prediction_mode != source_manifest.get("prediction_mode"):
+        raise ValueError("Baseline metadata and manifest disagree on prediction mode.")
     offset = prediction_offset(arrays, config["target"], prediction_mode)
     model_y = y - offset
     samples = pd.read_csv(source / "predictions.csv", parse_dates=["origin", "target_time"])
@@ -145,9 +147,16 @@ def run(args):
     np.savez_compressed(output / "preprocessing_and_sequences.npz", **arrays)
     (output / "metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
     plot_training_report(raw, forecasts, predictions, result, config, output,
-        train_end=source_manifest["train_end_exclusive"], test_start=source_manifest["test_start"])
+        train_start=source_manifest["train_start_inclusive"],
+        train_end=source_manifest["train_end_exclusive"],
+        test_start=source_manifest["test_start"],
+        horizon_minutes=source_manifest["horizon_minutes"],
+        step_minutes=source_manifest["origin_interval_minutes"])
     html = "<html><meta charset='utf-8'><title>Tuned forecast comparison</title><h1>Validation-only hyperparameter tuning</h1>"
-    html += "<p>Frozen baseline sequences and full-history training. Parameters minimize validation MSE; test never selects models. Split figure displays only seven days. Training scores are in-sample.</p>"
+    html += (f"<p>Frozen baseline sequences use {source_manifest['history_minutes']} minutes of input "
+             f"to predict a {source_manifest['horizon_minutes']}-minute {prediction_mode} target. Parameters minimize "
+             "validation MSE; test never selects models. Split figure displays only seven days. "
+             "Training scores are in-sample.</p>")
     html += result.round(6).to_html(index=False)
     html += "<h2>Baseline versus tuned metrics</h2>" + comparison.round(6).to_html(index=False)
     for filename in ("dataset_split.png", "train_test_predictions.png", "metrics_comparison.png"):

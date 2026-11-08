@@ -1,4 +1,4 @@
-<html><meta charset='utf-8'><title>Tuned forecast comparison</title><h1>Validation-only hyperparameter tuning</h1><p>Frozen baseline sequences and full-history training. Parameters minimize validation MSE; test never selects models. Split figure displays only seven days. Training scores are in-sample.</p><table border="1" class="dataframe">
+<html><meta charset='utf-8'><title>Tuned forecast comparison</title><h1>Validation-only hyperparameter tuning</h1><p>Frozen baseline sequences use 60 minutes of input to predict a 10-minute absolute target. Parameters minimize validation MSE; test never selects models. Split figure displays only seven days. Training scores are in-sample.</p><table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th>model</th>
@@ -20,10 +20,10 @@
       <td>mg-N/L</td>
       <td>Ridge</td>
       <td>train</td>
-      <td>1733</td>
-      <td>0.066113</td>
-      <td>0.442058</td>
-      <td>0.146130</td>
+      <td>2005</td>
+      <td>0.008973</td>
+      <td>0.011734</td>
+      <td>0.022757</td>
       <td>False</td>
     </tr>
     <tr>
@@ -32,10 +32,10 @@
       <td>mg-N/L</td>
       <td>Ridge</td>
       <td>validation</td>
-      <td>213</td>
-      <td>0.012808</td>
-      <td>0.015835</td>
-      <td>-0.984374</td>
+      <td>432</td>
+      <td>0.009550</td>
+      <td>0.011671</td>
+      <td>-0.105273</td>
       <td>False</td>
     </tr>
     <tr>
@@ -44,10 +44,10 @@
       <td>mg-N/L</td>
       <td>Ridge</td>
       <td>test</td>
-      <td>211</td>
-      <td>0.011689</td>
-      <td>0.015535</td>
-      <td>-0.955511</td>
+      <td>362</td>
+      <td>0.010014</td>
+      <td>0.012517</td>
+      <td>-0.174276</td>
       <td>False</td>
     </tr>
     <tr>
@@ -56,10 +56,10 @@
       <td>mg-N/L</td>
       <td>Random Forest</td>
       <td>train</td>
-      <td>1733</td>
-      <td>0.066246</td>
-      <td>0.370800</td>
-      <td>0.399224</td>
+      <td>2005</td>
+      <td>0.005853</td>
+      <td>0.007264</td>
+      <td>0.625493</td>
       <td>False</td>
     </tr>
     <tr>
@@ -68,10 +68,10 @@
       <td>mg-N/L</td>
       <td>Random Forest</td>
       <td>validation</td>
-      <td>213</td>
-      <td>0.010450</td>
-      <td>0.014595</td>
-      <td>-0.685771</td>
+      <td>432</td>
+      <td>0.009344</td>
+      <td>0.011344</td>
+      <td>-0.044132</td>
       <td>False</td>
     </tr>
     <tr>
@@ -80,10 +80,10 @@
       <td>mg-N/L</td>
       <td>Random Forest</td>
       <td>test</td>
-      <td>211</td>
-      <td>0.023244</td>
-      <td>0.027126</td>
-      <td>-4.962040</td>
+      <td>362</td>
+      <td>0.010180</td>
+      <td>0.012671</td>
+      <td>-0.203395</td>
       <td>False</td>
     </tr>
     <tr>
@@ -92,10 +92,10 @@
       <td>mg-N/L</td>
       <td>XGBoost</td>
       <td>train</td>
-      <td>1733</td>
-      <td>0.039009</td>
-      <td>0.245675</td>
-      <td>0.736273</td>
+      <td>2005</td>
+      <td>0.008840</td>
+      <td>0.011559</td>
+      <td>0.051678</td>
       <td>False</td>
     </tr>
     <tr>
@@ -104,10 +104,10 @@
       <td>mg-N/L</td>
       <td>XGBoost</td>
       <td>validation</td>
-      <td>213</td>
-      <td>0.010860</td>
-      <td>0.013447</td>
-      <td>-0.430952</td>
+      <td>432</td>
+      <td>0.009402</td>
+      <td>0.011464</td>
+      <td>-0.066303</td>
       <td>False</td>
     </tr>
     <tr>
@@ -116,10 +116,10 @@
       <td>mg-N/L</td>
       <td>XGBoost</td>
       <td>test</td>
-      <td>211</td>
-      <td>0.268670</td>
-      <td>0.454370</td>
-      <td>-1671.827139</td>
+      <td>362</td>
+      <td>0.009835</td>
+      <td>0.012333</td>
+      <td>-0.139995</td>
       <td>False</td>
     </tr>
     <tr>
@@ -128,10 +128,10 @@
       <td>mg-N/L</td>
       <td>LSTM</td>
       <td>train</td>
-      <td>1733</td>
-      <td>0.118742</td>
-      <td>0.401823</td>
-      <td>0.294492</td>
+      <td>2005</td>
+      <td>0.009373</td>
+      <td>0.012123</td>
+      <td>-0.043186</td>
       <td>False</td>
     </tr>
     <tr>
@@ -140,10 +140,10 @@
       <td>mg-N/L</td>
       <td>LSTM</td>
       <td>validation</td>
-      <td>213</td>
-      <td>0.013905</td>
-      <td>0.017499</td>
-      <td>-1.423311</td>
+      <td>432</td>
+      <td>0.009183</td>
+      <td>0.011206</td>
+      <td>-0.018851</td>
       <td>False</td>
     </tr>
     <tr>
@@ -152,10 +152,10 @@
       <td>mg-N/L</td>
       <td>LSTM</td>
       <td>test</td>
-      <td>211</td>
-      <td>0.037693</td>
-      <td>0.049069</td>
-      <td>-18.509889</td>
+      <td>362</td>
+      <td>0.009407</td>
+      <td>0.011777</td>
+      <td>-0.039603</td>
       <td>False</td>
     </tr>
   </tbody>
@@ -186,32 +186,15 @@
       <td>mg-N/L</td>
       <td>Ridge</td>
       <td>train</td>
-      <td>1733</td>
-      <td>0.095857</td>
-      <td>0.363798</td>
-      <td>0.421698</td>
+      <td>2005</td>
+      <td>0.008761</td>
+      <td>0.011416</td>
+      <td>0.074952</td>
       <td>False</td>
-      <td>1733</td>
-      <td>0.066113</td>
-      <td>0.442058</td>
-      <td>0.146130</td>
-      <td>False</td>
-    </tr>
-    <tr>
-      <td>eff_nh3_n</td>
-      <td>Eff_NH4_N</td>
-      <td>mg-N/L</td>
-      <td>Ridge</td>
-      <td>validation</td>
-      <td>213</td>
-      <td>0.080481</td>
-      <td>0.101097</td>
-      <td>-79.883478</td>
-      <td>False</td>
-      <td>213</td>
-      <td>0.012808</td>
-      <td>0.015835</td>
-      <td>-0.984374</td>
+      <td>2005</td>
+      <td>0.008973</td>
+      <td>0.011734</td>
+      <td>0.022757</td>
       <td>False</td>
     </tr>
     <tr>
@@ -219,16 +202,33 @@
       <td>Eff_NH4_N</td>
       <td>mg-N/L</td>
       <td>Ridge</td>
-      <td>test</td>
-      <td>211</td>
-      <td>0.093870</td>
-      <td>0.117318</td>
-      <td>-110.522009</td>
+      <td>validation</td>
+      <td>432</td>
+      <td>0.009768</td>
+      <td>0.011926</td>
+      <td>-0.154041</td>
       <td>False</td>
-      <td>211</td>
-      <td>0.011689</td>
-      <td>0.015535</td>
-      <td>-0.955511</td>
+      <td>432</td>
+      <td>0.009550</td>
+      <td>0.011671</td>
+      <td>-0.105273</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>eff_nh3_n</td>
+      <td>Eff_NH4_N</td>
+      <td>mg-N/L</td>
+      <td>Ridge</td>
+      <td>test</td>
+      <td>362</td>
+      <td>0.010425</td>
+      <td>0.013040</td>
+      <td>-0.274448</td>
+      <td>False</td>
+      <td>362</td>
+      <td>0.010014</td>
+      <td>0.012517</td>
+      <td>-0.174276</td>
       <td>False</td>
     </tr>
     <tr>
@@ -237,15 +237,15 @@
       <td>mg-N/L</td>
       <td>Random Forest</td>
       <td>train</td>
-      <td>1733</td>
-      <td>0.048709</td>
-      <td>0.261315</td>
-      <td>0.701626</td>
+      <td>2005</td>
+      <td>0.008282</td>
+      <td>0.010579</td>
+      <td>0.205681</td>
       <td>False</td>
-      <td>1733</td>
-      <td>0.066246</td>
-      <td>0.370800</td>
-      <td>0.399224</td>
+      <td>2005</td>
+      <td>0.005853</td>
+      <td>0.007264</td>
+      <td>0.625493</td>
       <td>False</td>
     </tr>
     <tr>
@@ -254,15 +254,15 @@
       <td>mg-N/L</td>
       <td>Random Forest</td>
       <td>validation</td>
-      <td>213</td>
-      <td>0.014918</td>
-      <td>0.023083</td>
-      <td>-3.216749</td>
+      <td>432</td>
+      <td>0.009417</td>
+      <td>0.011466</td>
+      <td>-0.066722</td>
       <td>False</td>
-      <td>213</td>
-      <td>0.010450</td>
-      <td>0.014595</td>
-      <td>-0.685771</td>
+      <td>432</td>
+      <td>0.009344</td>
+      <td>0.011344</td>
+      <td>-0.044132</td>
       <td>False</td>
     </tr>
     <tr>
@@ -271,15 +271,15 @@
       <td>mg-N/L</td>
       <td>Random Forest</td>
       <td>test</td>
-      <td>211</td>
-      <td>0.012213</td>
-      <td>0.015838</td>
-      <td>-1.032629</td>
+      <td>362</td>
+      <td>0.010263</td>
+      <td>0.012762</td>
+      <td>-0.220814</td>
       <td>False</td>
-      <td>211</td>
-      <td>0.023244</td>
-      <td>0.027126</td>
-      <td>-4.962040</td>
+      <td>362</td>
+      <td>0.010180</td>
+      <td>0.012671</td>
+      <td>-0.203395</td>
       <td>False</td>
     </tr>
     <tr>
@@ -288,15 +288,15 @@
       <td>mg-N/L</td>
       <td>XGBoost</td>
       <td>train</td>
-      <td>1733</td>
-      <td>0.023104</td>
-      <td>0.086775</td>
-      <td>0.967098</td>
+      <td>2005</td>
+      <td>0.007280</td>
+      <td>0.009235</td>
+      <td>0.394615</td>
       <td>False</td>
-      <td>1733</td>
-      <td>0.039009</td>
-      <td>0.245675</td>
-      <td>0.736273</td>
+      <td>2005</td>
+      <td>0.008840</td>
+      <td>0.011559</td>
+      <td>0.051678</td>
       <td>False</td>
     </tr>
     <tr>
@@ -305,15 +305,15 @@
       <td>mg-N/L</td>
       <td>XGBoost</td>
       <td>validation</td>
-      <td>213</td>
-      <td>0.012093</td>
-      <td>0.016532</td>
-      <td>-1.162768</td>
+      <td>432</td>
+      <td>0.009380</td>
+      <td>0.011468</td>
+      <td>-0.067075</td>
       <td>False</td>
-      <td>213</td>
-      <td>0.010860</td>
-      <td>0.013447</td>
-      <td>-0.430952</td>
+      <td>432</td>
+      <td>0.009402</td>
+      <td>0.011464</td>
+      <td>-0.066303</td>
       <td>False</td>
     </tr>
     <tr>
@@ -322,15 +322,15 @@
       <td>mg-N/L</td>
       <td>XGBoost</td>
       <td>test</td>
-      <td>211</td>
-      <td>0.156281</td>
-      <td>0.261697</td>
-      <td>-553.918245</td>
+      <td>362</td>
+      <td>0.010508</td>
+      <td>0.013077</td>
+      <td>-0.281698</td>
       <td>False</td>
-      <td>211</td>
-      <td>0.268670</td>
-      <td>0.454370</td>
-      <td>-1671.827139</td>
+      <td>362</td>
+      <td>0.009835</td>
+      <td>0.012333</td>
+      <td>-0.139995</td>
       <td>False</td>
     </tr>
     <tr>
@@ -339,15 +339,15 @@
       <td>mg-N/L</td>
       <td>LSTM</td>
       <td>train</td>
-      <td>1733</td>
-      <td>0.077513</td>
-      <td>0.425266</td>
-      <td>0.209768</td>
+      <td>2005</td>
+      <td>0.008694</td>
+      <td>0.011296</td>
+      <td>0.094283</td>
       <td>False</td>
-      <td>1733</td>
-      <td>0.118742</td>
-      <td>0.401823</td>
-      <td>0.294492</td>
+      <td>2005</td>
+      <td>0.009373</td>
+      <td>0.012123</td>
+      <td>-0.043186</td>
       <td>False</td>
     </tr>
     <tr>
@@ -356,15 +356,15 @@
       <td>mg-N/L</td>
       <td>LSTM</td>
       <td>validation</td>
-      <td>213</td>
-      <td>0.014284</td>
-      <td>0.018027</td>
-      <td>-1.571697</td>
+      <td>432</td>
+      <td>0.009449</td>
+      <td>0.011512</td>
+      <td>-0.075247</td>
       <td>False</td>
-      <td>213</td>
-      <td>0.013905</td>
-      <td>0.017499</td>
-      <td>-1.423311</td>
+      <td>432</td>
+      <td>0.009183</td>
+      <td>0.011206</td>
+      <td>-0.018851</td>
       <td>False</td>
     </tr>
     <tr>
@@ -373,15 +373,15 @@
       <td>mg-N/L</td>
       <td>LSTM</td>
       <td>test</td>
-      <td>211</td>
-      <td>0.019981</td>
-      <td>0.024589</td>
-      <td>-3.899187</td>
+      <td>362</td>
+      <td>0.010200</td>
+      <td>0.012681</td>
+      <td>-0.205360</td>
       <td>False</td>
-      <td>211</td>
-      <td>0.037693</td>
-      <td>0.049069</td>
-      <td>-18.509889</td>
+      <td>362</td>
+      <td>0.009407</td>
+      <td>0.011777</td>
+      <td>-0.039603</td>
       <td>False</td>
     </tr>
   </tbody>

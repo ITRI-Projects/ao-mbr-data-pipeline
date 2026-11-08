@@ -6,11 +6,20 @@ import numpy as np
 import pandas as pd
 
 from src.training.workbook import read_workbook
-from src.training.train import discover_mask_paths, load_source, metrics, prediction_offset
+from src.training.train import (
+    DEFAULT_PREDICTION_MODE,
+    discover_mask_paths,
+    load_source,
+    metrics,
+    prediction_offset,
+)
 from src.training.forecast_dataset import prepare
 
 
 class TrainingScriptTests(unittest.TestCase):
+    def test_absolute_prediction_is_the_default(self):
+        self.assertEqual(DEFAULT_PREDICTION_MODE, "absolute")
+
     def test_masks_are_discovered_beside_data(self):
         with tempfile.TemporaryDirectory(dir=Path.cwd()) as folder:
             folder = Path(folder)
@@ -102,7 +111,7 @@ class TrainingScriptTests(unittest.TestCase):
             prediction_offset(arrays, "target", "absolute"), [0., 0.])
 
     def test_supplied_preparation_is_used_without_refilling(self):
-        index = pd.date_range("2026-04-14", "2026-04-23 23:59", freq="min")
+        index = pd.date_range("2026-04-03 23:00", "2026-04-23 23:59", freq="min")
         raw = pd.DataFrame({"x": np.arange(len(index), dtype=float), "y": np.arange(len(index), dtype=float)}, index=index)
         inputs = raw.copy()
         inputs.loc["2026-04-15 00:20", "x"] = np.nan

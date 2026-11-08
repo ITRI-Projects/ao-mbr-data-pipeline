@@ -1,4 +1,4 @@
-<html><meta charset='utf-8'><title>Tuned forecast comparison</title><h1>Validation-only hyperparameter tuning</h1><p>Frozen baseline sequences and full-history training. Parameters minimize validation MSE; test never selects models. Split figure displays only seven days. Training scores are in-sample.</p><table border="1" class="dataframe">
+<html><meta charset='utf-8'><title>Tuned forecast comparison</title><h1>Validation-only hyperparameter tuning</h1><p>Frozen baseline sequences use 60 minutes of input to predict a 10-minute absolute target. Parameters minimize validation MSE; test never selects models. Split figure displays only seven days. Training scores are in-sample.</p><table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th>model</th>
@@ -20,10 +20,10 @@
       <td>m3/min</td>
       <td>Ridge</td>
       <td>train</td>
-      <td>1730</td>
-      <td>0.506737</td>
-      <td>1.826467</td>
-      <td>0.530612</td>
+      <td>2003</td>
+      <td>0.320791</td>
+      <td>0.948343</td>
+      <td>0.899079</td>
       <td>False</td>
     </tr>
     <tr>
@@ -32,10 +32,10 @@
       <td>m3/min</td>
       <td>Ridge</td>
       <td>validation</td>
-      <td>212</td>
-      <td>0.292417</td>
-      <td>0.361316</td>
-      <td>0.858609</td>
+      <td>428</td>
+      <td>0.213531</td>
+      <td>0.264378</td>
+      <td>0.925692</td>
       <td>False</td>
     </tr>
     <tr>
@@ -44,10 +44,10 @@
       <td>m3/min</td>
       <td>Ridge</td>
       <td>test</td>
-      <td>211</td>
-      <td>0.988391</td>
-      <td>2.826533</td>
-      <td>0.226696</td>
+      <td>361</td>
+      <td>0.566656</td>
+      <td>1.514509</td>
+      <td>0.820307</td>
       <td>False</td>
     </tr>
     <tr>
@@ -56,10 +56,10 @@
       <td>m3/min</td>
       <td>Random Forest</td>
       <td>train</td>
-      <td>1730</td>
-      <td>0.459969</td>
-      <td>1.261342</td>
-      <td>0.776141</td>
+      <td>2003</td>
+      <td>0.289567</td>
+      <td>0.927672</td>
+      <td>0.903431</td>
       <td>False</td>
     </tr>
     <tr>
@@ -68,10 +68,10 @@
       <td>m3/min</td>
       <td>Random Forest</td>
       <td>validation</td>
-      <td>212</td>
-      <td>0.476657</td>
-      <td>0.588487</td>
-      <td>0.624922</td>
+      <td>428</td>
+      <td>0.265385</td>
+      <td>0.326090</td>
+      <td>0.886953</td>
       <td>False</td>
     </tr>
     <tr>
@@ -80,10 +80,10 @@
       <td>m3/min</td>
       <td>Random Forest</td>
       <td>test</td>
-      <td>211</td>
-      <td>0.938536</td>
-      <td>2.557378</td>
-      <td>0.366959</td>
+      <td>361</td>
+      <td>0.879900</td>
+      <td>1.741928</td>
+      <td>0.762290</td>
       <td>False</td>
     </tr>
     <tr>
@@ -92,10 +92,10 @@
       <td>m3/min</td>
       <td>XGBoost</td>
       <td>train</td>
-      <td>1730</td>
-      <td>0.510753</td>
-      <td>1.700711</td>
-      <td>0.593024</td>
+      <td>2003</td>
+      <td>0.538603</td>
+      <td>1.320962</td>
+      <td>0.804192</td>
       <td>False</td>
     </tr>
     <tr>
@@ -104,10 +104,10 @@
       <td>m3/min</td>
       <td>XGBoost</td>
       <td>validation</td>
-      <td>212</td>
-      <td>0.334569</td>
-      <td>0.409179</td>
-      <td>0.818668</td>
+      <td>428</td>
+      <td>0.439695</td>
+      <td>0.649134</td>
+      <td>0.552027</td>
       <td>False</td>
     </tr>
     <tr>
@@ -116,10 +116,10 @@
       <td>m3/min</td>
       <td>XGBoost</td>
       <td>test</td>
-      <td>211</td>
-      <td>0.923177</td>
-      <td>2.556792</td>
-      <td>0.367249</td>
+      <td>361</td>
+      <td>1.208530</td>
+      <td>2.083374</td>
+      <td>0.659966</td>
       <td>False</td>
     </tr>
     <tr>
@@ -128,10 +128,10 @@
       <td>m3/min</td>
       <td>LSTM</td>
       <td>train</td>
-      <td>1730</td>
-      <td>0.560384</td>
-      <td>1.852179</td>
-      <td>0.517304</td>
+      <td>2003</td>
+      <td>0.273909</td>
+      <td>0.683741</td>
+      <td>0.947539</td>
       <td>False</td>
     </tr>
     <tr>
@@ -140,10 +140,10 @@
       <td>m3/min</td>
       <td>LSTM</td>
       <td>validation</td>
-      <td>212</td>
-      <td>0.304343</td>
-      <td>0.370070</td>
-      <td>0.851674</td>
+      <td>428</td>
+      <td>0.232050</td>
+      <td>0.295215</td>
+      <td>0.907347</td>
       <td>False</td>
     </tr>
     <tr>
@@ -152,10 +152,10 @@
       <td>m3/min</td>
       <td>LSTM</td>
       <td>test</td>
-      <td>211</td>
-      <td>1.155668</td>
-      <td>2.878340</td>
-      <td>0.198089</td>
+      <td>361</td>
+      <td>1.506470</td>
+      <td>3.520378</td>
+      <td>0.029119</td>
       <td>False</td>
     </tr>
   </tbody>
@@ -186,32 +186,15 @@
       <td>m3/min</td>
       <td>Ridge</td>
       <td>train</td>
-      <td>1730</td>
-      <td>0.619282</td>
-      <td>1.515829</td>
-      <td>0.676698</td>
+      <td>2003</td>
+      <td>0.320791</td>
+      <td>0.948343</td>
+      <td>0.899079</td>
       <td>False</td>
-      <td>1730</td>
-      <td>0.506737</td>
-      <td>1.826467</td>
-      <td>0.530612</td>
-      <td>False</td>
-    </tr>
-    <tr>
-      <td>a1_air_flow</td>
-      <td>A1_Q_air</td>
-      <td>m3/min</td>
-      <td>Ridge</td>
-      <td>validation</td>
-      <td>212</td>
-      <td>0.509653</td>
-      <td>0.621585</td>
-      <td>0.581544</td>
-      <td>False</td>
-      <td>212</td>
-      <td>0.292417</td>
-      <td>0.361316</td>
-      <td>0.858609</td>
+      <td>2003</td>
+      <td>0.320791</td>
+      <td>0.948343</td>
+      <td>0.899079</td>
       <td>False</td>
     </tr>
     <tr>
@@ -219,16 +202,33 @@
       <td>A1_Q_air</td>
       <td>m3/min</td>
       <td>Ridge</td>
-      <td>test</td>
-      <td>211</td>
-      <td>1.625849</td>
-      <td>2.865321</td>
-      <td>0.205327</td>
+      <td>validation</td>
+      <td>428</td>
+      <td>0.213531</td>
+      <td>0.264378</td>
+      <td>0.925692</td>
       <td>False</td>
-      <td>211</td>
-      <td>0.988391</td>
-      <td>2.826533</td>
-      <td>0.226696</td>
+      <td>428</td>
+      <td>0.213531</td>
+      <td>0.264378</td>
+      <td>0.925692</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>a1_air_flow</td>
+      <td>A1_Q_air</td>
+      <td>m3/min</td>
+      <td>Ridge</td>
+      <td>test</td>
+      <td>361</td>
+      <td>0.566656</td>
+      <td>1.514509</td>
+      <td>0.820307</td>
+      <td>False</td>
+      <td>361</td>
+      <td>0.566656</td>
+      <td>1.514509</td>
+      <td>0.820307</td>
       <td>False</td>
     </tr>
     <tr>
@@ -237,15 +237,15 @@
       <td>m3/min</td>
       <td>Random Forest</td>
       <td>train</td>
-      <td>1730</td>
-      <td>0.419387</td>
-      <td>1.096460</td>
-      <td>0.830842</td>
+      <td>2003</td>
+      <td>0.271605</td>
+      <td>0.748931</td>
+      <td>0.937059</td>
       <td>False</td>
-      <td>1730</td>
-      <td>0.459969</td>
-      <td>1.261342</td>
-      <td>0.776141</td>
+      <td>2003</td>
+      <td>0.289567</td>
+      <td>0.927672</td>
+      <td>0.903431</td>
       <td>False</td>
     </tr>
     <tr>
@@ -254,15 +254,15 @@
       <td>m3/min</td>
       <td>Random Forest</td>
       <td>validation</td>
-      <td>212</td>
-      <td>0.914026</td>
-      <td>1.125817</td>
-      <td>-0.372725</td>
+      <td>428</td>
+      <td>0.570580</td>
+      <td>0.771226</td>
+      <td>0.367666</td>
       <td>False</td>
-      <td>212</td>
-      <td>0.476657</td>
-      <td>0.588487</td>
-      <td>0.624922</td>
+      <td>428</td>
+      <td>0.265385</td>
+      <td>0.326090</td>
+      <td>0.886953</td>
       <td>False</td>
     </tr>
     <tr>
@@ -271,15 +271,15 @@
       <td>m3/min</td>
       <td>Random Forest</td>
       <td>test</td>
-      <td>211</td>
-      <td>1.106788</td>
-      <td>2.522977</td>
-      <td>0.383876</td>
+      <td>361</td>
+      <td>1.020148</td>
+      <td>1.761870</td>
+      <td>0.756816</td>
       <td>False</td>
-      <td>211</td>
-      <td>0.938536</td>
-      <td>2.557378</td>
-      <td>0.366959</td>
+      <td>361</td>
+      <td>0.879900</td>
+      <td>1.741928</td>
+      <td>0.762290</td>
       <td>False</td>
     </tr>
     <tr>
@@ -288,15 +288,15 @@
       <td>m3/min</td>
       <td>XGBoost</td>
       <td>train</td>
-      <td>1730</td>
-      <td>0.411656</td>
-      <td>0.941030</td>
-      <td>0.875401</td>
+      <td>2003</td>
+      <td>0.278621</td>
+      <td>0.677568</td>
+      <td>0.948482</td>
       <td>False</td>
-      <td>1730</td>
-      <td>0.510753</td>
-      <td>1.700711</td>
-      <td>0.593024</td>
+      <td>2003</td>
+      <td>0.538603</td>
+      <td>1.320962</td>
+      <td>0.804192</td>
       <td>False</td>
     </tr>
     <tr>
@@ -305,15 +305,15 @@
       <td>m3/min</td>
       <td>XGBoost</td>
       <td>validation</td>
-      <td>212</td>
-      <td>0.890070</td>
-      <td>1.211910</td>
-      <td>-0.590702</td>
+      <td>428</td>
+      <td>0.652139</td>
+      <td>1.188244</td>
+      <td>-0.501047</td>
       <td>False</td>
-      <td>212</td>
-      <td>0.334569</td>
-      <td>0.409179</td>
-      <td>0.818668</td>
+      <td>428</td>
+      <td>0.439695</td>
+      <td>0.649134</td>
+      <td>0.552027</td>
       <td>False</td>
     </tr>
     <tr>
@@ -322,15 +322,15 @@
       <td>m3/min</td>
       <td>XGBoost</td>
       <td>test</td>
-      <td>211</td>
-      <td>1.014574</td>
-      <td>2.568765</td>
-      <td>0.361309</td>
+      <td>361</td>
+      <td>0.974143</td>
+      <td>1.765356</td>
+      <td>0.755853</td>
       <td>False</td>
-      <td>211</td>
-      <td>0.923177</td>
-      <td>2.556792</td>
-      <td>0.367249</td>
+      <td>361</td>
+      <td>1.208530</td>
+      <td>2.083374</td>
+      <td>0.659966</td>
       <td>False</td>
     </tr>
     <tr>
@@ -339,15 +339,15 @@
       <td>m3/min</td>
       <td>LSTM</td>
       <td>train</td>
-      <td>1730</td>
-      <td>0.542542</td>
-      <td>1.816325</td>
-      <td>0.535811</td>
+      <td>2003</td>
+      <td>0.378090</td>
+      <td>0.967769</td>
+      <td>0.894902</td>
       <td>False</td>
-      <td>1730</td>
-      <td>0.560384</td>
-      <td>1.852179</td>
-      <td>0.517304</td>
+      <td>2003</td>
+      <td>0.273909</td>
+      <td>0.683741</td>
+      <td>0.947539</td>
       <td>False</td>
     </tr>
     <tr>
@@ -356,15 +356,15 @@
       <td>m3/min</td>
       <td>LSTM</td>
       <td>validation</td>
-      <td>212</td>
-      <td>0.305284</td>
-      <td>0.375278</td>
-      <td>0.847470</td>
+      <td>428</td>
+      <td>0.256763</td>
+      <td>0.323415</td>
+      <td>0.888800</td>
       <td>False</td>
-      <td>212</td>
-      <td>0.304343</td>
-      <td>0.370070</td>
-      <td>0.851674</td>
+      <td>428</td>
+      <td>0.232050</td>
+      <td>0.295215</td>
+      <td>0.907347</td>
       <td>False</td>
     </tr>
     <tr>
@@ -373,15 +373,15 @@
       <td>m3/min</td>
       <td>LSTM</td>
       <td>test</td>
-      <td>211</td>
-      <td>1.075166</td>
-      <td>2.806317</td>
-      <td>0.237718</td>
+      <td>361</td>
+      <td>1.414717</td>
+      <td>3.355866</td>
+      <td>0.117740</td>
       <td>False</td>
-      <td>211</td>
-      <td>1.155668</td>
-      <td>2.878340</td>
-      <td>0.198089</td>
+      <td>361</td>
+      <td>1.506470</td>
+      <td>3.520378</td>
+      <td>0.029119</td>
       <td>False</td>
     </tr>
   </tbody>

@@ -6,7 +6,7 @@ from src.training.forecast_dataset import prepare
 
 class ForecastDatasetTests(unittest.TestCase):
     def setUp(self):
-        index = pd.date_range("2026-04-14", "2026-04-23 23:59", freq="min")
+        index = pd.date_range("2026-04-03 23:00", "2026-04-23 23:59", freq="min")
         self.raw = pd.DataFrame({"x": np.sin(np.arange(len(index)) / 100),
                                  "y": np.arange(len(index), dtype=float)}, index=index)
         self.config = {"features": ["x"], "target": "y"}
@@ -20,8 +20,22 @@ class ForecastDatasetTests(unittest.TestCase):
         np.testing.assert_array_equal(a["X"][historical], b["X"][historical])
         np.testing.assert_array_equal(a["median"], b["median"])
         self.assertTrue((samples.loc[samples.split == "train", "target_time"] < pd.Timestamp("2026-04-18")).all())
+        self.assertTrue((samples.loc[samples.split == "train", "target_time"] >= pd.Timestamp("2026-04-04")).all())
         self.assertTrue((samples.loc[samples.split == "validation", "target_time"] < pd.Timestamp("2026-04-21")).all())
+        self.assertTrue((samples.loc[samples.split == "validation", "target_time"] >= pd.Timestamp("2026-04-18")).all())
+        self.assertTrue((samples.loc[samples.split == "test", "origin"] >= pd.Timestamp("2026-04-21")).all())
         np.testing.assert_array_equal(a["y"], self.raw.y.reindex(a["target_time"]).to_numpy())
+
+    def test_default_history_horizon_and_interval_match_experiment(self):
+        arrays, samples, details = prepare(self.raw, self.config)
+
+        self.assertEqual(arrays["X"].shape[1], 7)
+        self.assertEqual(details["history_minutes"], 60)
+        self.assertEqual(details["horizon_minutes"], 10)
+        self.assertEqual(details["origin_interval_minutes"], 10)
+        self.assertTrue((samples.target_time - samples.origin).eq(pd.Timedelta(minutes=10)).all())
+        origin_differences = samples.loc[samples.split == "train", "origin"].diff().dropna()
+        self.assertTrue(origin_differences.eq(pd.Timedelta(minutes=10)).all())
 
     def test_missing_future_labels_are_dropped_and_input_age_is_bounded(self):
         self.raw.loc["2026-04-15 01:00", "y"] = np.nan
@@ -48,7 +62,7 @@ class ForecastDatasetTests(unittest.TestCase):
             input_quality_mask=quality, excluded_timestamps=excluded,
         )
 
-        history_start = samples.origin - pd.Timedelta(minutes=220)
+        history_start = samples.origin - pd.Timedelta(minutes=60)
         self.assertFalse(
             ((history_start <= corrupt_time) & (samples.origin >= corrupt_time)).any()
         )

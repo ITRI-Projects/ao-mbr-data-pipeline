@@ -2,7 +2,7 @@
   {
     "algorithm": "Ridge",
     "parameters": {
-      "alpha": 63.0957344480193,
+      "alpha": 3.981071705534969,
       "copy_X": true,
       "fit_intercept": true,
       "max_iter": null,
@@ -11,7 +11,7 @@
       "solver": "auto",
       "tol": 0.0001
     },
-    "validation_mse": 578.1499281429585
+    "validation_mse": 103.107341209871
   },
   {
     "algorithm": "Random Forest",
@@ -19,12 +19,12 @@
       "bootstrap": true,
       "ccp_alpha": 0.0,
       "criterion": "squared_error",
-      "max_depth": 8,
+      "max_depth": 12,
       "max_features": 1.0,
       "max_leaf_nodes": null,
       "max_samples": null,
       "min_impurity_decrease": 0.0,
-      "min_samples_leaf": 1,
+      "min_samples_leaf": 3,
       "min_samples_split": 2,
       "min_weight_fraction_leaf": 0.0,
       "monotonic_cst": null,
@@ -35,7 +35,7 @@
       "verbose": 0,
       "warm_start": false
     },
-    "validation_mse": 594.5539676692798
+    "validation_mse": 67.86861897262561
   },
   {
     "algorithm": "XGBoost",
@@ -57,40 +57,40 @@
       "grow_policy": null,
       "importance_type": null,
       "interaction_constraints": null,
-      "learning_rate": 0.08,
+      "learning_rate": 0.04,
       "max_bin": null,
       "max_cat_threshold": null,
       "max_cat_to_onehot": null,
       "max_delta_step": null,
-      "max_depth": 2,
+      "max_depth": 5,
       "max_leaves": null,
       "min_child_weight": 5,
       "missing": NaN,
       "monotone_constraints": null,
       "multi_strategy": null,
-      "n_estimators": 250,
+      "n_estimators": 500,
       "n_jobs": 2,
       "num_parallel_tree": null,
       "random_state": 42,
       "reg_alpha": 0.1,
-      "reg_lambda": 50.0,
+      "reg_lambda": 1.0,
       "sampling_method": null,
       "scale_pos_weight": null,
-      "subsample": 1.0,
+      "subsample": 0.7,
       "tree_method": null,
       "validate_parameters": null,
       "verbosity": null
     },
-    "validation_mse": 554.8256152694039
+    "validation_mse": 74.60152838517524
   },
   {
     "algorithm": "LSTM",
     "parameters": {
-      "hidden": 12,
+      "hidden": 48,
       "learning_rate": 0.003,
       "weight_decay": 0.001,
       "epochs": 100
     },
-    "validation_mse": 611.9372684414852
+    "validation_mse": 97.94474559523307
   }
 ]

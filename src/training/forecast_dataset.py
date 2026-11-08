@@ -15,15 +15,24 @@ import pandas as pd
 CONFIG_MODULES = ("eff_nh3_n", "eff_no3_n", "a1_ch3oh_flow",
                   "a2_ch3oh_flow", "a1_air_flow", "a2_air_flow")
 
+DEFAULT_TRAIN_START = "2026-04-04"
+DEFAULT_TRAIN_END = "2026-04-18"
+DEFAULT_TEST_START = "2026-04-21"
+DEFAULT_HORIZON_MINUTES = 10
+DEFAULT_STEP_MINUTES = 10
+DEFAULT_SEQUENCE_STEPS = 7
 
-def prepare(raw, config, train_end="2026-04-18", test_start="2026-04-21",
-            horizon_minutes=60, step_minutes=20, sequence_steps=12, max_age_minutes=5,
+
+def prepare(raw, config, train_start=DEFAULT_TRAIN_START, train_end=DEFAULT_TRAIN_END,
+            test_start=DEFAULT_TEST_START, horizon_minutes=DEFAULT_HORIZON_MINUTES,
+            step_minutes=DEFAULT_STEP_MINUTES, sequence_steps=DEFAULT_SEQUENCE_STEPS,
+            max_age_minutes=5,
             prepared_inputs=None, input_quality_mask=None, excluded_timestamps=None):
-    """Use exact future observed labels and past/current inputs only.
+    """Use exact absolute future observations as labels and past/current inputs only.
 
-    Validation is April 18-20 by default; train labels cannot cross April 18,
-    and validation labels cannot cross April 21. Test history may include
-    earlier observations, as it would at a rolling operational forecast origin.
+    Training labels are April 4-17 and validation labels are April 18-20 by
+    default. Test origins begin April 21. Input history and forecast origins
+    may precede a label boundary, as they would for an operational forecast.
     """
     if min(horizon_minutes, step_minutes, sequence_steps) < 1 or max_age_minutes < 0:
         raise ValueError("Horizon, interval and sequence length must be positive; age nonnegative.")
@@ -37,8 +46,9 @@ def prepare(raw, config, train_end="2026-04-18", test_start="2026-04-21",
     raw = raw.apply(pd.to_numeric, errors="raise")
     if np.isinf(raw.to_numpy(dtype=float)).any():
         raise ValueError("Infinite readings are invalid.")
+    train_start = pd.Timestamp(train_start)
     train_end, test_start = pd.Timestamp(train_end), pd.Timestamp(test_start)
-    if not raw.index.min() < train_end < test_start <= raw.index.max():
+    if not raw.index.min() <= train_start < train_end < test_start <= raw.index.max():
         raise ValueError("Split boundaries must be ordered and inside source coverage.")
     target = config["target"]
     columns = list(dict.fromkeys([*config["features"], target]))
@@ -47,7 +57,7 @@ def prepare(raw, config, train_end="2026-04-18", test_start="2026-04-21",
         raise ValueError(f"Missing configured sensors: {sorted(absent)}")
     grid = raw.reindex(pd.date_range(raw.index.min(), raw.index.max(), freq="min", name="datetime"))
     # Exclude unusable inputs using training observations only.
-    unique = grid.loc[grid.index < train_end, columns].nunique()
+    unique = grid.loc[(grid.index >= train_start) & (grid.index < train_end), columns].nunique()
     retained = unique.index[unique.gt(1)].tolist()
     if not retained:
         raise ValueError("No varying training inputs remain.")
@@ -83,8 +93,8 @@ def prepare(raw, config, train_end="2026-04-18", test_start="2026-04-21",
     label_times = origins + pd.Timedelta(minutes=horizon_minutes)
     y = grid[target].reindex(label_times).to_numpy(dtype=float)
     split = np.full(len(origins), "purged", dtype="U10")
-    split[(origins < train_end) & (label_times < train_end)] = "train"
-    split[(origins >= train_end) & (origins < test_start) & (label_times < test_start)] = "validation"
+    split[(label_times >= train_start) & (label_times < train_end)] = "train"
+    split[(label_times >= train_end) & (label_times < test_start)] = "validation"
     split[(origins >= test_start) & (label_times <= grid.index.max())] = "test"
     history_starts = origins - pd.Timedelta(minutes=step_minutes * (sequence_steps - 1))
     corrupt_sequence = np.array([
@@ -123,6 +133,14 @@ def prepare(raw, config, train_end="2026-04-18", test_start="2026-04-21",
                 origin=origins.to_numpy(), target_time=label_times.to_numpy(),
                 feature_names=np.asarray(retained), median=medians, center=center, scale=scale), metadata, {
                     "target": target, "features": retained,
+                    "train_start": str(train_start),
+                    "train_end_exclusive": str(train_end),
+                    "test_start": str(test_start),
+                    "horizon_minutes": horizon_minutes,
+                    "label_representation": "absolute_future_value",
+                    "origin_interval_minutes": step_minutes,
+                    "sequence_steps": sequence_steps,
+                    "history_minutes": step_minutes * (sequence_steps - 1),
                     "excluded_no_training_sequence_support": sequence_excluded,
                     "excluded_training_constant_or_unobserved": unique.index[unique.le(1)].tolist(),
                     "split_counts": metadata.groupby("split").size().to_dict(),
@@ -134,7 +152,10 @@ def prepare(raw, config, train_end="2026-04-18", test_start="2026-04-21",
 
 
 def plot_training_report(raw, samples, predictions, scores, config, folder,
-                         train_end="2026-04-18", test_start="2026-04-21", prefix=""):
+                         train_start=DEFAULT_TRAIN_START, train_end=DEFAULT_TRAIN_END,
+                         test_start=DEFAULT_TEST_START,
+                         horizon_minutes=DEFAULT_HORIZON_MINUTES,
+                         step_minutes=DEFAULT_STEP_MINUTES, prefix=""):
     """Compare identical forecast samples across chronological splits and models.
 
     Missing observed labels remain gaps. Training predictions are in-sample fits.
@@ -148,7 +169,7 @@ def plot_training_report(raw, samples, predictions, scores, config, folder,
     folder.mkdir(parents=True, exist_ok=True)
     splits = ("train", "validation", "test")
     colors = ("steelblue", "darkorange", "seagreen")
-    boundaries = [raw.index.min(), pd.Timestamp(train_end), pd.Timestamp(test_start),
+    boundaries = [pd.Timestamp(train_start), pd.Timestamp(train_end), pd.Timestamp(test_start),
                   raw.index.max() + pd.Timedelta(minutes=1)]
     # Visualization only: crop the display, never the source used by prepare().
     display_end = raw.index.max() + pd.Timedelta(minutes=1)
@@ -163,7 +184,7 @@ def plot_training_report(raw, samples, predictions, scores, config, folder,
             ax.plot(segment.index, segment[config["target"]], color=colors[i],
                     linewidth=.8, label=split.capitalize())
     ax.set_xlim(display_start, display_end)
-    ax.set(title=f"{config['target']}: final seven days (visualization only; full-history training)",
+    ax.set(title=f"{config['target']}: final seven days (14-day training window)",
            ylabel=config["unit"], xlabel="Measurement timestamp")
     locator = mdates.AutoDateLocator(minticks=5, maxticks=8)
     ax.xaxis.set_major_locator(locator)
@@ -180,7 +201,9 @@ def plot_training_report(raw, samples, predictions, scores, config, folder,
             subset = samples.loc[chosen].copy()
             subset["prediction"] = np.asarray(predicted)[chosen]
             timeline = subset.set_index("target_time")[["target", "prediction"]]
-            timeline = timeline.reindex(pd.date_range(timeline.index.min(), timeline.index.max(), freq="20min"))
+            timeline = timeline.reindex(pd.date_range(
+                timeline.index.min(), timeline.index.max(), freq=f"{step_minutes}min"
+            ))
             ax = axes[row, col]
             ax.plot(timeline.index, timeline.target, color="black", linewidth=.85, label="Observed")
             ax.plot(timeline.index, timeline.prediction, color=colors[col], linewidth=.9, alpha=.85, label=algorithm)
@@ -191,7 +214,7 @@ def plot_training_report(raw, samples, predictions, scores, config, folder,
             locator = mdates.AutoDateLocator(minticks=3, maxticks=5)
             ax.xaxis.set_major_locator(locator)
             ax.xaxis.set_major_formatter(mdates.ConciseDateFormatter(locator))
-    fig.suptitle(f"{config['target']}: observed versus one-hour-ahead predictions\n"
+    fig.suptitle(f"{config['target']}: observed versus {horizon_minutes}-minute-ahead predictions\n"
                  "Train: fitted | Validation: model selection | Test: held-out rolling forecast")
     fig.tight_layout(rect=(0, 0, 1, .95))
     fig.savefig(folder / f"{prefix}train_test_predictions.png", dpi=150); plt.close(fig)
@@ -227,8 +250,9 @@ def export_dataset(source, output):
         np.savez_compressed(folder / "sequences.npz", **arrays)
         samples.to_csv(folder / "samples.csv", index=False)
         # Flattened sequences share the same information as the 3D LSTM input.
-        features = [f"{sensor}__t_minus_{lag * 20}min"
-                    for lag in range(11, -1, -1) for sensor in arrays["feature_names"]]
+        features = [f"{sensor}__t_minus_{lag * DEFAULT_STEP_MINUTES}min"
+                    for lag in range(DEFAULT_SEQUENCE_STEPS - 1, -1, -1)
+                    for sensor in arrays["feature_names"]]
         flat = pd.DataFrame(arrays["X"].reshape(len(samples), -1), columns=features)
         masks = pd.DataFrame(arrays["missing"].reshape(len(samples), -1).astype(int),
                              columns=[f"{f}__missing" for f in features])
@@ -242,10 +266,16 @@ def export_dataset(source, output):
         "source": str(source.resolve()), "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
         "source_start": str(raw.index.min()), "source_end": str(raw.index.max()),
         "source_rows": len(raw),
-        "horizon_minutes": 60, "origin_step_minutes": 20, "sequence_steps": 12,
+        "horizon_minutes": DEFAULT_HORIZON_MINUTES,
+        "origin_step_minutes": DEFAULT_STEP_MINUTES,
+        "sequence_steps": DEFAULT_SEQUENCE_STEPS,
+        "history_minutes": DEFAULT_STEP_MINUTES * (DEFAULT_SEQUENCE_STEPS - 1),
         "input_policy": "current minute, causal forward fill at most five minutes; no averaging",
-        "label_policy": "exact observed source value at origin + 60 minutes, never filled",
-        "train_end_exclusive": "2026-04-18", "validation_end_exclusive": "2026-04-21",
+        "label_policy": "exact absolute observed source value at origin + 10 minutes, never filled",
+        "label_representation": "absolute_future_value",
+        "train_start_inclusive": DEFAULT_TRAIN_START,
+        "train_end_exclusive": DEFAULT_TRAIN_END,
+        "validation_end_exclusive": DEFAULT_TEST_START,
         "preprocessing": "training-sequence median imputation and standardization only",
         "missingness": "NPZ missing channels must accompany X; X_raw preserves NaNs",
         "source_caveat": "Observed means non-null in supplied raw export; upstream cleaning is not independently verified.",
