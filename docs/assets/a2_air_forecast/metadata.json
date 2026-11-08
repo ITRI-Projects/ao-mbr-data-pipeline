@@ -12,22 +12,29 @@
     "Eff_NH4_N",
     "A2_Q_air"
   ],
+  "train_start": "2026-04-04 00:00:00",
+  "train_end_exclusive": "2026-04-18 00:00:00",
+  "test_start": "2026-04-21 00:00:00",
+  "horizon_minutes": 10,
+  "label_representation": "absolute_future_value",
+  "origin_interval_minutes": 10,
+  "sequence_steps": 7,
+  "history_minutes": 60,
   "excluded_no_training_sequence_support": [],
-  "excluded_training_constant_or_unobserved": [
-    "A2_NH3_N"
-  ],
+  "excluded_training_constant_or_unobserved": [],
   "split_counts": {
-    "test": 211,
-    "train": 1729,
-    "validation": 212
+    "test": 361,
+    "train": 2003,
+    "validation": 428
   },
   "target_unique_by_split": {
-    "test": 172,
-    "train": 1601,
-    "validation": 204
+    "test": 333,
+    "train": 1770,
+    "validation": 397
   },
-  "scheduled_origins_after_warmup": 2182,
-  "excluded_missing_labels_or_boundary": 30,
+  "scheduled_origins_after_warmup": 4380,
+  "excluded_missing_labels_boundary_or_corruption": 1588,
+  "excluded_corrupt_sequence_or_label": 67,
   "workbook": {
     "name": "a2_air_flow",
     "target": "A2_Q_air",
@@ -36,7 +43,6 @@
       "A2_COD_in",
       "A2_Q_r1",
       "A2_FQ_CH3OH",
-      "A2_NH3_N",
       "O_PH",
       "O_ORP",
       "O_DO",
@@ -48,12 +54,15 @@
     "workbook_marked_targets": [
       "Eff_NH4_N"
     ],
-    "target_mark_corrected": true
+    "target_mark_corrected": true,
+    "excluded_unavailable_features": [
+      "A2_NH3_N"
+    ]
   },
   "hyperparameter_selection": {
     "Ridge": {
       "parameters": {
-        "alpha": 100.0,
+        "alpha": 10.0,
         "copy_X": true,
         "fit_intercept": true,
         "max_iter": null,
@@ -62,14 +71,14 @@
         "solver": "auto",
         "tol": 0.0001
       },
-      "validation_mse": 0.5894790761032089
+      "validation_mse": 0.10994090809842565
     },
     "Random Forest": {
       "parameters": {
         "bootstrap": true,
         "ccp_alpha": 0.0,
         "criterion": "squared_error",
-        "max_depth": 10,
+        "max_depth": 5,
         "max_features": 1.0,
         "max_leaf_nodes": null,
         "max_samples": null,
@@ -85,7 +94,7 @@
         "verbose": 0,
         "warm_start": false
       },
-      "validation_mse": 1.284315790385492
+      "validation_mse": 0.22911533230400394
     },
     "XGBoost": {
       "parameters": {
@@ -130,11 +139,15 @@
         "validate_parameters": null,
         "verbosity": null
       },
-      "validation_mse": 1.0428532748652772
+      "validation_mse": 1.5157403584098759
     }
   },
-  "prediction_mode": "delta",
-  "model_target": "future_minus_origin",
+  "prediction_mode": "absolute",
+  "model_target": "future_absolute",
   "added_target_history": true,
-  "label_policy": "exact observed future labels only; source mask removes estimates"
+  "excluded_unavailable_workbook_features": [
+    "A2_NH3_N"
+  ],
+  "label_policy": "exact observed future labels only; fill, fault and replacement masks remove estimates",
+  "input_channels": "scaled readings, missing flags, and fill/fault/replacement quality flags"
 }
