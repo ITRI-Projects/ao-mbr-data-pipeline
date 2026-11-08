@@ -140,6 +140,7 @@ def metrics(y, prediction):
             "constant_target": bool(np.ptp(y) == 0)}
 
 PREDICTION_MODES = ("absolute", "delta")
+DEFAULT_PREDICTION_MODE = "absolute"
 
 
 def prediction_offset(arrays, target, mode):
@@ -330,7 +331,10 @@ def main():
     parser.add_argument("--sequence-steps", type=int, default=DEFAULT_SEQUENCE_STEPS)
     parser.add_argument("--epochs", type=int, default=60)
     parser.add_argument("--targets", nargs="*", help="Optional model names, e.g. eff_nh3_n a1_air_flow")
-    parser.add_argument("--prediction-mode", choices=PREDICTION_MODES, default="delta")
+    parser.add_argument(
+        "--prediction-mode", choices=PREDICTION_MODES, default=DEFAULT_PREDICTION_MODE,
+        help="Model the absolute future value (default) or its change from the forecast origin",
+    )
     args = parser.parse_args()
     if min(args.epochs, args.horizon_minutes, args.step_minutes, args.sequence_steps) < 1:
         parser.error("Epochs, horizon, interval, and sequence length must be positive")

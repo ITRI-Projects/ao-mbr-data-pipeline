@@ -28,7 +28,7 @@ def prepare(raw, config, train_start=DEFAULT_TRAIN_START, train_end=DEFAULT_TRAI
             step_minutes=DEFAULT_STEP_MINUTES, sequence_steps=DEFAULT_SEQUENCE_STEPS,
             max_age_minutes=5,
             prepared_inputs=None, input_quality_mask=None, excluded_timestamps=None):
-    """Use exact future observed labels and past/current inputs only.
+    """Use exact absolute future observations as labels and past/current inputs only.
 
     Training labels are April 4-17 and validation labels are April 18-20 by
     default. Test origins begin April 21. Input history and forecast origins
@@ -137,6 +137,7 @@ def prepare(raw, config, train_start=DEFAULT_TRAIN_START, train_end=DEFAULT_TRAI
                     "train_end_exclusive": str(train_end),
                     "test_start": str(test_start),
                     "horizon_minutes": horizon_minutes,
+                    "label_representation": "absolute_future_value",
                     "origin_interval_minutes": step_minutes,
                     "sequence_steps": sequence_steps,
                     "history_minutes": step_minutes * (sequence_steps - 1),
@@ -270,7 +271,8 @@ def export_dataset(source, output):
         "sequence_steps": DEFAULT_SEQUENCE_STEPS,
         "history_minutes": DEFAULT_STEP_MINUTES * (DEFAULT_SEQUENCE_STEPS - 1),
         "input_policy": "current minute, causal forward fill at most five minutes; no averaging",
-        "label_policy": "exact observed source value at origin + 10 minutes, never filled",
+        "label_policy": "exact absolute observed source value at origin + 10 minutes, never filled",
+        "label_representation": "absolute_future_value",
         "train_start_inclusive": DEFAULT_TRAIN_START,
         "train_end_exclusive": DEFAULT_TRAIN_END,
         "validation_end_exclusive": DEFAULT_TEST_START,
