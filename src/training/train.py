@@ -19,7 +19,16 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
-from .forecast_dataset import prepare, plot_training_report
+from .forecast_dataset import (
+    DEFAULT_HORIZON_MINUTES,
+    DEFAULT_SEQUENCE_STEPS,
+    DEFAULT_STEP_MINUTES,
+    DEFAULT_TEST_START,
+    DEFAULT_TRAIN_END,
+    DEFAULT_TRAIN_START,
+    prepare,
+    plot_training_report,
+)
 from .workbook import read_workbook
 
 MASK_FILENAMES = (
@@ -198,8 +207,9 @@ def run(args):
         def artifact(filename):
             return folder / (prefix + filename)
         arrays, samples, details = prepare(
-            raw, config, train_end=args.train_end, test_start=args.test_start,
-            horizon_minutes=60, step_minutes=20, sequence_steps=12,
+            raw, config, train_start=args.train_start, train_end=args.train_end,
+            test_start=args.test_start, horizon_minutes=args.horizon_minutes,
+            step_minutes=args.step_minutes, sequence_steps=args.sequence_steps,
             prepared_inputs=data, input_quality_mask=source.quality_mask,
             excluded_timestamps=source.synchronized_mask)
         # Workbook inputs are authoritative; target history is an explicitly added autoregressive input.
@@ -264,7 +274,10 @@ def run(args):
         manifest_targets[name] = {"target": config["target"], "split_counts": details["split_counts"]}
         target_scores = pd.DataFrame(summaries).query("model == @name")
         plot_training_report(raw, samples, predictions, target_scores, config, folder,
-                             train_end=args.train_end, test_start=args.test_start, prefix=prefix)
+                             train_start=args.train_start, train_end=args.train_end,
+                             test_start=args.test_start,
+                             horizon_minutes=args.horizon_minutes,
+                             step_minutes=args.step_minutes, prefix=prefix)
         pd.DataFrame(summaries).query("model == @name").to_csv(artifact("metrics.csv"), index=False)
     summary = pd.DataFrame(summaries)
     summary.to_csv(output / "metrics_summary.csv", index=False)
@@ -274,10 +287,10 @@ def run(args):
     ax.axis("off")
     table = ax.table(cellText=display.fillna("undefined").values, colLabels=display.columns, loc="center")
     table.auto_set_font_size(False);table.set_fontsize(9);table.scale(1, 1.5)
-    ax.set_title("Held-out test metrics: one-hour-ahead forecasts", pad=15)
+    ax.set_title(f"Held-out test metrics: {args.horizon_minutes}-minute-ahead forecasts", pad=15)
     fig.tight_layout();fig.savefig(output / "metrics_summary.png", dpi=150);plt.close(fig)
     html = "<html><meta charset='utf-8'><title>Forecast comparison</title><body><h1>Forecast comparison</h1>"
-    html += f"<p>Train labels before {args.train_end}; validation labels before {args.test_start}; test origins from {args.test_start}. The split figure shows only the final seven days; training still uses all available earlier history. Test metrics never select models. R2 is undefined for constant labels. Recorded flows are predicted; this is not an operating recommendation.</p>"
+    html += f"<p>Train labels from {args.train_start} through the instant before {args.train_end}; validation labels continue through the instant before {args.test_start}; test origins begin at {args.test_start}. Inputs cover {args.step_minutes * (args.sequence_steps - 1)} minutes and forecasts look ahead {args.horizon_minutes} minutes. Test metrics never select models. R2 is undefined for constant labels. Recorded flows are predicted; this is not an operating recommendation.</p>"
     html += summary.round(6).fillna("undefined").to_html(index=False)
     for name in configs:
         prefix = f"{name}_" if len(configs) > 1 else ""
@@ -285,9 +298,13 @@ def run(args):
     (output / "report.html").write_text(html + "</body></html>", encoding="utf-8")
     source_files = [args.data, *mask_paths, args.workbook]
     manifest = {"files": {str(p): hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in source_files},
+                "train_start_inclusive": args.train_start,
                 "train_end_exclusive": args.train_end, "test_start": args.test_start,
                 "prediction_mode": args.prediction_mode,
-                "horizon_minutes": 60, "sequence_steps": 12, "origin_interval_minutes": 20,
+                "horizon_minutes": args.horizon_minutes,
+                "sequence_steps": args.sequence_steps,
+                "origin_interval_minutes": args.step_minutes,
+                "history_minutes": args.step_minutes * (args.sequence_steps - 1),
                 "seed": 42, "max_lstm_epochs": args.epochs, "targets": manifest_targets,
                 "skipped_targets": skipped_targets,
                 "versions": {p: importlib.metadata.version(p) for p in ("numpy", "pandas", "scikit-learn", "xgboost", "torch")},
@@ -305,14 +322,18 @@ def main():
     parser.add_argument("--data", default="docs/raw/data_filled.csv")
     parser.add_argument("--workbook", default="Sensor_Configurations.xlsx")
     parser.add_argument("--output", default="data/training/workbook_forecasts")
-    parser.add_argument("--train-end", default="2026-04-18")
-    parser.add_argument("--test-start", default="2026-04-21")
+    parser.add_argument("--train-start", default=DEFAULT_TRAIN_START)
+    parser.add_argument("--train-end", default=DEFAULT_TRAIN_END)
+    parser.add_argument("--test-start", default=DEFAULT_TEST_START)
+    parser.add_argument("--horizon-minutes", type=int, default=DEFAULT_HORIZON_MINUTES)
+    parser.add_argument("--step-minutes", type=int, default=DEFAULT_STEP_MINUTES)
+    parser.add_argument("--sequence-steps", type=int, default=DEFAULT_SEQUENCE_STEPS)
     parser.add_argument("--epochs", type=int, default=60)
     parser.add_argument("--targets", nargs="*", help="Optional model names, e.g. eff_nh3_n a1_air_flow")
     parser.add_argument("--prediction-mode", choices=PREDICTION_MODES, default="delta")
     args = parser.parse_args()
-    if args.epochs < 1:
-        parser.error("--epochs must be positive")
+    if min(args.epochs, args.horizon_minutes, args.step_minutes, args.sequence_steps) < 1:
+        parser.error("Epochs, horizon, interval, and sequence length must be positive")
     run(args)
 
 
