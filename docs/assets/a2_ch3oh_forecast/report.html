@@ -1,4 +1,4 @@
-<html><meta charset='utf-8'><title>Forecast comparison</title><body><h1>Forecast comparison</h1><p>Train labels before 2026-04-18; validation labels before 2026-04-21; test origins from 2026-04-21. The split figure shows only the final seven days; training still uses all available earlier history. Test metrics never select models. R2 is undefined for constant labels. Recorded flows are predicted; this is not an operating recommendation.</p><table border="1" class="dataframe">
+<html><meta charset='utf-8'><title>Forecast comparison</title><body><h1>Forecast comparison</h1><p>Train labels from 2026-04-04 through the instant before 2026-04-18; validation labels continue through the instant before 2026-04-21; test origins begin at 2026-04-21. Inputs cover 60 minutes and forecasts look ahead 10 minutes. Test metrics never select models. R2 is undefined for constant labels. Recorded flows are predicted; this is not an operating recommendation.</p><table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th>model</th>
@@ -20,10 +20,10 @@
       <td>m3/hour</td>
       <td>Ridge</td>
       <td>train</td>
-      <td>1717</td>
-      <td>11.862526</td>
-      <td>21.664095</td>
-      <td>0.811728</td>
+      <td>1956</td>
+      <td>4.495750</td>
+      <td>10.827280</td>
+      <td>0.967229</td>
       <td>False</td>
     </tr>
     <tr>
@@ -32,10 +32,10 @@
       <td>m3/hour</td>
       <td>Ridge</td>
       <td>validation</td>
-      <td>213</td>
-      <td>13.109330</td>
-      <td>23.238563</td>
-      <td>0.696717</td>
+      <td>432</td>
+      <td>4.440161</td>
+      <td>10.177358</td>
+      <td>0.941743</td>
       <td>False</td>
     </tr>
     <tr>
@@ -44,10 +44,10 @@
       <td>m3/hour</td>
       <td>Ridge</td>
       <td>test</td>
-      <td>180</td>
-      <td>16.446213</td>
-      <td>23.508686</td>
-      <td>0.602878</td>
+      <td>365</td>
+      <td>4.305674</td>
+      <td>8.079484</td>
+      <td>0.951405</td>
       <td>False</td>
     </tr>
     <tr>
@@ -56,10 +56,10 @@
       <td>m3/hour</td>
       <td>Random Forest</td>
       <td>train</td>
-      <td>1717</td>
-      <td>6.636690</td>
-      <td>12.709753</td>
-      <td>0.935199</td>
+      <td>1956</td>
+      <td>3.144935</td>
+      <td>7.273221</td>
+      <td>0.985212</td>
       <td>False</td>
     </tr>
     <tr>
@@ -68,10 +68,10 @@
       <td>m3/hour</td>
       <td>Random Forest</td>
       <td>validation</td>
-      <td>213</td>
-      <td>13.013832</td>
-      <td>24.555167</td>
-      <td>0.661378</td>
+      <td>432</td>
+      <td>3.690520</td>
+      <td>8.293226</td>
+      <td>0.961317</td>
       <td>False</td>
     </tr>
     <tr>
@@ -80,10 +80,10 @@
       <td>m3/hour</td>
       <td>Random Forest</td>
       <td>test</td>
-      <td>180</td>
-      <td>15.093019</td>
-      <td>23.662516</td>
-      <td>0.597664</td>
+      <td>365</td>
+      <td>6.125495</td>
+      <td>10.910769</td>
+      <td>0.911380</td>
       <td>False</td>
     </tr>
     <tr>
@@ -92,10 +92,10 @@
       <td>m3/hour</td>
       <td>XGBoost</td>
       <td>train</td>
-      <td>1717</td>
-      <td>5.687249</td>
-      <td>9.828220</td>
-      <td>0.961251</td>
+      <td>1956</td>
+      <td>3.851653</td>
+      <td>9.070899</td>
+      <td>0.976998</td>
       <td>False</td>
     </tr>
     <tr>
@@ -104,10 +104,10 @@
       <td>m3/hour</td>
       <td>XGBoost</td>
       <td>validation</td>
-      <td>213</td>
-      <td>12.073396</td>
-      <td>24.225086</td>
-      <td>0.670421</td>
+      <td>432</td>
+      <td>4.053667</td>
+      <td>9.324754</td>
+      <td>0.951095</td>
       <td>False</td>
     </tr>
     <tr>
@@ -116,10 +116,10 @@
       <td>m3/hour</td>
       <td>XGBoost</td>
       <td>test</td>
-      <td>180</td>
-      <td>15.013014</td>
-      <td>23.901172</td>
-      <td>0.589507</td>
+      <td>365</td>
+      <td>5.457387</td>
+      <td>9.533395</td>
+      <td>0.932342</td>
       <td>False</td>
     </tr>
     <tr>
@@ -128,10 +128,10 @@
       <td>m3/hour</td>
       <td>LSTM</td>
       <td>train</td>
-      <td>1717</td>
-      <td>12.175813</td>
-      <td>22.695098</td>
-      <td>0.793381</td>
+      <td>1956</td>
+      <td>4.985237</td>
+      <td>10.642354</td>
+      <td>0.968339</td>
       <td>False</td>
     </tr>
     <tr>
@@ -140,10 +140,10 @@
       <td>m3/hour</td>
       <td>LSTM</td>
       <td>validation</td>
-      <td>213</td>
-      <td>14.127460</td>
-      <td>25.073878</td>
-      <td>0.646921</td>
+      <td>432</td>
+      <td>4.972450</td>
+      <td>10.192394</td>
+      <td>0.941571</td>
       <td>False</td>
     </tr>
     <tr>
@@ -152,10 +152,10 @@
       <td>m3/hour</td>
       <td>LSTM</td>
       <td>test</td>
-      <td>180</td>
-      <td>13.263748</td>
-      <td>20.129387</td>
-      <td>0.708842</td>
+      <td>365</td>
+      <td>9.141326</td>
+      <td>15.015002</td>
+      <td>0.832169</td>
       <td>False</td>
     </tr>
   </tbody>
