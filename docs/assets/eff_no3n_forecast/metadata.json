@@ -11,30 +11,37 @@
     "A2_FQ_CH3OH",
     "A_PH",
     "A_ORP",
-    "A_DO",
     "A_MLSS",
     "A1_Q_air",
     "A2_Q_air",
     "Eff_NH4_N"
   ],
+  "train_start": "2026-04-04 00:00:00",
+  "train_end_exclusive": "2026-04-18 00:00:00",
+  "test_start": "2026-04-21 00:00:00",
+  "horizon_minutes": 10,
+  "label_representation": "absolute_future_value",
+  "origin_interval_minutes": 10,
+  "sequence_steps": 7,
+  "history_minutes": 60,
   "excluded_no_training_sequence_support": [],
   "excluded_training_constant_or_unobserved": [
-    "A1_NH3_N",
-    "A2_NH3_N",
+    "A_DO",
     "Eff_NO3_N"
   ],
   "split_counts": {
-    "test": 211,
-    "train": 1733,
-    "validation": 213
+    "test": 362,
+    "train": 2005,
+    "validation": 432
   },
   "target_unique_by_split": {
     "test": 1,
     "train": 1,
     "validation": 1
   },
-  "scheduled_origins_after_warmup": 2182,
-  "excluded_missing_labels_or_boundary": 25,
+  "scheduled_origins_after_warmup": 4380,
+  "excluded_missing_labels_boundary_or_corruption": 1581,
+  "excluded_corrupt_sequence_or_label": 67,
   "workbook": {
     "name": "eff_no3_n",
     "target": "Eff_NO3_N",
@@ -47,8 +54,6 @@
       "A2_COD_in",
       "A2_Q_r1",
       "A2_FQ_CH3OH",
-      "A1_NH3_N",
-      "A2_NH3_N",
       "A_PH",
       "A_ORP",
       "A_DO",
@@ -63,7 +68,11 @@
     "workbook_marked_targets": [
       "Eff_NO3_N"
     ],
-    "target_mark_corrected": false
+    "target_mark_corrected": false,
+    "excluded_unavailable_features": [
+      "A1_NH3_N",
+      "A2_NH3_N"
+    ]
   },
   "hyperparameter_selection": {
     "Ridge": {
@@ -113,7 +122,7 @@
         "colsample_bytree": null,
         "device": null,
         "early_stopping_rounds": null,
-        "enable_categorical": true,
+        "enable_categorical": false,
         "eval_metric": null,
         "feature_types": null,
         "feature_weights": null,
@@ -148,6 +157,13 @@
       "validation_mse": 0.0
     }
   },
+  "prediction_mode": "absolute",
+  "model_target": "future_absolute",
   "added_target_history": false,
-  "label_policy": "exact observed future labels only; source mask removes estimates"
+  "excluded_unavailable_workbook_features": [
+    "A1_NH3_N",
+    "A2_NH3_N"
+  ],
+  "label_policy": "exact observed future labels only; fill, fault and replacement masks remove estimates",
+  "input_channels": "scaled readings, missing flags, and fill/fault/replacement quality flags"
 }

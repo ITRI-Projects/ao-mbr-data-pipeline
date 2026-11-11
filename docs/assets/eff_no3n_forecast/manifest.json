@@ -1,36 +1,43 @@
 {
   "files": {
-    "docs/raw/data_filled.csv": "1ff56a7356fe47ee7667a65e625e846280cea377449a0eb024d5b35554bcf419",
-    "docs/raw/data_filled_mask.csv": "06ac15c7f7639dfd11a444e404a206f5e39fd07bfce539a13cb3bf8616e0c12b",
+    "docs/raw/eff_no3_n/data_filled.csv": "e59ee9dd3ccd7e8551b58b221ccd59ae8a1c066e634c52b93d08e4fc59aea7d8",
+    "/home/itri/projects/ao-mbr-data-pipeline/docs/raw/eff_no3_n/data_filled_mask.csv": "8ec381ae29dbcf237804a774407c2d427d2ea2e07f3dcd3eba91e97af630e38a",
+    "/home/itri/projects/ao-mbr-data-pipeline/docs/raw/eff_no3_n/data_sensor_fault_mask.csv": "1ad62770e7573228276713277e29a247d25a92b59c765a6f3f19c6ecee25b711",
+    "/home/itri/projects/ao-mbr-data-pipeline/docs/raw/eff_no3_n/data_short_error_replacement_mask.csv": "e517ee21cf50182cd021ef31a6bd626bd88d74e9c78e919aa4fb02f0a3285e7c",
+    "/home/itri/projects/ao-mbr-data-pipeline/docs/raw/eff_no3_n/data_synchronized_corrupt_mask.csv": "0ae887b6f217bf4efb6920d167e0579edaafafcd8b597f340fac259c5baa6b00",
     "Sensor_Configurations.xlsx": "35d1280b8c06541aa528b2df1f12df56232104d028fae19534414e1d6fbffa0b"
   },
+  "train_start_inclusive": "2026-04-04",
   "train_end_exclusive": "2026-04-18",
   "test_start": "2026-04-21",
-  "horizon_minutes": 60,
-  "sequence_steps": 12,
-  "origin_interval_minutes": 20,
+  "prediction_mode": "absolute",
+  "horizon_minutes": 10,
+  "sequence_steps": 7,
+  "origin_interval_minutes": 10,
+  "history_minutes": 60,
   "seed": 42,
   "max_lstm_epochs": 60,
   "targets": {
     "eff_no3_n": {
       "target": "Eff_NO3_N",
       "split_counts": {
-        "test": 211,
-        "train": 1733,
-        "validation": 213
+        "test": 362,
+        "train": 2005,
+        "validation": 432
       }
     }
   },
+  "skipped_targets": {},
   "versions": {
-    "numpy": "2.5.3",
+    "numpy": "2.4.6",
     "pandas": "3.0.6",
     "scikit-learn": "1.9.1",
-    "xgboost": "3.4.1",
-    "torch": "2.14.1+cpu"
+    "xgboost": "3.2.0",
+    "torch": "2.14.1"
   },
   "limitations": [
     "Short previously inspected source period; independent future evaluation needed.",
-    "Upstream observations rely on source fill mask accuracy.",
+    "Upstream observations rely on fill and sensor-quality mask accuracy.",
     "Rolling test forecasts use past available test observations."
   ]
 }
