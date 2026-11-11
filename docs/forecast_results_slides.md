@@ -12,6 +12,15 @@
 | Held-out test | 21–23 April 2026 · 12.9–13.3% |
 | Scoring | Compare forecasts with measured readings at the exact target time |
 
+| Target | Training | Validation | Held-out test |
+|---|---:|---:|---:|
+| Effluent ammonia (NH₄-N) | 2,005 | 432 | 362 |
+| Effluent nitrate | 2,005 | 432 | 362 |
+| A1 methanol dosing | 2,012 | 432 | 365 |
+| A2 methanol dosing | 1,956 | 432 | 365 |
+| A1 aeration airflow | 2,003 | 428 | 361 |
+| A2 aeration airflow | 2,003 | 428 | 361 |
+
 The split percentages count eligible forecasts and vary by target. The nitrate run uses the same 10-minute design and date boundaries. Its separate export retains original nitrate observations for a constant-signal baseline and excludes invalid readings and synchronized corrupt intervals.
 
 ## Slide 2 — How original and tuned models were compared
@@ -19,7 +28,7 @@ The split percentages count eligible forecasts and vary by target. The nitrate r
 - Each arrow shows **original → tuned** for the same algorithm on the same test samples.
 - Tuning reused the original inputs and splits. It selected settings by lowest validation MSE and included the original model as a candidate.
 - The tuning comparisons cover five targets. Nitrate is shown as a baseline run.
-- The highlighted winners have the lowest held-out test RMSE. RMSE uses the target's original units.
+- The highlighted results have the lowest RMSE observed on the held-out test set. These rankings describe test performance. RMSE uses the target's original units.
 - Negative test R² means the model had higher squared error than predicting the test-set average.
 
 ## Slide 3 — Best held-out results by target
