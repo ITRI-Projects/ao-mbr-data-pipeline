@@ -12,12 +12,13 @@
 | Held-out test | 21–23 April 2026 · 12.9–13.3% |
 | Scoring | Compare forecasts with measured readings at the exact target time |
 
-The split percentages count eligible forecasts and vary by target. Effluent nitrate comes from a separate one-hour run.
+The split percentages count eligible forecasts and vary by target. The nitrate run uses the same 10-minute design and date boundaries. Its separate export retains original nitrate observations for a constant-signal baseline and excludes invalid readings and synchronized corrupt intervals.
 
 ## Slide 2 — How original and tuned models were compared
 
 - Each arrow shows **original → tuned** for the same algorithm on the same test samples.
 - Tuning reused the original inputs and splits. It selected settings by lowest validation MSE and included the original model as a candidate.
+- The tuning comparisons cover five targets. Nitrate is shown as a baseline run.
 - The highlighted winners have the lowest held-out test RMSE. RMSE uses the target's original units.
 - Negative test R² means the model had higher squared error than predicting the test-set average.
 
@@ -26,7 +27,7 @@ The split percentages count eligible forecasts and vary by target. Effluent nitr
 | Target | Best result | Test forecasts | Test RMSE | Test R² |
 |---|---|---:|---:|---:|
 | Effluent ammonia | Tuned LSTM | 362 | 0.011777 mg-N/L | −0.040 |
-| Effluent nitrate (one hour ahead) | Ridge, Random Forest, and XGBoost tied | 211 | 0.000000 mg-N/L | Undefined |
+| Effluent nitrate | Ridge, Random Forest, and XGBoost tied | 362 | 0.000000 mg-N/L | Undefined |
 | A1 methanol dosing | Tuned Random Forest | 365 | 7.686 m³/h | 0.979 |
 | A2 methanol dosing | Original Ridge Regression | 365 | 8.079 m³/h | 0.951 |
 | A1 aeration airflow | Ridge Regression (original and tuned tied) | 361 | 1.515 m³/min | 0.820 |
@@ -47,16 +48,18 @@ The split percentages count eligible forecasts and vary by target. Effluent nitr
 
 ## Slide 5 — Effluent nitrate (NO₃-N)
 
-**211 held-out forecasts · 60 minutes ahead · Original results only**
+**362 held-out forecasts · 10 minutes ahead · Nitrate baseline**
 
-| Algorithm | Test RMSE (mg-N/L) | Test R² | Highlight |
-|---|---:|---:|---|
-| Ridge Regression | 0.000000 | Undefined | Tied at zero error |
-| Random Forest | 0.000000 | Undefined | Tied at zero error |
-| XGBoost | 0.000000 | Undefined | Tied at zero error |
-| LSTM | 0.004306 | Undefined | Small error on a constant target |
+| Algorithm | Test MAE (mg-N/L) | Test RMSE (mg-N/L) | Test R² |
+|---|---:|---:|---:|
+| Ridge Regression | 0.000000 | 0.000000 | Undefined |
+| Random Forest | 0.000000 | 0.000000 | Undefined |
+| XGBoost | 0.000000 | 0.000000 | Undefined |
+| LSTM | 0.009560 | 0.016211 | Undefined |
 
-[Original metrics](assets/eff_no3n_forecast/metrics_summary.csv) · [Original forecast plots](assets/eff_no3n_forecast/train_test_predictions.png)
+The run used 2,005 training, 432 validation, and 362 test samples. Every scored nitrate reading was 5.0 mg-N/L. Ridge, Random Forest, and XGBoost reproduced that level exactly. Performance on changing nitrate concentrations remains unmeasured.
+
+[Nitrate run settings and sample counts](assets/eff_no3n_forecast/manifest.json) · [Nitrate metrics](assets/eff_no3n_forecast/metrics_summary.csv) · [Nitrate forecast plots](assets/eff_no3n_forecast/train_test_predictions.png)
 
 ## Slide 6 — A1 methanol dosing
 
@@ -117,5 +120,5 @@ The split percentages count eligible forecasts and vary by target. Effluent nitr
 - **A1 methanol dosing.** Tuned Random Forest led with **7.686 m³/h** RMSE and **0.979** R².
 - **A2 methanol dosing.** Original Ridge Regression led with **8.079 m³/h** RMSE. Its tuned fit had slightly higher error.
 - **Effluent ammonia.** Tuned LSTM led and reduced RMSE by **7.1%**. All four models still had negative test R².
-- **Effluent nitrate.** Three models tied at zero error in the separate one-hour run. The constant nitrate readings leave performance on changing concentrations unresolved.
+- **Effluent nitrate.** Three models exactly reproduced the recorded 5.0 mg-N/L level across 362 ten-minute forecasts. R² is undefined for this constant target.
 - **Effect of tuning.** Test RMSE improved in **11 of 20** model comparisons, worsened in **8**, and stayed unchanged in **1**.
