@@ -28,106 +28,33 @@ Configure the repository `.env` using `.env.example`. The notebook reuses
 table. Install Microsoft ODBC Driver 18 for SQL Server separately from the Python
 requirements.
 
-Run the cells in order. Optional start/end timestamps restrict the query;
-otherwise it loads the entire table into memory. The resulting `df` has a
-sorted datetime index and one column per sensor. Connections are closed after
-loading, and no database writes are performed.
+Run the cells in order. The default query covers April 14–23, 2026. Set either
+boundary to `None` to use the first or last available reading. The notebook
+closes the SQL connection after loading and prepares the data using Notebook
+02's sensor consolidation, limited forward fill, fault cleaning, and plots.
+The final cell writes `sql_raw.csv`, `data_filled.csv`, and the four training
+masks to `docs/raw/sql_server/` by default. Change `EXPORT_DIR` in the settings
+cell to choose another location.
 
 Clear notebook outputs before committing to keep sensor readings out of Git.
 
 ## Google Drive CSV notebook
 
-`02_explore_google_drive_csv.ipynb` prepares sensor history without SQL Server.
-Install `notebooks/requirements-drive.txt`, configure `DRIVE_FILE_URL_OR_ID` in
-`.env`, and run the notebook in order. The Drive CSV must allow downloading.
-Alternatively, set `LOCAL_CSV_PATH` to a saved snapshot for offline execution.
+`02_explore_google_drive_csv.ipynb` downloads the CSV configured by
+`DRIVE_FILE_URL_OR_ID` in the repository `.env`. Install the dependencies in
+`notebooks/requirements-drive.txt` and run the cells in order. The Drive CSV
+must allow downloads.
 
-`START_TIME = None` and `END_TIME = None` select the first through last available
-source minute. Explicit boundaries select an inclusive subset. The source is
-validated for unique, timezone-naive, minute-aligned timestamps and numeric finite
-readings (or blanks). Uniform ISO timestamps and day/month/year minute timestamps
-are supported. The complete source remains in `full_source_df`.
-
-Preparation follows notebook 01: reindex to the complete minute grid and forward
-fill independently per sensor with no gap-length limit. Recorded values and zeros
-are preserved. Leading gaps and entirely unobserved sensors remain null. No
-backfill, donor replacement, smoothing, clipping, or automatic outlier deletion is
-applied. Coverage audits distinguish absent minutes from null values in existing
-rows. Bilingual raw and filled plots retain the full selected timeline. April
-21–23 shading is retained for historical test context; it does not limit the
-preparation window. Sensor behavior review uses only observations before April 21.
-
-The export cell writes alias-named `data_filled.csv`, `data_filled_mask.csv`, and
-`data_filled_summary.csv` to `notebooks/data/`. These replace
-any existing shared exports. Both data and Boolean masks are reloaded and checked.
-Future forecast labels must use observed values recovered with the matching mask.
-
-Reproducibility files in `notebooks/data/` include original CSV bytes in
-`google_drive_download.csv`, full numeric source in `google_drive_full_raw.csv`,
-selected original-tag observations in `google_drive_raw.csv`, the alias-named raw
-minute grid in `google_drive_raw_grid.csv`, daily coverage in
-`google_drive_window_coverage.csv`, and source hash, coverage, alias mapping and
-fill policy in `data_source.json`. The remote Drive file is unchanged.
-
-The notebook auto-detects a CJK font. Override `CJK_FONT` or `CJK_FONT_PATH` if
-needed; on Windows Microsoft JhengHei is normally available. The executed notebook
-contains source readings and plots; clear outputs before committing if required.
-
-## Restarted SQL dataset review (notebook 01)
-
-Notebook 01 loads April 14–23 using inclusive minute boundaries:
-`START_TIME = "2026-04-14 00:00:00"` and
-`END_TIME = "2026-04-23 23:59:00"`. This retains seven training days (April
-14–20) plus three test days (April 21–23), not seven total source days.
-Run through the daily missingness and sensor time-series plots first.
-The notebook shows null counts/percentages per sensor, daily null counts, and
-absent source minutes separately. Sensor plots retain the entire ten-day axis
-and show gaps without filling readings.
-
-The next section uses unlimited forward filling per sensor across the full
-one-minute grid, including missing source timestamps. `df_filled` holds the
-result while `df` stays raw; `df_fill_mask` marks estimated cells. `fill_summary`
-reports filled source nulls, fills at absent minutes, and remaining nulls.
-Daily count tables, stacked bars and observed/filled timelines show the effect.
-Leading gaps and entirely unobserved sensors remain null because no readings
-before `START_TIME` are loaded to seed them. Filled future targets must not be
-used as measured labels. Run the save cell after the audit to replace `notebooks/data/data_filled.csv`,
-`data_filled_mask.csv` and `data_filled_summary.csv` with the current window.
-The data and Boolean estimate mask share a `datetime` index and sensor columns,
-as expected by notebook 03. Notebooks 04–05 use separate 20-minute aggregates.
-
-
-The coverage/target audit works on the configured ten-day source window. The later
-original-source query and historical benchmark are skipped by default via
-`RUN_HISTORICAL_REVIEW = False`. To repeat the earlier 3/7/14/21-day benchmark,
-use a separate longer-history configuration (including adjusting the source-window validation) covering March 28 onward, then enable the switch. The findings
-below describe that previous full-history run.
-Two causal input policies are compared: operational forward filling and a
-five-minute maximum measurement age. No historical MLSS donor is used. Constant
-and entirely unobserved sensors are excluded using training observations only.
-Future labels always use observed values.
-
-Ridge, compact Extra Trees and a mean-only reference screen the candidates using
-April 18–20 validation days. Each fold purges labels crossing its training boundary
-and confines validation labels to that day. Candidate selection never uses April
-21–23 scores. Once selected, the benchmark is evaluated on available measured test
-labels. Constant nitrate R² is explicitly undefined.
-
-A separate original-source audit reads `dbo.T02_08A_SCADA`. It found 802 original
-effluent observations on April 23 (through 13:25), absent from the cleaned table,
-and negative original ammonia concentrations requiring review. Original and
-cleaned targets are exported separately and are not mixed as ground truth.
-
-Audit tables, candidate rankings, selected raw data and model-input matrices,
-predictions, screening models, source comparisons and metadata are exported to
-`notebooks/data/dataset_review/`. Existing `data_filled.csv`, its mask and earlier
-model runs stay unchanged. Notebook 03 still points to the prior experiment;
-review outputs require an explicit subsequent training update.
+Notebook 02 normalizes sensor aliases, combines paired A1/A2 tank readings,
+and plots missingness. It reindexes to a minute grid, carries readings forward
+for up to 10 minutes, reviews and cleans sensor faults, and plots original and
+cleaned readings. The final cell writes the prepared CSV and four masks to
+`docs/raw/`.
 
 ## Preparation strategy comparisons and forecasting (notebooks 03–05)
 
-Run notebooks 03, 04 and 05 after exporting the shared `data_filled.csv` and
-Boolean `data_filled_mask.csv` from notebook 01 or 02. All three read the
+Notebooks 03, 04 and 05 use historical `data_filled.csv` and
+`data_filled_mask.csv` exports from the earlier workflow. All three read the
 minute-level exports directly and recover observations by masking filled cells.
 No SQL history or prior 20-minute export is required. Notebook 03 forecasts
 ammonium and nitrate; 04 forecasts A1/A2 methanol flows; 05 forecasts A1/A2 airflow.
