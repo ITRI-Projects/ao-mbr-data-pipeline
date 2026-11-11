@@ -23,8 +23,24 @@ A1 = `A1_Q_air`, A2 = `A2_Q_air`. Their inconsistent green workbook marks are
 recorded in the exported audit rather than changing the workbook. Current target
 history is added once as an explicit autoregressive input. Sensors removed from
 the cleaned CSV are removed from workbook feature lists; a model is skipped when
-its target was removed. Other constant, unobserved, or unsampled training inputs
+its target was removed when training all available models. Notebook 02 drops
+`Eff_NO3_N` as a constant sensor from the current export. To train `eff_no3_n`,
+use a prepared CSV that retains observed nitrate readings and the four matching
+masks. For the current export, omit `--targets` (or `TARGET` in Make) to train all
+available models. Other constant, unobserved, or unsampled training inputs
 are excluded and recorded in each model metadata.
+
+For a nitrate-only training run, run Notebook 02 through the
+`export-nitrate-training-data` cell immediately before the constant-sensor
+removal cell. The export writes the CSV and four masks to
+`docs/raw/eff_no3_n/`. It retains original nitrate observations for a
+constant-signal baseline, excluding negative/nonfinite nitrate readings and
+synchronized corrupt intervals. Other sensors use the notebook's fault-cleaned
+data. A constant nitrate target has undefined R².
+
+```bash
+make train DATA=docs/raw/eff_no3_n/data_filled.csv TARGET=eff_no3_n OUTPUT=docs/assets/eff_no3n_baseline
+```
 
 All four algorithms receive identical 12-step sequences at 20-minute origins
 and exact observed labels 60 minutes later. LSTM uses the ordered sequences;
