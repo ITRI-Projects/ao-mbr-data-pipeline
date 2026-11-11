@@ -143,6 +143,10 @@ PREDICTION_MODES = ("absolute", "delta")
 DEFAULT_PREDICTION_MODE = "absolute"
 
 
+class UnavailableTargetError(ValueError):
+    """A requested forecast target is missing from the prepared data."""
+
+
 def prediction_offset(arrays, target, mode):
     """Return the level added to raw model output to obtain absolute forecasts."""
     if mode not in PREDICTION_MODES:
@@ -190,9 +194,16 @@ def run(args):
         revised["excluded_unavailable_features"] = unavailable
         available_configs[name] = revised
     if args.targets and skipped_targets:
-        raise ValueError(
-            "Requested targets were removed from the cleaned data: "
-            f"{sorted(skipped_targets)}"
+        missing = ", ".join(
+            f"{name} requires {details['target']}"
+            for name, details in sorted(skipped_targets.items())
+        )
+        available = ", ".join(sorted(available_configs)) or "none of the requested targets"
+        raise UnavailableTargetError(
+            f"{args.data} is missing target columns: {missing}. "
+            f"Available among the requested targets: {available}. "
+            "Omit --targets to train all available models, or use a prepared CSV "
+            "that retains the requested target and has matching mask exports."
         )
     configs = available_configs
     if not configs:
@@ -338,7 +349,10 @@ def main():
     args = parser.parse_args()
     if min(args.epochs, args.horizon_minutes, args.step_minutes, args.sequence_steps) < 1:
         parser.error("Epochs, horizon, interval, and sequence length must be positive")
-    run(args)
+    try:
+        run(args)
+    except UnavailableTargetError as error:
+        parser.exit(2, f"{parser.prog}: error: {error}\n")
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-<html><meta charset='utf-8'><title>Forecast comparison</title><body><h1>Forecast comparison</h1><p>Train labels before 2026-04-18; validation labels before 2026-04-21; test origins from 2026-04-21. The split figure shows only the final seven days; training still uses all available earlier history. Test metrics never select models. R2 is undefined for constant labels. Recorded flows are predicted; this is not an operating recommendation.</p><table border="1" class="dataframe">
+<html><meta charset='utf-8'><title>Forecast comparison</title><body><h1>Forecast comparison</h1><p>Train labels from 2026-04-04 through the instant before 2026-04-18; validation labels continue through the instant before 2026-04-21; test origins begin at 2026-04-21. Inputs cover 60 minutes and forecasts look ahead 10 minutes. Test metrics never select models. R2 is undefined for constant labels. Recorded flows are predicted; this is not an operating recommendation.</p><table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th>model</th>
@@ -20,7 +20,7 @@
       <td>mg-N/L</td>
       <td>Ridge</td>
       <td>train</td>
-      <td>1733</td>
+      <td>2005</td>
       <td>0.000000</td>
       <td>0.000000</td>
       <td>undefined</td>
@@ -32,7 +32,7 @@
       <td>mg-N/L</td>
       <td>Ridge</td>
       <td>validation</td>
-      <td>213</td>
+      <td>432</td>
       <td>0.000000</td>
       <td>0.000000</td>
       <td>undefined</td>
@@ -44,7 +44,7 @@
       <td>mg-N/L</td>
       <td>Ridge</td>
       <td>test</td>
-      <td>211</td>
+      <td>362</td>
       <td>0.000000</td>
       <td>0.000000</td>
       <td>undefined</td>
@@ -56,7 +56,7 @@
       <td>mg-N/L</td>
       <td>Random Forest</td>
       <td>train</td>
-      <td>1733</td>
+      <td>2005</td>
       <td>0.000000</td>
       <td>0.000000</td>
       <td>undefined</td>
@@ -68,7 +68,7 @@
       <td>mg-N/L</td>
       <td>Random Forest</td>
       <td>validation</td>
-      <td>213</td>
+      <td>432</td>
       <td>0.000000</td>
       <td>0.000000</td>
       <td>undefined</td>
@@ -80,7 +80,7 @@
       <td>mg-N/L</td>
       <td>Random Forest</td>
       <td>test</td>
-      <td>211</td>
+      <td>362</td>
       <td>0.000000</td>
       <td>0.000000</td>
       <td>undefined</td>
@@ -92,7 +92,7 @@
       <td>mg-N/L</td>
       <td>XGBoost</td>
       <td>train</td>
-      <td>1733</td>
+      <td>2005</td>
       <td>0.000000</td>
       <td>0.000000</td>
       <td>undefined</td>
@@ -104,7 +104,7 @@
       <td>mg-N/L</td>
       <td>XGBoost</td>
       <td>validation</td>
-      <td>213</td>
+      <td>432</td>
       <td>0.000000</td>
       <td>0.000000</td>
       <td>undefined</td>
@@ -116,7 +116,7 @@
       <td>mg-N/L</td>
       <td>XGBoost</td>
       <td>test</td>
-      <td>211</td>
+      <td>362</td>
       <td>0.000000</td>
       <td>0.000000</td>
       <td>undefined</td>
@@ -128,9 +128,9 @@
       <td>mg-N/L</td>
       <td>LSTM</td>
       <td>train</td>
-      <td>1733</td>
-      <td>0.001008</td>
-      <td>0.001278</td>
+      <td>2005</td>
+      <td>0.002574</td>
+      <td>0.003127</td>
       <td>undefined</td>
       <td>True</td>
     </tr>
@@ -140,9 +140,9 @@
       <td>mg-N/L</td>
       <td>LSTM</td>
       <td>validation</td>
-      <td>213</td>
-      <td>0.000996</td>
-      <td>0.001362</td>
+      <td>432</td>
+      <td>0.003275</td>
+      <td>0.004098</td>
       <td>undefined</td>
       <td>True</td>
     </tr>
@@ -152,9 +152,9 @@
       <td>mg-N/L</td>
       <td>LSTM</td>
       <td>test</td>
-      <td>211</td>
-      <td>0.002583</td>
-      <td>0.004306</td>
+      <td>362</td>
+      <td>0.009560</td>
+      <td>0.016211</td>
       <td>undefined</td>
       <td>True</td>
     </tr>

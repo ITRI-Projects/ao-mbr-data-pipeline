@@ -1,13 +1,13 @@
 model,target,unit,algorithm,split,n,MAE,RMSE,R2,constant_target
-eff_no3_n,Eff_NO3_N,mg-N/L,Ridge,train,1733,0.0,0.0,,True
-eff_no3_n,Eff_NO3_N,mg-N/L,Ridge,validation,213,0.0,0.0,,True
-eff_no3_n,Eff_NO3_N,mg-N/L,Ridge,test,211,0.0,0.0,,True
-eff_no3_n,Eff_NO3_N,mg-N/L,Random Forest,train,1733,0.0,0.0,,True
-eff_no3_n,Eff_NO3_N,mg-N/L,Random Forest,validation,213,0.0,0.0,,True
-eff_no3_n,Eff_NO3_N,mg-N/L,Random Forest,test,211,0.0,0.0,,True
-eff_no3_n,Eff_NO3_N,mg-N/L,XGBoost,train,1733,0.0,0.0,,True
-eff_no3_n,Eff_NO3_N,mg-N/L,XGBoost,validation,213,0.0,0.0,,True
-eff_no3_n,Eff_NO3_N,mg-N/L,XGBoost,test,211,0.0,0.0,,True
-eff_no3_n,Eff_NO3_N,mg-N/L,LSTM,train,1733,0.0010075563649806548,0.0012780333021590565,,True
-eff_no3_n,Eff_NO3_N,mg-N/L,LSTM,validation,213,0.0009958106027522556,0.0013622961730107672,,True
-eff_no3_n,Eff_NO3_N,mg-N/L,LSTM,test,211,0.0025834562654178856,0.0043056165439257455,,True
+eff_no3_n,Eff_NO3_N,mg-N/L,Ridge,train,2005,0.0,0.0,,True
+eff_no3_n,Eff_NO3_N,mg-N/L,Ridge,validation,432,0.0,0.0,,True
+eff_no3_n,Eff_NO3_N,mg-N/L,Ridge,test,362,0.0,0.0,,True
+eff_no3_n,Eff_NO3_N,mg-N/L,Random Forest,train,2005,0.0,0.0,,True
+eff_no3_n,Eff_NO3_N,mg-N/L,Random Forest,validation,432,0.0,0.0,,True
+eff_no3_n,Eff_NO3_N,mg-N/L,Random Forest,test,362,0.0,0.0,,True
+eff_no3_n,Eff_NO3_N,mg-N/L,XGBoost,train,2005,0.0,0.0,,True
+eff_no3_n,Eff_NO3_N,mg-N/L,XGBoost,validation,432,0.0,0.0,,True
+eff_no3_n,Eff_NO3_N,mg-N/L,XGBoost,test,362,0.0,0.0,,True
+eff_no3_n,Eff_NO3_N,mg-N/L,LSTM,train,2005,0.002573840457602332,0.0031269824357112253,,True
+eff_no3_n,Eff_NO3_N,mg-N/L,LSTM,validation,432,0.0032747939780906395,0.004097727522094576,,True
+eff_no3_n,Eff_NO3_N,mg-N/L,LSTM,test,362,0.009560183266908424,0.016211082566924426,,True

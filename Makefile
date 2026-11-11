@@ -40,9 +40,9 @@ check:
 	"$(VENV_PYTHON)" -m compileall -q main.py src config
 	"$(VENV_PYTHON)" -m pip check
 
-# Supported TARGET values (omit TARGET to train all models):
+# Workbook TARGET values (omit TARGET to train all available models):
 #   eff_nh3_n       -> Eff_NH4_N
-#   eff_no3_n       -> Eff_NO3_N
+#   eff_no3_n       -> Eff_NO3_N (requires an export that retains nitrate)
 #   a1_ch3oh_flow   -> A1_FQ_CH3OH
 #   a2_ch3oh_flow   -> A2_FQ_CH3OH
 #   a1_air_flow     -> A1_Q_air
