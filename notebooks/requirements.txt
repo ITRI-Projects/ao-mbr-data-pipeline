@@ -2,6 +2,7 @@
 jupyterlab
 ipykernel
 pandas
+openpyxl
 matplotlib
 seaborn
 xgboost
