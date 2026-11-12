@@ -1,5 +1,7 @@
 import argparse
 import os
+import subprocess
+import sys
 
 from config.common import DATA_WINDOW, TIMESTAMP_COLUMNS
 from config.sensors import SENSORS
@@ -35,6 +37,8 @@ def prompt_operation():
         "2": ("submit", "Actual API submission"),
         "3": ("load_csv", "Load cleaned CSV into database"),
         "4": ("db_check", "Check SQL Server connection and permissions"),
+        "5": ("train", "Train forecasting models"),
+        "6": ("tune", "Tune a single-target baseline"),
     }
     print("\nChoose an operation:")
     for number, (_, label) in operations.items():
@@ -72,10 +76,34 @@ def prompt_sensor():
         print("Enter a listed sensor number or alias, or q.")
 
 
+def prompt_training_command(operation, parser):
+    if operation == "train":
+        data = input("Prepared training CSV path: ").strip()
+        if not data:
+            parser.error("Prepared training CSV path is required")
+        output = input("Baseline output directory: ").strip()
+        if not output:
+            parser.error("Baseline output directory is required")
+        target = input("Target model name (e.g. eff_nh3_n, Enter for all available targets): ").strip()
+        command = ["-m", "src.training.train", "--data", data, "--output", output]
+        if target:
+            command.extend(["--targets", target])
+        return command
+
+    source = input("Baseline output directory from a completed single-target training run: ").strip()
+    if not source:
+        parser.error("Single-target baseline output directory is required")
+    output = input("Separate tuned output directory: ").strip()
+    if not output:
+        parser.error("Tuned output directory is required")
+    return ["-m", "src.training.tune", "--source", source, "--output", output]
+
+
 def select_options(argv=None):
     parser = build_parser()
     args = parser.parse_args(argv)
     args.db_check = False
+    args.training_command = None
     if args.validate_only and args.load_csv is None:
         parser.error("--validate-only requires --load-csv")
 
@@ -83,6 +111,11 @@ def select_options(argv=None):
         operation = prompt_operation()
         if operation is None:
             return None
+        if operation in ("train", "tune"):
+            if args.sensor or args.resume_from_id or args.resume_after_id:
+                parser.error("Training and tuning do not use sensor or resume options")
+            args.training_command = prompt_training_command(operation, parser)
+            return args
         setattr(args, operation, "" if operation == "load_csv" else True)
 
     if args.load_csv == "":
@@ -101,6 +134,12 @@ def select_options(argv=None):
 
 
 def dispatch(args):
+    if args.training_command is not None:
+        try:
+            result = subprocess.run([sys.executable, *args.training_command], check=False)
+        except KeyboardInterrupt:
+            return 130
+        return result.returncode
     if args.db_check:
         return check_database()
     setup_logger()
