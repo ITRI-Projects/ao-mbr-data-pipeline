@@ -39,6 +39,7 @@ def prompt_operation():
         "4": ("db_check", "Check SQL Server connection and permissions"),
         "5": ("train", "Train forecasting models"),
         "6": ("tune", "Tune a single-target baseline"),
+        "7": ("clean", "Prepare loaded SQL sensor data for training"),
     }
     print("\nChoose an operation:")
     for number, (_, label) in operations.items():
@@ -99,11 +100,25 @@ def prompt_training_command(operation, parser):
     return ["-m", "src.training.tune", "--source", source, "--output", output]
 
 
+def prompt_cleaning_command():
+    command = ["-m", "src.cleaning"]
+    for flag, prompt in (
+        ("--table", "SQL table [dbo.CleanedSensorData]: "),
+        ("--start", "First minute (YYYY-MM-DD HH:MM, Enter for earliest): "),
+        ("--end", "Last minute (YYYY-MM-DD HH:MM, Enter for latest): "),
+        ("--output", "Export parent directory [data/cleaning]: "),
+    ):
+        value = input(prompt).strip()
+        if value:
+            command.extend([flag, value])
+    return command
+
+
 def select_options(argv=None):
     parser = build_parser()
     args = parser.parse_args(argv)
     args.db_check = False
-    args.training_command = None
+    args.module_command = None
     if args.validate_only and args.load_csv is None:
         parser.error("--validate-only requires --load-csv")
 
@@ -111,10 +126,11 @@ def select_options(argv=None):
         operation = prompt_operation()
         if operation is None:
             return None
-        if operation in ("train", "tune"):
+        if operation in ("train", "tune", "clean"):
             if args.sensor or args.resume_from_id or args.resume_after_id:
-                parser.error("Training and tuning do not use sensor or resume options")
-            args.training_command = prompt_training_command(operation, parser)
+                parser.error("The selected operation does not use sensor or resume options")
+            args.module_command = (prompt_cleaning_command() if operation == "clean"
+                                   else prompt_training_command(operation, parser))
             return args
         setattr(args, operation, "" if operation == "load_csv" else True)
 
@@ -134,9 +150,9 @@ def select_options(argv=None):
 
 
 def dispatch(args):
-    if args.training_command is not None:
+    if args.module_command is not None:
         try:
-            result = subprocess.run([sys.executable, *args.training_command], check=False)
+            result = subprocess.run([sys.executable, *args.module_command], check=False)
         except KeyboardInterrupt:
             return 130
         return result.returncode

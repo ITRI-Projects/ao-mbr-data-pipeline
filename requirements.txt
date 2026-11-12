@@ -1,3 +1,5 @@
 pyodbc
 requests
 python-dotenv
+pandas
+matplotlib
