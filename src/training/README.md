@@ -139,6 +139,25 @@ metadata and hashes, and split/prediction/metric comparison plots. LSTM candidat
 checkpoints and losses use flat prefixed filenames. No subfolders are created.
 The split plot shows only seven days; training still uses all baseline history.
 
+## Select one saved forecast per target
+
+Choose **8. Select one forecast model per target** in `make dev`, or run:
+
+```bash
+python -m src.training.select_model --assets docs/assets --output data/forecast_selection.json
+```
+
+The selector reads single-target forecast folders identified by their
+`manifest.json` files. Raw and tuned runs for the same target must have matching
+validation timestamps, observed values, forecast horizons, and prediction modes.
+The selector computes validation RMSE and MAE from `predictions.csv`. It ranks
+by RMSE, then MAE, then Ridge, Random Forest, XGBoost, and LSTM in that order.
+When the same algorithm ties across variants, the raw run wins.
+
+The selection JSON contains one record for each of the six workbook targets,
+including the algorithm column, source CSV path and checksum, and validation
+scores. Relative CSV paths are based on the selection file's directory.
+
 ## Effluent ammonia from the full Drive history
 
 Run the four-model comparison on the notebook 02 output:
