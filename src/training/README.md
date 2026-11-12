@@ -158,6 +158,19 @@ The selection JSON contains one record for each of the six workbook targets,
 including the algorithm column, source CSV path and checksum, and validation
 scores. Relative CSV paths are based on the selection file's directory.
 
+## Review and load the selected test forecasts
+
+Choose **9. Review selected forecasts and optionally load them into SQL Server**
+in `make dev`. The command verifies the selected CSVs, then shows the algorithm,
+validation RMSE, and test coverage for each target. It also shows the configured
+SQL Server instance and database before prompting. Press Enter to skip the
+import, or answer `y` to load into `dbo.ForecastPredictions`.
+
+The table has one row per `target_time` and one prediction column per target.
+The import updates existing timestamps and inserts new ones in a transaction.
+Missing target values are stored as SQL `NULL`. The table is created if needed.
+For a scripted preview, use `python -m src.forecast_loader --preview-only`.
+
 ## Effluent ammonia from the full Drive history
 
 Run the four-model comparison on the notebook 02 output:
