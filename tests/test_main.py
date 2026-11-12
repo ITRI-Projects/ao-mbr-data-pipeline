@@ -72,3 +72,15 @@ class MenuTests(unittest.TestCase):
                 [main.sys.executable, "-m", "src.training.tune", "--source", "baseline run", "--output", "tuned run"],
                 check=False,
             )
+
+    def test_cleaning_dispatches_selected_table_range_and_output(self):
+        answers = ["7", "dbo.ImportedSensors", "2026-04-14 00:00", "", "cleaning runs"]
+        with patch("builtins.input", side_effect=answers), patch("builtins.print"), \
+                patch.object(main.subprocess, "run") as run:
+            run.return_value.returncode = 0
+            self.assertEqual(main.main([]), 0)
+            run.assert_called_once_with(
+                [main.sys.executable, "-m", "src.cleaning", "--table", "dbo.ImportedSensors",
+                 "--start", "2026-04-14 00:00", "--output", "cleaning runs"],
+                check=False,
+            )
