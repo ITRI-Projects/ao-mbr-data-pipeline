@@ -84,3 +84,19 @@ class MenuTests(unittest.TestCase):
                  "--start", "2026-04-14 00:00", "--output", "cleaning runs"],
                 check=False,
             )
+
+    def test_model_selection_dispatches_with_menu_defaults(self):
+        with patch("builtins.input", side_effect=["8", "", ""]), patch("builtins.print"), \
+                patch.object(main.subprocess, "run") as run:
+            run.return_value.returncode = 0
+            self.assertEqual(main.main([]), 0)
+            run.assert_called_once_with([main.sys.executable, "-m", "src.training.select_model"], check=False)
+
+    def test_forecast_review_dispatches_with_selected_json(self):
+        with patch("builtins.input", side_effect=["9", "chosen runs.json"]), patch("builtins.print"), \
+                patch.object(main.subprocess, "run") as run:
+            run.return_value.returncode = 0
+            self.assertEqual(main.main([]), 0)
+            run.assert_called_once_with(
+                [main.sys.executable, "-m", "src.forecast_loader", "--selection", "chosen runs.json"], check=False,
+            )
