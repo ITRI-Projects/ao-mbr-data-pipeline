@@ -7,6 +7,11 @@ python -m pip install -r src/training/requirements.txt
 python -m src.training.train
 ```
 
+For the interactive workflow, install the training requirements in the same
+environment used by `make dev` (`.venv` by default). Choose **5. Train forecasting
+models** and enter the prepared CSV path, baseline output directory, and target
+model name. Leave the target blank to train all available targets.
+
 The defaults consume `docs/raw/data_filled.csv` plus the fill, sensor-fault,
 short-error-replacement, and synchronized-corruption masks exported by notebook
 02. Filled, faulty, and repaired values cannot become future measured labels.
@@ -106,6 +111,10 @@ percentages mean lower error. Historical inputs can alter training-only feature
 eligibility and scaling; these are recomputed without using test observations.
 
 ## Validation-based hyperparameter tuning
+
+In `make dev`, choose **6. Tune a single-target baseline**. Enter the output
+directory from a completed training run for one target and a separate directory
+for the tuned results.
 
 Tune one saved single-parameter run into a separate flat result directory:
 
