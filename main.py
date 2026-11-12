@@ -6,10 +6,11 @@ from config.sensors import SENSORS
 from src.logger import setup_logger
 from src.pipeline import run_pipeline
 from src.csv_loader import load_csv
+from src.database_check import main as check_database
 
 
-def select_options(argv=None):
-    parser = argparse.ArgumentParser(description="Choose a SQL count check, cleaning API submission, or cleaned CSV import.")
+def build_parser():
+    parser = argparse.ArgumentParser(description="Choose an AO-MBR pipeline operation.")
     parser.add_argument("--sensor", choices=sorted(SENSORS))
     resume = parser.add_mutually_exclusive_group()
     resume.add_argument('--resume-from-id', help='Skip earlier readings; include this DATA_ID (verify it was not delivered)')
@@ -25,68 +26,83 @@ def select_options(argv=None):
     parser.add_argument("--timestamp-format", default=os.getenv("CSV_TIMESTAMP_FORMAT") or None,
                         help="Explicit datetime format, e.g. %%d/%%m/%%Y %%H:%%M; overrides auto parsing")
     parser.add_argument("--validate-only", action="store_true", help="Validate a CSV without connecting to SQL Server")
+    return parser
+
+
+def prompt_operation():
+    operations = {
+        "1": ("dry_run", "Dry run (count only)"),
+        "2": ("submit", "Actual API submission"),
+        "3": ("load_csv", "Load cleaned CSV into database"),
+        "4": ("db_check", "Check SQL Server connection and permissions"),
+    }
+    print("\nChoose an operation:")
+    for number, (_, label) in operations.items():
+        print(f"  {number}. {label}")
+    print("  q. Quit")
+    while True:
+        choice = input("Operation [1]: ").strip().lower() or "1"
+        if choice == "q":
+            return None
+        if choice in operations:
+            return operations[choice][0]
+        print("Enter a listed operation number or q.")
+
+
+def prompt_sensor():
+    aliases = list(SENSORS)
+    print("\nSelect a sensor column:")
+    previous_group = None
+    for number, alias in enumerate(aliases, 1):
+        sensor = SENSORS[alias]
+        group = sensor.get("group", "Other")
+        if group != previous_group:
+            print(f"\n{group}:")
+            previous_group = group
+        source = sensor["source"]
+        print(f"  {number}. {alias} — {source['table']}.{source['column']} — {sensor.get('description', '')}")
+    while True:
+        choice = input("Sensor number or alias, q to quit: ").strip()
+        if choice.lower() == "q":
+            return None
+        if choice in SENSORS:
+            return choice
+        if choice.isdecimal() and 1 <= int(choice) <= len(aliases):
+            return aliases[int(choice) - 1]
+        print("Enter a listed sensor number or alias, or q.")
+
+
+def select_options(argv=None):
+    parser = build_parser()
     args = parser.parse_args(argv)
+    args.db_check = False
+    if args.validate_only and args.load_csv is None:
+        parser.error("--validate-only requires --load-csv")
+
+    if not (args.dry_run or args.submit or args.load_csv is not None):
+        operation = prompt_operation()
+        if operation is None:
+            return None
+        setattr(args, operation, "" if operation == "load_csv" else True)
+
     if args.load_csv == "":
         args.load_csv = input("CSV path (Windows or local path): ").strip()
         if not args.load_csv:
             parser.error("CSV path is required")
-    if args.validate_only and not args.load_csv:
-        parser.error("--validate-only requires --load-csv")
-
-    if not (args.dry_run or args.submit or args.load_csv):
-        print("\nChoose an operation:\n  1. Dry run (count only)\n  2. Actual API submission\n  3. Load cleaned CSV into database\n  q. Quit")
-        while True:
-            choice = input("Operation [1]: ").strip().lower()
-            if choice == "q":
-                return None
-            if choice in ("", "1", "2", "3"):
-                args.dry_run = choice not in ("2", "3")
-                if choice == "3":
-                    args.load_csv = input("CSV path (Windows or local path): ").strip()
-                    if not args.load_csv:
-                        parser.error("CSV path is required")
-                break
-            print("Enter 1, 2, 3, or q.")
-
-    if args.load_csv:
+    if args.load_csv or args.db_check:
         if args.sensor or args.resume_from_id or args.resume_after_id:
-            parser.error("CSV loading does not use sensor or resume options")
-        return args
-
-    if args.sensor is None:
-        aliases = list(SENSORS)
-        print("\nSelect a sensor column:")
-        previous_group = None
-        for number, alias in enumerate(aliases, 1):
-            sensor = SENSORS[alias]
-            group = sensor.get("group", "Other")
-            if group != previous_group:
-                print(f"\n{group}:")
-                previous_group = group
-            source = sensor["source"]
-            print(f"  {number}. {alias} — {source['table']}.{source['column']} — {sensor.get('description', '')}")
-        while True:
-            choice = input("Sensor number or alias, q to quit: ").strip()
-            if choice.lower() == "q":
-                return None
-            if choice in SENSORS:
-                args.sensor = choice
-                break
-            if choice.isdigit() and 1 <= int(choice) <= len(aliases):
-                args.sensor = aliases[int(choice) - 1]
-                break
-            print("Enter a listed sensor number or alias, or q.")
+            activity = "Database check" if args.db_check else "CSV loading"
+            parser.error(f"{activity} does not use sensor or resume options")
+    elif args.sensor is None:
+        args.sensor = prompt_sensor()
+        if args.sensor is None:
+            return None
     return args
 
 
-def main(argv=None):
-    try:
-        args = select_options(argv)
-    except (EOFError, KeyboardInterrupt):
-        print("\nCancelled before extraction or submission.")
-        return 130
-    if args is None:
-        return 0
+def dispatch(args):
+    if args.db_check:
+        return check_database()
     setup_logger()
     if args.load_csv:
         return load_csv(args.load_csv, table=args.table, schema=args.schema,
@@ -101,6 +117,17 @@ def main(argv=None):
         resume_from_id=args.resume_from_id,
         resume_after_id=args.resume_after_id,
     )
+
+
+def main(argv=None):
+    try:
+        args = select_options(argv)
+    except (EOFError, KeyboardInterrupt):
+        print("\nCancelled before running an operation.")
+        return 130
+    if args is None:
+        return 0
+    return dispatch(args)
 
 
 if __name__ == "__main__":
