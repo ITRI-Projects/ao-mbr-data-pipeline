@@ -41,6 +41,7 @@ def prompt_operation():
         "6": ("tune", "Tune a single-target baseline"),
         "7": ("clean", "Prepare loaded SQL sensor data for training"),
         "8": ("select_model", "Select one forecast model per target"),
+        "9": ("load_forecasts", "Review selected forecasts and optionally load them into SQL Server"),
     }
     print("\nChoose an operation:")
     for number, (_, label) in operations.items():
@@ -126,6 +127,14 @@ def prompt_model_selection_command():
     return command
 
 
+def prompt_forecast_load_command():
+    command = ["-m", "src.forecast_loader"]
+    selection = input("Selection JSON path [data/forecast_selection.json]: ").strip()
+    if selection:
+        command.extend(["--selection", selection])
+    return command
+
+
 def select_options(argv=None):
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -138,13 +147,15 @@ def select_options(argv=None):
         operation = prompt_operation()
         if operation is None:
             return None
-        if operation in ("train", "tune", "clean", "select_model"):
+        if operation in ("train", "tune", "clean", "select_model", "load_forecasts"):
             if args.sensor or args.resume_from_id or args.resume_after_id:
                 parser.error("The selected operation does not use sensor or resume options")
             if operation == "clean":
                 args.module_command = prompt_cleaning_command()
             elif operation == "select_model":
                 args.module_command = prompt_model_selection_command()
+            elif operation == "load_forecasts":
+                args.module_command = prompt_forecast_load_command()
             else:
                 args.module_command = prompt_training_command(operation, parser)
             return args
