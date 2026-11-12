@@ -46,3 +46,29 @@ class MenuTests(unittest.TestCase):
             self.assertEqual(main.main([]), 1)
             prompt.assert_called_once_with("Operation [1]: ")
             check.assert_called_once_with()
+
+    def test_training_dispatches_with_optional_target(self):
+        for target, target_args in (("", []), ("eff_nh3_n", ["--targets", "eff_nh3_n"])):
+            with self.subTest(target=target), \
+                    patch("builtins.input", side_effect=["5", "prepared data.csv", "baseline run", target]), \
+                    patch("builtins.print"), \
+                    patch.object(main.subprocess, "run") as run:
+                run.return_value.returncode = 0
+                self.assertEqual(main.main([]), 0)
+                run.assert_called_once_with(
+                    [main.sys.executable, "-m", "src.training.train", "--data", "prepared data.csv",
+                     "--output", "baseline run", *target_args],
+                    check=False,
+                )
+
+    def test_tuning_prompts_for_a_single_target_baseline_and_returns_status(self):
+        with patch("builtins.input", side_effect=["6", "baseline run", "tuned run"]) as prompt, \
+                patch("builtins.print"), \
+                patch.object(main.subprocess, "run") as run:
+            run.return_value.returncode = 2
+            self.assertEqual(main.main([]), 2)
+            self.assertIn("single-target", prompt.call_args_list[1].args[0])
+            run.assert_called_once_with(
+                [main.sys.executable, "-m", "src.training.tune", "--source", "baseline run", "--output", "tuned run"],
+                check=False,
+            )
