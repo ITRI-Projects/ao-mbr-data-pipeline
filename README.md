@@ -18,6 +18,22 @@ See [notebooks/README.md](notebooks/README.md) for setup and launch commands.
 The notebook loads `dbo.CleanedSensorData` using the existing `.env` database
 settings and includes timestamp, missing-value, and summary-statistics checks.
 
+## Prepare loaded SQL data for training
+
+After loading the cleaned CSV into SQL Server, run `make dev` and choose
+**7. Prepare loaded SQL sensor data for training**. The default table is
+`dbo.CleanedSensorData`. Enter optional start and end minutes to read a specific
+interval. A blank boundary uses the earliest or latest available reading.
+
+The command applies workbook aliases, combines paired A1/A2 readings, fills up
+to 10 minutes on a one-minute grid, and applies the sensor fault rules from
+Notebook 01. Each run saves `sql_raw.csv`, `data_filled.csv`, the four training
+masks, and `sensor_timeseries.png` in its own folder under `data/cleaning/` by
+default. Use the printed `data_filled.csv` path in menu option 5. Keep the masks
+in the same folder as that file.
+
+For scripted runs, use `.venv/bin/python -m src.cleaning --help`.
+
 ## Submit sensor readings to the cleaning API
 
 ```bash
