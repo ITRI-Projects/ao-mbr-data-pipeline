@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 import pandas as pd
 
 from src import cleaning
-from src.csv_loader import read_aliases
+from src.sensor_aliases import read_aliases
 from src.training.train import discover_mask_paths, load_source
 
 

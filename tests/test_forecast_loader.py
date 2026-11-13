@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 
 import pyodbc
 
-from src import forecast_loader
+from src.etl import forecast_loader
 from src.training import select_model
 
 

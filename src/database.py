@@ -1,9 +1,16 @@
 import os
+import re
 
 import pyodbc
 from dotenv import load_dotenv
 
 load_dotenv()
+
+
+def identifier(value):
+    if not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]{0,127}', value):
+        raise ValueError(f'Invalid SQL identifier: {value}')
+    return '[' + value + ']'
 
 
 def _required_setting(name):

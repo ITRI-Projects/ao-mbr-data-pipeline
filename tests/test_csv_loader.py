@@ -5,7 +5,8 @@ import unittest
 from unittest.mock import Mock, patch
 
 import main
-from src import csv_loader
+from src.cli import app
+from src.etl import csv_loader
 
 
 class CSVLoaderTests(unittest.TestCase):
@@ -71,7 +72,7 @@ class CSVLoaderTests(unittest.TestCase):
         self.assertEqual(rows[1][0].isoformat(), '2026-05-04T08:00:00')
         with self.assertRaises(ValueError):
             csv_loader.parse_timestamp('04/22/2026 23:59', fmt)
-        with patch.object(main, 'load_csv', return_value=0) as load:
+        with patch.object(app, 'load_csv', return_value=0) as load:
             self.assertEqual(main.main(['--load-csv', str(self.path), '--timestamp-format', fmt, '--validate-only']), 0)
             self.assertEqual(load.call_args.kwargs['timestamp_format'], fmt)
 
