@@ -6,38 +6,34 @@ from datetime import datetime
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from matplotlib.backends.backend_agg import FigureCanvasAgg
-from matplotlib.figure import Figure
 import pandas as pd
 import pyodbc
 
-from src.csv_loader import identifier, local_path, read_aliases
-from src.database import close_connection, get_connection
+from src.cleaning_policy import (
+    CONSTANT_SENSORS,
+    FLATLINE_MINUTES,
+    FORWARD_FILL_MINUTES,
+    FREEZE_SENSOR_FRACTION,
+    SENSOR_BOUNDS,
+    SHORT_REPAIR_MINUTES,
+    SYNCHRONIZED_FREEZE_MINUTES,
+    TANK_SENSORS,
+)
+from src.database import close_connection, get_connection, identifier
+from src.paths import local_path
+from src.prepared_data import (
+    FILL_MASK_CSV,
+    PREPARED_CSV,
+    SENSOR_FAULT_MASK_CSV,
+    SHORT_REPAIR_MASK_CSV,
+    SYNCHRONIZED_MASK_CSV,
+)
+from src.sensor_aliases import read_aliases
+from src.settings import CLEANED_SENSOR_TABLE, CLEANING_OUTPUT_DIR, DEFAULT_SCHEMA
+from src.visuals.cleaning import plot_sensor_readings
 
-TANK_SENSORS = ("A_DO", "O_DO", "A_MLSS", "O_MLSS", "A_ORP", "O_ORP", "A_PH", "O_PH")
-CONSTANT_SENSORS = ("A1_NH3_N", "A2_NH3_N", "Eff_NO3_N")
-SENSOR_BOUNDS = {
-    "A1_COD_in": (0, None),
-    "A2_COD_in": (0, None),
-    "A1_Q_air": (0, None),
-    "A2_Q_air": (0, None),
-    "A1_Qin": (0, None),
-    "A2_Qin": (0, None),
-    "A1_FQ_CH3OH": (0, None),
-    "A2_FQ_CH3OH": (0, None),
-    "A1_Q_r1": (0, None),
-    "A2_Q_r1": (0, None),
-    "A1_NH3_N": (0, None),
-    "A2_NH3_N": (0, None),
-    "Eff_NH4_N": (0, None),
-    "Eff_NO3_N": (0, None),
-    "A_DO": (0, 25),
-    "O_DO": (0, 25),
-    "A_MLSS": (0, None),
-    "O_MLSS": (0, None),
-    "A_PH": (0, 14),
-    "O_PH": (0, 14),
-}
+
+DEFAULT_TABLE = f"{DEFAULT_SCHEMA}.{CLEANED_SENSOR_TABLE}"
 
 
 @dataclass
@@ -59,10 +55,10 @@ def minute_boundary(value):
     return time
 
 
-def read_sql_readings(table="dbo.CleanedSensorData", start=None, end=None):
+def read_sql_readings(table=DEFAULT_TABLE, start=None, end=None):
     """Read an inclusive minute range and return the original sensor columns."""
     schema, _, name = table.rpartition(".")
-    source = f"{identifier(schema or 'dbo')}.{identifier(name)}"
+    source = f"{identifier(schema or DEFAULT_SCHEMA)}.{identifier(name)}"
     start, end = minute_boundary(start), minute_boundary(end)
     if start is not None and end is not None and start > end:
         raise ValueError("Start must be at or before end.")
@@ -152,20 +148,20 @@ def clean_readings(raw, aliases):
         frame.index.min(), frame.index.max(), freq="min", name="datetime"
     )
     before_fill = frame.reindex(minute_index)
-    filled = before_fill.ffill(limit=10)
+    filled = before_fill.ffill(limit=FORWARD_FILL_MINUTES)
     fill_mask = before_fill.isna() & filled.notna()
 
     # A synchronized freeze flags the initial reading as well as its repeats.
     informative = filled.loc[:, filled.nunique(dropna=True).gt(1)]
-    frozen = informative.eq(informative.shift()).mean(axis=1).ge(0.80)
-    synchronized = frozen & run_lengths(frozen).ge(60)
+    frozen = informative.eq(informative.shift()).mean(axis=1).ge(FREEZE_SENSOR_FRACTION)
+    synchronized = frozen & run_lengths(frozen).ge(SYNCHRONIZED_FREEZE_MINUTES)
     synchronized |= synchronized.shift(-1, fill_value=False)
     working = filled.loc[~synchronized]
     if working.empty:
         raise ValueError("No readings remain after removing synchronized freezes.")
 
     flatlines = working.apply(
-        lambda values: values.notna() & run_lengths(values).ge(60)
+        lambda values: values.notna() & run_lengths(values).ge(FLATLINE_MINUTES)
     )
     physical = pd.DataFrame(False, index=working.index, columns=working.columns)
     for sensor, (lower, upper) in SENSOR_BOUNDS.items():
@@ -176,8 +172,8 @@ def clean_readings(raw, aliases):
 
     faults = flatlines | physical
     masked = working.mask(faults)
-    interpolated = masked.interpolate(method="time", limit=10, limit_area="inside")
-    short_errors = physical.apply(lambda values: values & run_lengths(values).le(10))
+    interpolated = masked.interpolate(method="time", limit=SHORT_REPAIR_MINUTES, limit_area="inside")
+    short_errors = physical.apply(lambda values: values & run_lengths(values).le(SHORT_REPAIR_MINUTES))
     replacements = short_errors & interpolated.notna()
     cleaned = masked.where(~replacements, interpolated)
 
@@ -197,43 +193,6 @@ def clean_readings(raw, aliases):
     )
 
 
-def plot_sensor_readings(readings, path):
-    before = readings.before_fill
-    after = readings.data.reindex(before.index)
-    rows = (len(before.columns) + 1) // 2
-    figure = Figure(figsize=(16, 2.5 * rows), layout="constrained")
-    FigureCanvasAgg(figure)
-    axes = figure.subplots(rows, 2, sharex=True, squeeze=False).ravel()
-    for axis, sensor in zip(axes, before):
-        axis.plot(
-            before.index,
-            before[sensor],
-            color="steelblue",
-            linewidth=0.8,
-            label="Before fill",
-        )
-        if sensor in after:
-            axis.plot(
-                after.index,
-                after[sensor],
-                color="seagreen",
-                linewidth=0.7,
-                alpha=0.8,
-                label="Prepared",
-            )
-        axis.set_title(sensor)
-        axis.set_ylabel("Reading")
-        axis.grid(alpha=0.25)
-        axis.legend(loc="best", fontsize="small")
-    for axis in axes[len(before.columns) - 2 : len(before.columns)]:
-        axis.tick_params(labelbottom=True)
-        axis.set_xlabel("Datetime")
-    for axis in axes[len(before.columns) :]:
-        axis.set_visible(False)
-    figure.suptitle("Sensor readings before and after preparation")
-    figure.savefig(path, dpi=120)
-
-
 def export_readings(raw, readings, output):
     """Publish the complete CSV, mask and plot bundle in one directory rename."""
     output.mkdir(parents=True, exist_ok=True)
@@ -241,11 +200,11 @@ def export_readings(raw, readings, output):
         staging = Path(staging)
         frames = {
             "sql_raw.csv": raw,
-            "data_filled.csv": readings.data,
-            "data_filled_mask.csv": readings.fill_mask,
-            "data_sensor_fault_mask.csv": readings.fault_mask,
-            "data_short_error_replacement_mask.csv": readings.replacement_mask,
-            "data_synchronized_corrupt_mask.csv": readings.synchronized_mask,
+            PREPARED_CSV: readings.data,
+            FILL_MASK_CSV: readings.fill_mask,
+            SENSOR_FAULT_MASK_CSV: readings.fault_mask,
+            SHORT_REPAIR_MASK_CSV: readings.replacement_mask,
+            SYNCHRONIZED_MASK_CSV: readings.synchronized_mask,
         }
         for filename, frame in frames.items():
             frame.to_csv(
@@ -261,7 +220,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--table",
-        default="dbo.CleanedSensorData",
+        default=DEFAULT_TABLE,
         help="SQL table in schema.table form",
     )
     parser.add_argument("--start", help="First minute to read, inclusive")
@@ -269,7 +228,7 @@ def main(argv=None):
     parser.add_argument(
         "--output",
         type=local_path,
-        default="data/cleaning",
+        default=CLEANING_OUTPUT_DIR,
         help="Parent directory for export runs",
     )
     args = parser.parse_args(argv)
@@ -293,7 +252,7 @@ def main(argv=None):
     print(
         f"Removed {readings.synchronized_mask.sum():,} synchronized freeze timestamps."
     )
-    print(f"Training input: {destination / 'data_filled.csv'}")
+    print(f"Training input: {destination / PREPARED_CSV}")
     return 0
 
 
