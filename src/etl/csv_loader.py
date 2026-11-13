@@ -2,76 +2,19 @@
 import csv
 from datetime import datetime
 import math
-import os
-from pathlib import Path
 import re
 import xml.etree.ElementTree as ET
-from zipfile import ZipFile, BadZipFile
+from zipfile import BadZipFile
 
 import pyodbc
 
-from src.database import get_connection
+from src.database import get_connection, identifier
 from src.logger import get_logger
+from src.paths import local_path
+from src.sensor_aliases import WORKBOOK, read_aliases
+from src.settings import CLEANED_SENSOR_TABLE, DEFAULT_SCHEMA
 
-WORKBOOK = Path(__file__).resolve().parents[1] / 'Sensor_Configurations.xlsx'
-
-
-def local_path(value):
-    value = str(value).strip().strip('\"').strip("'")
-    if os.name != 'nt' and re.match(r'^[A-Za-z]:[\\/]', value):
-        value = '/mnt/' + value[0].lower() + '/' + value[3:].replace('\\', '/')
-    return Path(value).expanduser()
-
-
-def identifier(value):
-    if not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]{0,127}', value):
-        raise ValueError(f'Invalid SQL identifier: {value}')
-    return '[' + value + ']'
-
-
-def read_aliases(workbook=WORKBOOK):
-    ns = {'m': 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
-    mapping = {}
-    with ZipFile(workbook) as archive:
-        strings = []
-        if 'xl/sharedStrings.xml' in archive.namelist():
-            strings = [''.join(t.text or '' for t in item.findall('.//m:t', ns))
-                       for item in ET.fromstring(archive.read('xl/sharedStrings.xml')).findall('m:si', ns)]
-        for name in archive.namelist():
-            if not re.fullmatch(r'xl/worksheets/sheet\d+\.xml', name):
-                continue
-            columns = None
-            for row in ET.fromstring(archive.read(name)).findall('.//m:row', ns):
-                values = {}
-                for cell in row:
-                    column = re.sub(r'\d+', '', cell.attrib['r'])
-                    v = cell.find('m:v', ns)
-                    if cell.attrib.get('t') == 's':
-                        text = strings[int(v.text)]
-                    elif cell.attrib.get('t') == 'inlineStr':
-                        text = ''.join(t.text or '' for t in cell.findall('.//m:t', ns))
-                    else:
-                        text = v.text if v is not None else ''
-                    values[column] = text.strip()
-                normalized = {v.lower(): k for k, v in values.items() if v}
-                if 'full tag name' in normalized:
-                    alias_key = normalized.get('prefered alias') or normalized.get('preferred alias')
-                    if not alias_key or 'column' not in normalized:
-                        raise ValueError('Workbook requires Preferred Alias and Column headers')
-                    columns = (normalized['full tag name'], alias_key, normalized['column'])
-                    continue
-                if columns:
-                    tag, alias, source = (values.get(k, '') for k in columns)
-                    if tag:
-                        alias = alias or source
-                        identifier(alias)
-                        if tag in mapping and mapping[tag] != alias:
-                            raise ValueError(f'Conflicting workbook mapping for {tag}')
-                        mapping[tag] = alias
-    if not mapping or len(set(a.lower() for a in mapping.values())) != len(mapping):
-        raise ValueError('Workbook has missing or duplicate aliases')
-    return mapping
-
+__all__ = ["WORKBOOK", "identifier", "load_csv", "local_path", "parse_timestamp", "read_aliases", "read_clean_csv"]
 
 def parse_timestamp(value, timestamp_format=None):
     """Accept ISO or month/day/year timestamps from the downloaded CSV."""
@@ -142,7 +85,7 @@ def read_clean_csv(path, mapping, timestamp_column='datetime', timestamp_format=
     return aliases, rows
 
 
-def load_csv(path, *, table='CleanedSensorData', schema='dbo',
+def load_csv(path, *, table=CLEANED_SENSOR_TABLE, schema=DEFAULT_SCHEMA,
              timestamp_column='datetime', validate_only=False, timestamp_format=None):
     logger = get_logger(__name__)
     connection = None

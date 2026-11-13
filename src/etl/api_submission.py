@@ -5,11 +5,11 @@ import shlex
 import pyodbc
 import requests
 
-from src.api_client import APIClient
+from .api_client import APIClient
 from src.database import close_connection, get_connection
-from src.extractor import extract_parameter
+from .extractor import extract_parameter
 from src.logger import get_logger
-from src.transformer import build_import_payload
+from .transformer import build_import_payload
 
 
 def run_pipeline(*, sensor_alias, sensor, data_window, timestamp_columns,

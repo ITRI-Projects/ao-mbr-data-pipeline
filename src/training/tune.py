@@ -15,11 +15,10 @@ from sklearn.metrics import mean_squared_error
 from xgboost import XGBRegressor
 
 from .lstm import train_lstm
-from .train import metrics, load_source, prediction_offset
+from .scoring import metrics, prediction_offset
+from .settings import ALGORITHMS
+from .source import load_source
 from .forecast_dataset import plot_training_report
-
-ALGORITHMS = {"ridge": "Ridge", "random_forest": "Random Forest", "xgboost": "XGBoost", "lstm": "LSTM"}
-
 
 def run(args):
     source, output = Path(args.source).resolve(), Path(args.output).resolve()

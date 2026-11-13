@@ -6,9 +6,10 @@ from unittest.mock import Mock, patch
 
 import requests
 import main
-from src import pipeline
-from src.api_client import APIClient
-from src.transformer import build_import_payload
+from src.cli import app
+from src.etl import api_submission as pipeline
+from src.etl.api_client import APIClient
+from src.etl.transformer import build_import_payload
 
 
 class SubmissionTests(unittest.TestCase):
@@ -20,17 +21,17 @@ class SubmissionTests(unittest.TestCase):
 
     def test_quit_and_eof_do_not_connect(self):
         for answer in ['q', EOFError()]:
-            with patch('builtins.input', side_effect=[answer]), patch('builtins.print'), patch.object(main, 'run_pipeline') as connect:
+            with patch('builtins.input', side_effect=[answer]), patch('builtins.print'), patch.object(app, 'run_pipeline') as connect:
                 self.assertIn(main.main([]), (0, 130))
                 connect.assert_not_called()
 
     def test_cli_passes_selected_configuration(self):
-        with patch.object(main, 'run_pipeline', return_value=1) as run:
+        with patch.object(app, 'run_pipeline', return_value=1) as run:
             result = main.main(['--submit', '--sensor', 'A2_Qin'])
         self.assertEqual(result, 1)
         run.assert_called_once_with(
-            sensor_alias='A2_Qin', sensor=main.SENSORS['A2_Qin'],
-            data_window=main.DATA_WINDOW, timestamp_columns=main.TIMESTAMP_COLUMNS,
+            sensor_alias='A2_Qin', sensor=app.SENSORS['A2_Qin'],
+            data_window=app.DATA_WINDOW, timestamp_columns=app.TIMESTAMP_COLUMNS,
             dry_run=False, resume_from_id=None, resume_after_id=None)
 
     def test_payload_and_authentication(self):
@@ -38,7 +39,7 @@ class SubmissionTests(unittest.TestCase):
             'timestamp': datetime(2026, 4, 23, 13), 'value': Decimal('3.5')})
         with patch.dict(os.environ, {'API_URL': 'https://example.com/import',
                                      'API_USER': 'user', 'API_TOKEN': 'secret'}), \
-                patch('src.api_client.requests.Session') as session:
+                patch('src.etl.api_client.requests.Session') as session:
             response = session.return_value.post.return_value.__enter__.return_value
             response.status_code = 204
             client = APIClient()
@@ -67,8 +68,8 @@ class SubmissionTests(unittest.TestCase):
             else:
                 client.submit_reading.return_value = outcome
             result = pipeline.run_pipeline(
-                sensor_alias='A2_Qin', sensor=main.SENSORS['A2_Qin'],
-                data_window=main.DATA_WINDOW, timestamp_columns=main.TIMESTAMP_COLUMNS,
+                sensor_alias='A2_Qin', sensor=app.SENSORS['A2_Qin'],
+                data_window=app.DATA_WINDOW, timestamp_columns=app.TIMESTAMP_COLUMNS,
                 dry_run=dry_run, **resume)
             close.assert_called_once()
             if dry_run:

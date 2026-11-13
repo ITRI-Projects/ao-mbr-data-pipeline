@@ -1,11 +1,11 @@
 """Read prediction checkmarks and target markings from the sensor workbook."""
-from openpyxl import load_workbook
-
 # Airflow targets follow the headings, explicitly confirmed by the project owner.
 TARGETS = {"Eff NH3-N": "Eff_NH4_N", "Eff NO3-N": "Eff_NO3_N",
            "A1 CH3OH Flow": "A1_FQ_CH3OH", "A2 CH3OH Flow": "A2_FQ_CH3OH",
            "A1 Aeration Flow": "A1_Q_air", "A2 Aeration Flow": "A2_Q_air"}
 NAMES = ("eff_nh3_n", "eff_no3_n", "a1_ch3oh_flow", "a2_ch3oh_flow", "a1_air_flow", "a2_air_flow")
+
+TARGET_COLUMNS = dict(zip(NAMES, TARGETS.values()))
 
 COMBINED_SENSOR_ALIASES = {
     f"A{line}_{tank}_{parameter}": f"{tank}_{parameter}"
@@ -16,6 +16,8 @@ COMBINED_SENSOR_ALIASES = {
 
 
 def read_workbook(path):
+    from openpyxl import load_workbook
+
     book = load_workbook(path, data_only=True)
     try:
         sheets = [s for s in book if any(c.value == "Eff NH3-N" for row in s for c in row)]

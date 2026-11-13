@@ -7,6 +7,11 @@ python -m pip install -r src/training/requirements.txt
 python -m src.training.train
 ```
 
+For the interactive workflow, install the training requirements in the same
+environment used by `make dev` (`.venv` by default). Choose **5. Train forecasting
+models** and enter the prepared CSV path, baseline output directory, and target
+model name. Leave the target blank to train all available targets.
+
 The defaults consume `docs/raw/data_filled.csv` plus the fill, sensor-fault,
 short-error-replacement, and synchronized-corruption masks exported by notebook
 02. Filled, faulty, and repaired values cannot become future measured labels.
@@ -107,6 +112,10 @@ eligibility and scaling; these are recomputed without using test observations.
 
 ## Validation-based hyperparameter tuning
 
+In `make dev`, choose **6. Tune a single-target baseline**. Enter the output
+directory from a completed training run for one target and a separate directory
+for the tuned results.
+
 Tune one saved single-parameter run into a separate flat result directory:
 
 ```bash
@@ -129,6 +138,38 @@ Outputs include `report.html`, `predictions.csv`, `metrics_summary.csv`,
 metadata and hashes, and split/prediction/metric comparison plots. LSTM candidate
 checkpoints and losses use flat prefixed filenames. No subfolders are created.
 The split plot shows only seven days; training still uses all baseline history.
+
+## Select one saved forecast per target
+
+Choose **8. Select one forecast model per target** in `make dev`, or run:
+
+```bash
+python -m src.training.select_model --assets docs/assets --output data/forecast_selection.json
+```
+
+The selector reads single-target forecast folders identified by their
+`manifest.json` files. Raw and tuned runs for the same target must have matching
+validation timestamps, observed values, forecast horizons, and prediction modes.
+The selector computes validation RMSE and MAE from `predictions.csv`. It ranks
+by RMSE, then MAE, then Ridge, Random Forest, XGBoost, and LSTM in that order.
+When the same algorithm ties across variants, the raw run wins.
+
+The selection JSON contains one record for each of the six workbook targets,
+including the algorithm column, source CSV path and checksum, and validation
+scores. Relative CSV paths are based on the selection file's directory.
+
+## Review and load the selected test forecasts
+
+Choose **9. Review selected forecasts and optionally load them into SQL Server**
+in `make dev`. The command verifies the selected CSVs, then shows the algorithm,
+validation RMSE, and test coverage for each target. It also shows the configured
+SQL Server instance and database before prompting. Press Enter to skip the
+import, or answer `y` to load into `dbo.ForecastPredictions`.
+
+The table has one row per `target_time` and one prediction column per target.
+The import updates existing timestamps and inserts new ones in a transaction.
+Missing target values are stored as SQL `NULL`. The table is created if needed.
+For a scripted preview, use `python -m src.etl.forecast_loader --preview-only`.
 
 ## Effluent ammonia from the full Drive history
 

@@ -18,6 +18,42 @@ See [notebooks/README.md](notebooks/README.md) for setup and launch commands.
 The notebook loads `dbo.CleanedSensorData` using the existing `.env` database
 settings and includes timestamp, missing-value, and summary-statistics checks.
 
+## Prepare loaded SQL data for training
+
+After loading the cleaned CSV into SQL Server, run `make dev` and choose
+**7. Prepare loaded SQL sensor data for training**. The default table is
+`dbo.CleanedSensorData`. Enter optional start and end minutes to read a specific
+interval. A blank boundary uses the earliest or latest available reading.
+
+The command applies workbook aliases, combines paired A1/A2 readings, fills up
+to 10 minutes on a one-minute grid, and applies the sensor fault rules from
+Notebook 01. Each run saves `sql_raw.csv`, `data_filled.csv`, the four training
+masks, and `sensor_timeseries.png` in its own folder under `data/cleaning/` by
+default. Use the printed `data_filled.csv` path in menu option 5. Keep the masks
+in the same folder as that file.
+
+For scripted runs, use `.venv/bin/python -m src.cleaning --help`.
+
+## Where to edit each CLI operation
+
+`main.py` launches `src/cli/app.py`, which parses scripted flags and dispatches
+the chosen operation. Edit menu labels, numbers, and interactive questions in
+`src/cli/prompts.py`. Shared table names and default paths are in `src/settings.py`.
+
+`src/etl/` contains the SQL-to-API submission and the two CSV-to-SQL imports.
+Use `src/etl/api_submission.py` for options 1–2, `src/etl/csv_loader.py` for
+option 3, and `src/etl/forecast_loader.py` for option 9.
+
+| Option | Workflow | Where to edit its rules |
+| --- | --- | --- |
+| 1–2. Count or submit readings | `src/etl/api_submission.py` | `config/common.py` for the SQL time window and timestamp fields, `config/sensors.py` for sensor mappings, `src/etl/transformer.py` for API payloads |
+| 3. Import a cleaned CSV | `src/etl/csv_loader.py` | `src/sensor_aliases.py` for workbook alias handling |
+| 4. Check SQL access | `src/database_check.py` | `src/database.py` for connection handling |
+| 5–6. Train or tune models | `src/training/train.py`, `src/training/tune.py` | `src/training/settings.py` for forecast settings, `src/training/source.py` for input validation, `src/training/scoring.py` for regression metrics |
+| 7. Prepare SQL data | `src/cleaning.py` | `src/cleaning_policy.py` for fill and fault rules, `src/visuals/cleaning.py` for plots, `src/prepared_data.py` for output filenames shared with training |
+| 8. Select one forecast per target | `src/training/select_model.py` | `src/training/workbook.py` for target names and `src/training/settings.py` for the algorithm tie order |
+| 9. Review and import forecasts | `src/etl/forecast_loader.py` | `src/settings.py` for the destination table |
+
 ## Submit sensor readings to the cleaning API
 
 ```bash
@@ -240,7 +276,7 @@ Still to be implemented or confirmed:
 - API request and response schemas
 - Retry and partial-failure handling
 - Destination SQL table and response-to-column mapping
-- Idempotent insert/update logic in `src/loader.py`
+- Idempotent storage for prediction API responses
 - Automated tests
 
 ## Information required to complete the pipeline
@@ -303,14 +339,14 @@ logs containing a unique DATA_ID can also be used with these options.
 ## Reusing the workflow
 
 `main.py` handles menus, command-line arguments, and logging setup.
-`src/pipeline.py` owns extraction, API submission, summaries,
+`src/etl/api_submission.py` owns extraction, API submission, summaries,
 and resource cleanup. Call it directly without interactive input:
 
 ```python
 from config.common import DATA_WINDOW, TIMESTAMP_COLUMNS
 from config.sensors import SENSORS
 from src.logger import setup_logger
-from src.pipeline import run_pipeline
+from src.etl.api_submission import run_pipeline
 
 setup_logger()
 status = run_pipeline(
