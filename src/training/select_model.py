@@ -12,11 +12,10 @@ import os
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
-from .workbook import NAMES, TARGETS
+from src.settings import FORECAST_ASSETS_DIR, FORECAST_SELECTION_PATH
 
-
-TARGET_COLUMNS = dict(zip(NAMES, TARGETS.values()))
-ALGORITHM_ORDER = ("Ridge", "Random Forest", "XGBoost", "LSTM")
+from .settings import ALGORITHM_ORDER
+from .workbook import TARGET_COLUMNS
 
 
 @dataclass(frozen=True)
@@ -159,8 +158,8 @@ def save_selections(selections, output):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--assets", type=Path, default="docs/assets", help="Directory containing saved forecast runs")
-    parser.add_argument("--output", type=Path, default="data/forecast_selection.json", help="Selection JSON path")
+    parser.add_argument("--assets", type=Path, default=FORECAST_ASSETS_DIR, help="Directory containing saved forecast runs")
+    parser.add_argument("--output", type=Path, default=FORECAST_SELECTION_PATH, help="Selection JSON path")
     args = parser.parse_args(argv)
     try:
         selections = select_models(args.assets)

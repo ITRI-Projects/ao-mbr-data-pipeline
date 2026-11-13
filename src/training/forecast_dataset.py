@@ -12,16 +12,17 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from .settings import (
+    DEFAULT_HORIZON_MINUTES,
+    DEFAULT_SEQUENCE_STEPS,
+    DEFAULT_STEP_MINUTES,
+    DEFAULT_TEST_START,
+    DEFAULT_TRAIN_END,
+    DEFAULT_TRAIN_START,
+)
+
 CONFIG_MODULES = ("eff_nh3_n", "eff_no3_n", "a1_ch3oh_flow",
                   "a2_ch3oh_flow", "a1_air_flow", "a2_air_flow")
-
-DEFAULT_TRAIN_START = "2026-04-04"
-DEFAULT_TRAIN_END = "2026-04-18"
-DEFAULT_TEST_START = "2026-04-21"
-DEFAULT_HORIZON_MINUTES = 10
-DEFAULT_STEP_MINUTES = 10
-DEFAULT_SEQUENCE_STEPS = 7
-
 
 def prepare(raw, config, train_start=DEFAULT_TRAIN_START, train_end=DEFAULT_TRAIN_END,
             test_start=DEFAULT_TEST_START, horizon_minutes=DEFAULT_HORIZON_MINUTES,

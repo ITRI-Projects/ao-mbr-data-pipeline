@@ -169,7 +169,7 @@ import, or answer `y` to load into `dbo.ForecastPredictions`.
 The table has one row per `target_time` and one prediction column per target.
 The import updates existing timestamps and inserts new ones in a transaction.
 Missing target values are stored as SQL `NULL`. The table is created if needed.
-For a scripted preview, use `python -m src.forecast_loader --preview-only`.
+For a scripted preview, use `python -m src.etl.forecast_loader --preview-only`.
 
 ## Effluent ammonia from the full Drive history
 

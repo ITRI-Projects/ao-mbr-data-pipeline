@@ -5,6 +5,8 @@ TARGETS = {"Eff NH3-N": "Eff_NH4_N", "Eff NO3-N": "Eff_NO3_N",
            "A1 Aeration Flow": "A1_Q_air", "A2 Aeration Flow": "A2_Q_air"}
 NAMES = ("eff_nh3_n", "eff_no3_n", "a1_ch3oh_flow", "a2_ch3oh_flow", "a1_air_flow", "a2_air_flow")
 
+TARGET_COLUMNS = dict(zip(NAMES, TARGETS.values()))
+
 COMBINED_SENSOR_ALIASES = {
     f"A{line}_{tank}_{parameter}": f"{tank}_{parameter}"
     for line in (1, 2)
